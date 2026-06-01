@@ -274,7 +274,7 @@ app.get('/video/meottearo.mp4', (req, res) => {
     options.headers['Range'] = req.headers.range;
   }
   
-  https.get(videoUrl, options, (proxyRes) => {
+  const proxyReq = https.get(videoUrl, options, (proxyRes) => {
     res.status(proxyRes.statusCode);
     res.setHeader('Cache-Control', 'public, max-age=31536000, immutable');
     
@@ -292,9 +292,18 @@ app.get('/video/meottearo.mp4', (req, res) => {
     }
     
     proxyRes.pipe(res);
-  }).on('error', (err) => {
+  });
+
+  proxyReq.on('error', (err) => {
     console.error('Video proxy error:', err);
-    res.sendStatus(500);
+    if (!res.headersSent) {
+      res.sendStatus(500);
+    }
+  });
+
+  // Critical: If client cancels or closes connection, abort the proxy request to free sockets
+  req.on('close', () => {
+    proxyReq.destroy();
   });
 });
 
