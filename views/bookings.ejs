@@ -1,170 +1,187 @@
 <%- include('partials/header') %>
 
-<main class="fixed">
-  <!-- Left Side: Navigation / Stat Summary -->
-  <section id="one" class="left" aria-expanded="true">
-    <div class="admin-sidebar" style="padding-right: 1.5rem;">
-      <h2 class="bold" style="color: var(--color-high); margin-bottom: 1.5rem;">ADMIN PANEL</h2>
-      
-      <div class="stats-panel" style="margin-bottom: 2rem;">
-        <div class="stat-card" style="background: var(--color-low); padding: 1.5rem; border-left: 4px solid var(--color-high);">
-          <h3 class="bold" style="font-size: 0.85rem; margin-bottom: 0.5rem; color: #555;">총 예매 건수 (인원)</h3>
-          <p class="bold" style="font-size: 2rem; color: var(--color-high);" id="total-bookings"><%= bookings.length %></p>
+  <main class="fixed">
+    <!-- Left Side: Navigation / Stat Summary -->
+    <section id="one" class="left" aria-expanded="true">
+      <div class="admin-sidebar" style="padding-right: 1.5rem;">
+        <!-- <h2 class="bold" style="color: var(--color-high); margin-bottom: 1.5rem;">ADMIN PANEL</h2> -->
+
+        <div class="stats-panel" style="margin-bottom: 2rem;">
+          <div class="stat-card"
+            style="background: var(--color-low); padding: 1.5rem; border-left: 4px solid var(--color-high);">
+            <h3 class="bold" style="font-size: 0.85rem; margin-bottom: 0.5rem; color: #555;">총 예매 건수 (인원)</h3>
+            <p class="bold" style="font-size: 2rem; color: var(--color-high);" id="total-bookings">
+              <%= bookings.length %>
+            </p>
+          </div>
+        </div>
+
+        <div class="search-panel">
+          <label for="search-input" class="bold" style="display: block; font-size: 0.85rem; margin-bottom: 0.5rem;">예매
+            내역 검색 (Search)</label>
+          <input type="text" id="search-input" placeholder="이름 또는 연락처 입력..."
+            style="width: 100%; padding: 0.75rem; border: 1px solid var(--color-fg); outline: none;">
+        </div>
+
+        <div style="margin-top: 1.5rem;">
+          <a href="/admin/export" class="bold"
+            style="display: inline-block; padding: 0.75rem 1.25rem; border: 1px solid var(--color-fg); text-decoration: none; font-size: 0.85rem;">CSV
+            내보내기 (Excel)</a>
         </div>
       </div>
-      
-      <div class="search-panel">
-        <label for="search-input" class="bold" style="display: block; font-size: 0.85rem; margin-bottom: 0.5rem;">예매 내역 검색 (Search)</label>
-        <input type="text" id="search-input" placeholder="이름 또는 연락처 입력..." style="width: 100%; padding: 0.75rem; border: 1px solid var(--color-fg); outline: none;">
-      </div>
+    </section>
 
-      <div style="margin-top: 1.5rem;">
-        <a href="/admin/export" class="bold" style="display: inline-block; padding: 0.75rem 1.25rem; border: 1px solid var(--color-fg); text-decoration: none; font-size: 0.85rem;">CSV 내보내기 (Excel)</a>
-      </div>
-    </div>
-  </section>
+    <!-- Right Side: Booking List Table -->
+    <section id="two" class="right" aria-expanded="true">
+      <div class="bookings-list-container">
+        <h2 class="bold" style="margin-bottom: 1.5rem;">RESERVATION LIST</h2>
+        <hr>
 
-  <!-- Right Side: Booking List Table -->
-  <section id="two" class="right" aria-expanded="true">
-    <div class="bookings-list-container">
-      <h2 class="bold" style="margin-bottom: 1.5rem;">RESERVATION LIST</h2>
-      <hr>
-
-      <div style="overflow-x: auto;">
-        <table class="admin-table" style="width: 100%; border-collapse: collapse; text-align: left; min-width: 500px;">
-          <thead>
-            <tr style="border-bottom: 2px solid var(--color-fg);">
-              <th class="bold" style="padding: 0.75rem 0.5rem;">이름</th>
-              <th class="bold" style="padding: 0.75rem 0.5rem;">학번 / 학과</th>
-              <th class="bold" style="padding: 0.75rem 0.5rem;">연락처</th>
-              <th class="bold" style="padding: 0.75rem 0.5rem; text-align: right;">관리</th>
-            </tr>
-          </thead>
-          <tbody id="bookings-table-body">
-            <% if (bookings.length === 0) { %>
-              <tr class="no-bookings-row">
-                <td colspan="4" style="padding: 2rem; text-align: center; color: var(--color-mid);">등록된 예매 내역이 없습니다.</td>
+        <div style="overflow-x: auto;">
+          <table class="admin-table"
+            style="width: 100%; border-collapse: collapse; text-align: left; min-width: 500px;">
+            <thead>
+              <tr style="border-bottom: 2px solid var(--color-fg);">
+                <th class="bold" style="padding: 0.75rem 0.5rem;">이름</th>
+                <th class="bold" style="padding: 0.75rem 0.5rem;">학번 / 학과</th>
+                <th class="bold" style="padding: 0.75rem 0.5rem;">연락처</th>
+                <th class="bold" style="padding: 0.75rem 0.5rem; text-align: right;">관리</th>
               </tr>
-            <% } else { %>
-              <% bookings.forEach(function(b) { %>
-                <tr class="booking-row" data-code="<%= b.code %>" data-name="<%= b.name %>" data-phone="<%= b.phone %>" style="border-bottom: 1px solid var(--color-low);">
-                  <td class="bold" style="padding: 0.75rem 0.5rem;"><%= b.name %></td>
-                  <td style="padding: 0.75rem 0.5rem;"><%= b.studentId %></td>
-                  <td style="padding: 0.75rem 0.5rem;"><%= b.phone %></td>
-                  <td style="padding: 0.75rem 0.5rem; text-align: right;">
-                    <button class="delete-booking-btn" data-code="<%= b.code %>" style="background: none; border: none; color: var(--color-err); cursor: pointer; font-size: 0.85rem; text-decoration: underline; padding: 0.25rem 0.5rem;">취소</button>
+            </thead>
+            <tbody id="bookings-table-body">
+              <% if (bookings.length===0) { %>
+                <tr class="no-bookings-row">
+                  <td colspan="4" style="padding: 2rem; text-align: center; color: var(--color-mid);">등록된 예매 내역이 없습니다.
                   </td>
                 </tr>
-              <% }); %>
-            <% } %>
-          </tbody>
-        </table>
+                <% } else { %>
+                  <% bookings.forEach(function(b) { %>
+                    <tr class="booking-row" data-code="<%= b.code %>" data-name="<%= b.name %>"
+                      data-phone="<%= b.phone %>" style="border-bottom: 1px solid var(--color-low);">
+                      <td class="bold" style="padding: 0.75rem 0.5rem;">
+                        <%= b.name %>
+                      </td>
+                      <td style="padding: 0.75rem 0.5rem;">
+                        <%= b.studentId %>
+                      </td>
+                      <td style="padding: 0.75rem 0.5rem;">
+                        <%= b.phone %>
+                      </td>
+                      <td style="padding: 0.75rem 0.5rem; text-align: right;">
+                        <button class="delete-booking-btn" data-code="<%= b.code %>"
+                          style="background: none; border: none; color: var(--color-err); cursor: pointer; font-size: 0.85rem; text-decoration: underline; padding: 0.25rem 0.5rem;">취소</button>
+                      </td>
+                    </tr>
+                    <% }); %>
+                      <% } %>
+            </tbody>
+          </table>
+        </div>
       </div>
-    </div>
-  </section>
-</main>
+    </section>
+  </main>
 
-<%- include('partials/footer') %>
+  <%- include('partials/footer') %>
 
-<script>
-  document.addEventListener('DOMContentLoaded', function() {
-    // 1. Search Filter
-    const searchInput = document.getElementById('search-input');
-    const tableBody = document.getElementById('bookings-table-body');
-    const rows = tableBody.querySelectorAll('.booking-row');
+    <script>
+      document.addEventListener('DOMContentLoaded', function () {
+        // 1. Search Filter
+        const searchInput = document.getElementById('search-input');
+        const tableBody = document.getElementById('bookings-table-body');
+        const rows = tableBody.querySelectorAll('.booking-row');
 
-    if (searchInput) {
-      searchInput.addEventListener('input', function() {
-        const query = this.value.toLowerCase().trim();
-        let matchCount = 0;
+        if (searchInput) {
+          searchInput.addEventListener('input', function () {
+            const query = this.value.toLowerCase().trim();
+            let matchCount = 0;
 
-        rows.forEach(row => {
-          const name = row.getAttribute('data-name').toLowerCase();
-          const phone = row.getAttribute('data-phone').toLowerCase();
-          
-          if (name.includes(query) || phone.includes(query)) {
-            row.style.display = '';
-            matchCount++;
-          } else {
-            row.style.display = 'none';
-          }
-        });
+            rows.forEach(row => {
+              const name = row.getAttribute('data-name').toLowerCase();
+              const phone = row.getAttribute('data-phone').toLowerCase();
 
-        // Toggle no results row
-        let noResultsRow = document.getElementById('no-results-row');
-        if (matchCount === 0 && query !== '') {
-          if (!noResultsRow) {
-            noResultsRow = document.createElement('tr');
-            noResultsRow.id = 'no-results-row';
-            noResultsRow.innerHTML = '<td colspan="4" style="padding: 2rem; text-align: center; color: var(--color-mid);">검색 결과가 없습니다.</td>';
-            tableBody.appendChild(noResultsRow);
-          }
-        } else {
-          if (noResultsRow) {
-            noResultsRow.remove();
-          }
-        }
-      });
-    }
+              if (name.includes(query) || phone.includes(query)) {
+                row.style.display = '';
+                matchCount++;
+              } else {
+                row.style.display = 'none';
+              }
+            });
 
-    // 2. Cancel/Delete Booking Action
-    tableBody.addEventListener('click', function(e) {
-      if (e.target.classList.contains('delete-booking-btn')) {
-        const btn = e.target;
-        const code = btn.getAttribute('data-code');
-
-        if (!confirm('정말로 이 예매를 취소하시겠습니까?')) {
-          return;
+            // Toggle no results row
+            let noResultsRow = document.getElementById('no-results-row');
+            if (matchCount === 0 && query !== '') {
+              if (!noResultsRow) {
+                noResultsRow = document.createElement('tr');
+                noResultsRow.id = 'no-results-row';
+                noResultsRow.innerHTML = '<td colspan="4" style="padding: 2rem; text-align: center; color: var(--color-mid);">검색 결과가 없습니다.</td>';
+                tableBody.appendChild(noResultsRow);
+              }
+            } else {
+              if (noResultsRow) {
+                noResultsRow.remove();
+              }
+            }
+          });
         }
 
-        btn.disabled = true;
-        btn.textContent = '처리중...';
+        // 2. Cancel/Delete Booking Action
+        tableBody.addEventListener('click', function (e) {
+          if (e.target.classList.contains('delete-booking-btn')) {
+            const btn = e.target;
+            const code = btn.getAttribute('data-code');
 
-        fetch('/admin/delete', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json'
-          },
-          body: JSON.stringify({ code })
-        })
-        .then(res => res.json())
-        .then(data => {
-          if (data.success) {
-            const row = btn.closest('.booking-row');
-            
-            // Fade-out row & delete
-            row.style.transition = 'opacity 0.2s';
-            row.style.opacity = 0;
-            setTimeout(() => {
-              row.remove();
-              
-              // Recalculate stats on client side
-              const totalBookingsEl = document.getElementById('total-bookings');
-              const currentBookings = parseInt(totalBookingsEl.textContent, 10) || 0;
-              totalBookingsEl.textContent = Math.max(0, currentBookings - 1);
+            if (!confirm('정말로 이 예매를 취소하시겠습니까?')) {
+              return;
+            }
 
-              // Check if table is empty now
-              const remainingRows = tableBody.querySelectorAll('.booking-row');
-              if (remainingRows.length === 0) {
-                tableBody.innerHTML = `
+            btn.disabled = true;
+            btn.textContent = '처리중...';
+
+            fetch('/admin/delete', {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json'
+              },
+              body: JSON.stringify({ code })
+            })
+              .then(res => res.json())
+              .then(data => {
+                if (data.success) {
+                  const row = btn.closest('.booking-row');
+
+                  // Fade-out row & delete
+                  row.style.transition = 'opacity 0.2s';
+                  row.style.opacity = 0;
+                  setTimeout(() => {
+                    row.remove();
+
+                    // Recalculate stats on client side
+                    const totalBookingsEl = document.getElementById('total-bookings');
+                    const currentBookings = parseInt(totalBookingsEl.textContent, 10) || 0;
+                    totalBookingsEl.textContent = Math.max(0, currentBookings - 1);
+
+                    // Check if table is empty now
+                    const remainingRows = tableBody.querySelectorAll('.booking-row');
+                    if (remainingRows.length === 0) {
+                      tableBody.innerHTML = `
                   <tr class="no-bookings-row">
                     <td colspan="4" style="padding: 2rem; text-align: center; color: var(--color-mid);">등록된 예매 내역이 없습니다.</td>
                   </tr>
                 `;
-              }
-            }, 200);
-          } else {
-            alert(data.error || '오류가 발생했습니다.');
-            btn.disabled = false;
-            btn.textContent = '취소';
+                    }
+                  }, 200);
+                } else {
+                  alert(data.error || '오류가 발생했습니다.');
+                  btn.disabled = false;
+                  btn.textContent = '취소';
+                }
+              })
+              .catch(err => {
+                alert('서버 통신 오류가 발생했습니다.');
+                btn.disabled = false;
+                btn.textContent = '취소';
+              });
           }
-        })
-        .catch(err => {
-          alert('서버 통신 오류가 발생했습니다.');
-          btn.disabled = false;
-          btn.textContent = '취소';
         });
-      }
-    });
-  });
-</script>
+      });
+    </script>

@@ -360,7 +360,7 @@ main div.student span.placeholder {
 }
 */
 
-main div.semesters > a.block:last-child {
+main div.semesters > a.block {
 	font-style:italic;
 }
 

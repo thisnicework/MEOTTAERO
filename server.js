@@ -177,22 +177,29 @@ app.post('/projects/:semesterId/book', async (req, res) => {
   }
 });
 
-// Basic Auth middleware for admin routes
+// Auth middleware for admin routes (cookie-based)
 function requireAdminAuth(req, res, next) {
-  const auth = req.headers['authorization'];
-  if (!auth || !auth.startsWith('Basic ')) {
-    res.set('WWW-Authenticate', 'Basic realm="Admin"');
-    return res.status(401).send('Authentication required');
-  }
-  const credentials = Buffer.from(auth.slice(6), 'base64').toString();
-  const colonIndex = credentials.indexOf(':');
-  const password = credentials.slice(colonIndex + 1);
-  if (password !== (process.env.ADMIN_PASSWORD || 'admin')) {
-    res.set('WWW-Authenticate', 'Basic realm="Admin"');
-    return res.status(401).send('Invalid credentials');
+  const cookies = req.headers.cookie ? Object.fromEntries(req.headers.cookie.split(';').map(c => c.trim().split('='))) : {};
+  if (cookies.admin_session !== 'true') {
+    return res.redirect('/login');
   }
   next();
 }
+
+// Route: Admin Login Page (GET)
+app.get('/login', (req, res) => {
+  res.render('login');
+});
+
+// Route: Admin Login Submit (POST)
+app.post('/login', (req, res) => {
+  const { password } = req.body;
+  if (password === (process.env.ADMIN_PASSWORD || 'admin')) {
+    res.cookie('admin_session', 'true', { httpOnly: true, path: '/' });
+    return res.redirect('/admin');
+  }
+  res.render('login', { error: '비밀번호가 올바르지 않습니다.' });
+});
 
 // Route: Admin Bookings Dashboard
 app.get('/admin', requireAdminAuth, async (req, res) => {

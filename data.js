@@ -89,7 +89,7 @@ function loadSemesters() {
             <p>틀어놓은 음악 위에서 각자 다른 방식으로 반짝일 시간</p>
             <br>
             <p><strong>DATE:</strong> 2026.03.31 (TUE) 9PM</p>
-            <p><strong>LOCATION:</strong> 서울예술대학교 라동 106호 (예술대학로 171)</p>
+            <p><strong>LOCATION:</strong> 서울예술대학교 라동 106호</p>
             <br>
             <p><strong>DJ:</strong> <a href="https://instagram.com/t0r1nsight" target="_blank" rel="noopener noreferrer">@t0r1nsight</a>, <a href="https://instagram.com/dearcoralinee" target="_blank" rel="noopener noreferrer">@dearcoralinee</a></p>
             <br>
@@ -162,7 +162,7 @@ export async function getBookings() {
         .from('bookings')
         .select('*')
         .order('created_at', { ascending: false });
-      
+
       if (!error && data) {
         return data.map(b => ({
           code: b.code,
@@ -210,7 +210,7 @@ export async function saveBooking(booking) {
           tickets: ticketsCount
         }])
         .select();
-      
+
       if (!error && data && data.length > 0) {
         const b = data[0];
         return {
@@ -239,7 +239,7 @@ export async function saveBooking(booking) {
     tickets: ticketsCount,
     createdAt: new Date().toISOString()
   };
-  
+
   bookings.push(newBooking);
   fs.writeFileSync(BOOKINGS_FILE, JSON.stringify(bookings, null, 2), 'utf8');
   return newBooking;
@@ -252,7 +252,7 @@ export async function deleteBooking(code) {
         .from('bookings')
         .delete()
         .eq('code', code);
-      
+
       if (!error) {
         return true;
       } else {

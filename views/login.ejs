@@ -1,0 +1,65 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="stylesheet" type="text/css" href="/assets/css/index.css">
+  <title>MEOTTAERO — Admin Login</title>
+  <style>
+    .login-container {
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      min-height: calc(80vh - 100px);
+      max-width: 360px;
+      margin: 0 auto;
+      padding: var(--margin);
+    }
+
+    .login-form {
+      display: flex;
+      flex-direction: column;
+      width: 100%;
+      gap: 1.2rem;
+      margin-top: 1.5rem;
+    }
+
+    .error-msg {
+      color: var(--color-err);
+      font-weight: bold;
+      font-size: 0.9rem;
+      margin-top: 0.2rem;
+    }
+  </style>
+</head>
+
+<body>
+  <header>
+    <h1><a href="/"><span class="bold">// MEOTTAERO</span></a></h1>
+  </header>
+  <hr>
+  <main>
+    <div class="login-container">
+      <h2 class="bold"
+        style="font-size: 1.2rem; text-transform: uppercase; letter-spacing: 0.05em; color: var(--color-high);">ADMIN
+        LOGIN</h2>
+      <form action="/login" method="POST" class="login-form">
+        <div class="form-group">
+          <label for="password" class="bold"
+            style="font-size: 0.85rem; text-transform: uppercase; letter-spacing: 0.05em;">PASSWORD</label>
+          <input type="password" id="password" name="password" required autofocus>
+          <% if (typeof error !=='undefined' ) { %>
+            <div class="error-msg">
+              <%= error %>
+            </div>
+            <% } %>
+        </div>
+        <button type="submit" class="submit-btn bold">login</button>
+      </form>
+    </div>
+  </main>
+</body>
+
+</html>

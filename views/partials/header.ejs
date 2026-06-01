@@ -23,10 +23,12 @@
   <body>
     <header>
       <h1><a href="/"><span class="bold">// MEOTTAERO</span></a></h1>
+      <% if (activeMenu !== 'admin') { %>
       <nav id="menu">
         <a <%= activeMenu === 'projects' ? 'aria-current="page"' : '' %> href="/projects">projects</a>
         <a <%= activeMenu === 'students' ? 'aria-current="page"' : '' %> href="/students">students</a>
         <a <%= activeMenu === 'about' ? 'aria-current="page"' : '' %> href="/about">about</a>
       </nav>
+      <% } %>
     </header>
     <hr>
