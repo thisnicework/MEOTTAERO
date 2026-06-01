@@ -1,6 +1,7 @@
 import express from 'express';
 import path from 'path';
 import { fileURLToPath } from 'url';
+import https from 'https';
 import * as db from './data.js';
 
 const __filename = fileURLToPath(import.meta.url);
@@ -261,6 +262,41 @@ app.post('/admin/delete', requireAdminAuth, async (req, res) => {
   }
 });
 
+
+// Proxy endpoint to stream video from Supabase and cache it aggressively on the client/browser
+app.get('/video/meottearo.mp4', (req, res) => {
+  const videoUrl = 'https://pysxtikwokpcyfjstdyv.supabase.co/storage/v1/object/public/videos/meottearo.mp4';
+  
+  const options = {
+    headers: {}
+  };
+  if (req.headers.range) {
+    options.headers['Range'] = req.headers.range;
+  }
+  
+  https.get(videoUrl, options, (proxyRes) => {
+    res.status(proxyRes.statusCode);
+    res.setHeader('Cache-Control', 'public, max-age=31536000, immutable');
+    
+    const headersToCopy = [
+      'content-type',
+      'content-length',
+      'content-range',
+      'accept-ranges',
+      'etag'
+    ];
+    for (const h of headersToCopy) {
+      if (proxyRes.headers[h]) {
+        res.setHeader(h, proxyRes.headers[h]);
+      }
+    }
+    
+    proxyRes.pipe(res);
+  }).on('error', (err) => {
+    console.error('Video proxy error:', err);
+    res.sendStatus(500);
+  });
+});
 
 // Export app for serverless environments (Vercel)
 export default app;
