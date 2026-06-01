@@ -232,7 +232,7 @@ main div.gallery {
 }
 
 main div.gallery a::after {
-	content: none;
+	content: none !important;
 }
 
 main div.gallery > div.iframe {
