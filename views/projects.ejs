@@ -14,15 +14,6 @@
   <section id="two" class="right" aria-expanded="false">
     <% if (initialProject && initialStudent) { %>
       <%- include('partials/reload_container', { project: initialProject, student: initialStudent }) %>
-    <% } else { %>
-      <div class="project init">
-        <div class="gallery">
-          <video class="gallery" autoplay loop muted playsinline style="width: 100%; border: none;">
-            <source src="/assets/video/brand.mp4" type="video/mp4">
-            Your browser does not support the video tag.
-          </video>
-        </div>
-      </div>
     <% } %>
   </section>
 </main>

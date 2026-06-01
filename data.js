@@ -90,7 +90,6 @@ function loadSemesters() {
             <br>
             <p><strong>DATE:</strong> 2026.03.31 (TUE) 9PM</p>
             <p><strong>LOCATION:</strong> 서울예술대학교 라동 106호 (예술대학로 171)</p>
-            <p><strong>🎟️ FREE ENTRY:</strong> 프로필 상단 구글폼으로 신청 가능</p>
             <br>
             <p><strong>DJ:</strong> <a href="https://instagram.com/t0r1nsight" target="_blank" rel="noopener noreferrer">@t0r1nsight</a>, <a href="https://instagram.com/dearcoralinee" target="_blank" rel="noopener noreferrer">@dearcoralinee</a></p>
             <br>
