@@ -47,58 +47,30 @@ function loadSemesters() {
         ...sem,
         description: `
           <div class="project-text" style="max-width: 480px; margin-bottom: 2rem;">
-            <p>학기도 끝나가는데 다시 한번 같이 춤추자 ! 이번엔 진짜 마지막처럼 놀자 !</p>
-            <p>매일 밥만 먹던 학식당에서 오늘 밤만큼은 불빛과 음악이 뒤섞입니다.</p>
+            <p>학기도 끝나가는데 다시 한번 같이 춤추자 ! 이번엔 진짜 마지막처럼 놀자 ! 매일 밥만 먹던 학식당에서 오늘 밤만큼은 불빛과 음악이 뒤섞입니다.</p>
             <br>
-            <p class="bold">FUNK & SOUL PARTY</p>
-            <p>meottaero가 여는 두 번째 파티</p>
-            <p class="bold">&lt;춤 출 자유 vol.2&gt;</p>
+            <p class="bold">FUNK & SOUL PARTY &lt;춤 출 자유 vol.2&gt;</p>
             <p>익숙한 공간이 낯설게 반짝이는 밤, 각자 마음 가는 대로 움직일 시간</p>
             <br>
-            <p class="bold">DATE</p>
-            <p>2026.06.02 (TUE) 9pm</p>
+            <p><strong>DATE:</strong> 2026.06.02 (TUE) 9PM</p>
+            <p><strong>LOCATION:</strong> 서울예술대학교 지원동 학식당</p>
             <br>
-            <p class="bold">LOCATION</p>
-            <p>서울예술대학교 지원동 학식당</p>
-            <br>
-            <p class="bold">DJ</p>
-            <p>DAEUN <a href="https://instagram.com/t0r1nsight" target="_blank" rel="noopener noreferrer">@t0r1nsight</a> with <a href="https://instagram.com/98.0811" target="_blank" rel="noopener noreferrer">@98.0811</a></p>
-            <p>UIHWA <a href="https://instagram.com/_h_wai" target="_blank" rel="noopener noreferrer">@_h_wai</a></p>
+            <p><strong>DJ:</strong> DAEUN <a href="https://instagram.com/t0r1nsight" target="_blank" rel="noopener noreferrer">@t0r1nsight</a> with <a href="https://instagram.com/98.0811" target="_blank" rel="noopener noreferrer">@98.0811</a> / UIHWA <a href="https://instagram.com/_h_wai" target="_blank" rel="noopener noreferrer">@_h_wai</a></p>
             <br>
             <p class="bold">SHOWCASE</p>
-            <p class="bold">: 대희와 가람</p>
-            <p>김대희 <a href="https://instagram.com/daehyi__" target="_blank" rel="noopener noreferrer">@daehyi__</a></p>
-            <p>김가람 <a href="https://instagram.com/__r.am_" target="_blank" rel="noopener noreferrer">@__r.am_</a></p>
-            <br>
-            <p class="bold">: SIA Waackers</p>
-            <p>
-              권경민 <a href="https://instagram.com/inkayyka" target="_blank" rel="noopener noreferrer">@inkayyka</a><br>
-              문승희 <a href="https://instagram.com/mseunghy" target="_blank" rel="noopener noreferrer">@mseunghy</a><br>
-              서영인 <a href="https://instagram.com/seoyoungiin" target="_blank" rel="noopener noreferrer">@seoyoungiin</a><br>
-              임은빈 <a href="https://instagram.com/liimeumvin" target="_blank" rel="noopener noreferrer">@liimeumvin</a><br>
-              이세연 <a href="https://instagram.com/dltpdus3_" target="_blank" rel="noopener noreferrer">@dltpdus3_</a><br>
-              고예은 <a href="https://instagram.com/heathe.r" target="_blank" rel="noopener noreferrer">@heathe.r</a><br>
-              장채현 <a href="https://instagram.com/geungjxng" target="_blank" rel="noopener noreferrer">@geungjxng</a><br>
-              백소리 <a href="https://instagram.com/1msound" target="_blank" rel="noopener noreferrer">@1msound</a><br>
-              심여진 <a href="https://instagram.com/sssimuri" target="_blank" rel="noopener noreferrer">@sssimuri</a>
-            </p>
-            <br>
-            <p class="bold">: SIA Unlimited</p>
-            <p>
-              김도현 <a href="https://instagram.com/troydi__ulmtd" target="_blank" rel="noopener noreferrer">@troydi__ulmtd</a><br>
-              이창섭 <a href="https://instagram.com/c_s__lee_" target="_blank" rel="noopener noreferrer">@c_s__lee_</a><br>
-              김주환 <a href="https://instagram.com/dlm0teo_" target="_blank" rel="noopener noreferrer">@dlm0teo_</a>
-            </p>
+            <p><strong>대희와 가람:</strong> 김대희 <a href="https://instagram.com/daehyi__" target="_blank" rel="noopener noreferrer">@daehyi__</a>, 김가람 <a href="https://instagram.com/__r.am_" target="_blank" rel="noopener noreferrer">@__r.am_</a></p>
+            <p><strong>SIA Waackers:</strong> <a href="https://instagram.com/inkayyka" target="_blank" rel="noopener noreferrer">@inkayyka</a>, <a href="https://instagram.com/mseunghy" target="_blank" rel="noopener noreferrer">@mseunghy</a>, <a href="https://instagram.com/seoyoungiin" target="_blank" rel="noopener noreferrer">@seoyoungiin</a>, <a href="https://instagram.com/liimeumvin" target="_blank" rel="noopener noreferrer">@liimeumvin</a>, <a href="https://instagram.com/dltpdus3_" target="_blank" rel="noopener noreferrer">@dltpdus3_</a>, <a href="https://instagram.com/heathe.r" target="_blank" rel="noopener noreferrer">@heathe.r</a>, <a href="https://instagram.com/geungjxng" target="_blank" rel="noopener noreferrer">@geungjxng</a>, <a href="https://instagram.com/1msound" target="_blank" rel="noopener noreferrer">@1msound</a>, <a href="https://instagram.com/sssimuri" target="_blank" rel="noopener noreferrer">@sssimuri</a></p>
+            <p><strong>SIA Unlimited:</strong> <a href="https://instagram.com/troydi__ulmtd" target="_blank" rel="noopener noreferrer">@troydi__ulmtd</a>, <a href="https://instagram.com/c_s__lee_" target="_blank" rel="noopener noreferrer">@c_s__lee_</a>, <a href="https://instagram.com/dlm0teo_" target="_blank" rel="noopener noreferrer">@dlm0teo_</a></p>
             <br>
             <p>Presented by <a href="https://instagram.com/meottaero__" target="_blank" rel="noopener noreferrer">@meottaero__</a></p>
-            <p>
-              <a href="https://instagram.com/__jon_ji" target="_blank" rel="noopener noreferrer">@__jon_ji</a>
-              <a href="https://instagram.com/rock.bawe" target="_blank" rel="noopener noreferrer">@rock.bawe</a>
-              <a href="https://instagram.com/thisnicework" target="_blank" rel="noopener noreferrer">@thisnicework</a>
-              <a href="https://instagram.com/t0r1nsight" target="_blank" rel="noopener noreferrer">@t0r1nsight</a>
-              <a href="https://instagram.com/98.0811" target="_blank" rel="noopener noreferrer">@98.0811</a>
-              <a href="https://instagram.com/jang_peace" target="_blank" rel="noopener noreferrer">@jang_peace</a>
-              <a href="https://instagram.com/hvv1ni" target="_blank" rel="noopener noreferrer">@hvv1ni</a>
+            <p class="small" style="font-size: 0.85em; opacity: 0.8;">
+              <a href="https://instagram.com/__jon_ji" target="_blank" rel="noopener noreferrer">@__jon_ji</a>, 
+              <a href="https://instagram.com/rock.bawe" target="_blank" rel="noopener noreferrer">@rock.bawe</a>, 
+              <a href="https://instagram.com/thisnicework" target="_blank" rel="noopener noreferrer">@thisnicework</a>, 
+              <a href="https://instagram.com/t0r1nsight" target="_blank" rel="noopener noreferrer">@t0r1nsight</a>, 
+              <a href="https://instagram.com/98.0811" target="_blank" rel="noopener noreferrer">@98.0811</a>, 
+              <a href="https://instagram.com/jang_peace" target="_blank" rel="noopener noreferrer">@jang_peace</a>, 
+              <a href="https://instagram.com/hvv1ni" target="_blank" rel="noopener noreferrer">@hvv1ni</a>, 
               <a href="https://instagram.com/ye0min" target="_blank" rel="noopener noreferrer">@ye0min</a>
             </p>
           </div>
@@ -111,64 +83,28 @@ function loadSemesters() {
         description: `
           <div class="project-text" style="max-width: 480px; margin-bottom: 2rem;">
             <p>수업 듣지말고 그냥 놀자.. 근데 쨀 수는 없으니깐.. 몰래 수업 끝나고 같이 춤추자 ! 싫으면 오지말고 재밌어 할 만한 사람만 부를려니까..</p>
+            <p>어두운 라동 106, 70–80’s 펑크와 디스코가 뒤섞인 밤이 시작됩니다. 반짝이는 미러볼 아래, 멋대로 움직이는 자유.</p>
             <br>
-            <p>어두운 라동 106,</p>
-            <p>70–80’s 펑크와 디스코가 뒤섞인 밤이 시작됩니다.</p>
-            <p>반짝이는 미러볼 아래, 멋대로 움직이는 자유</p>
-            <br>
-            <p>meottaero가 여는 첫 번째 파티 <strong class="bold">&lt;춤 출 자유&gt;</strong></p>
+            <p class="bold">meottaero 첫 번째 파티 &lt;춤 출 자유&gt;</p>
             <p>틀어놓은 음악 위에서 각자 다른 방식으로 반짝일 시간</p>
             <br>
-            <p class="bold">DATE</p>
-            <p>2026.03.31 (TUE) 9PM</p>
+            <p><strong>DATE:</strong> 2026.03.31 (TUE) 9PM</p>
+            <p><strong>LOCATION:</strong> 서울예술대학교 라동 106호 (예술대학로 171)</p>
+            <p><strong>🎟️ FREE ENTRY:</strong> 프로필 상단 구글폼으로 신청 가능</p>
             <br>
-            <p class="bold">LOCATION</p>
-            <p>서울예술대학교 라동 106호<br>(경기도 안산시 단원구 예술대학로 171)</p>
-            <br>
-            <p class="bold">🎟️ FREE ENTRY</p>
-            <p>프로필 상단 구글폼으로 신청 가능</p>
-            <br>
-            <p class="bold">DJ</p>
-            <p>
-              <a href="https://instagram.com/t0r1nsight" target="_blank" rel="noopener noreferrer">@t0r1nsight</a><br>
-              <a href="https://instagram.com/dearcoralinee" target="_blank" rel="noopener noreferrer">@dearcoralinee</a>
-            </p>
+            <p><strong>DJ:</strong> <a href="https://instagram.com/t0r1nsight" target="_blank" rel="noopener noreferrer">@t0r1nsight</a>, <a href="https://instagram.com/dearcoralinee" target="_blank" rel="noopener noreferrer">@dearcoralinee</a></p>
             <br>
             <p class="bold">SHOWCASE</p>
-            <br>
-            <p class="bold">: SIA TUTTING</p>
-            <p>
-              <a href="https://instagram.com/hachi_y_" target="_blank" rel="noopener noreferrer">@hachi_y_</a><br>
-              <a href="https://instagram.com/jseuki_" target="_blank" rel="noopener noreferrer">@jseuki_</a>
-            </p>
-            <br>
-            <p class="bold">: ISSEORA</p>
-            <p>
-              <a href="https://instagram.com/rishaat__" target="_blank" rel="noopener noreferrer">@rishaat__</a><br>
-              <a href="https://instagram.com/suuak_" target="_blank" rel="noopener noreferrer">@suuak_</a><br>
-              <a href="https://instagram.com/elfklm__" target="_blank" rel="noopener noreferrer">@elfklm__</a><br>
-              <a href="https://instagram.com/x_unseo" target="_blank" rel="noopener noreferrer">@x_unseo</a>
-            </p>
-            <br>
-            <p class="bold">: SIA HOUSE</p>
-            <p>
-              <a href="https://instagram.com/0xuxiii" target="_blank" rel="noopener noreferrer">@0xuxiii</a><br>
-              <a href="https://instagram.com/xzxz_sy" target="_blank" rel="noopener noreferrer">@xzxz_sy</a><br>
-              <a href="https://instagram.com/troydi__ulmtd" target="_blank" rel="noopener noreferrer">@troydi__ulmtd</a><br>
-              <a href="https://instagram.com/xdpfla" target="_blank" rel="noopener noreferrer">@xdpfla</a><br>
-              <a href="https://instagram.com/taekyung.sss" target="_blank" rel="noopener noreferrer">@taekyung.sss</a><br>
-              <a href="https://instagram.com/c_s__lee_" target="_blank" rel="noopener noreferrer">@c_s__lee_</a><br>
-              <a href="https://instagram.com/obvlque" target="_blank" rel="noopener noreferrer">@obvlque</a><br>
-              <a href="https://instagram.com/dlm0teo_" target="_blank" rel="noopener noreferrer">@dlm0teo_</a><br>
-              <a href="https://instagram.com/aaarxxm" target="_blank" rel="noopener noreferrer">@aaarxxm</a>
-            </p>
+            <p><strong>SIA TUTTING:</strong> <a href="https://instagram.com/hachi_y_" target="_blank" rel="noopener noreferrer">@hachi_y_</a>, <a href="https://instagram.com/jseuki_" target="_blank" rel="noopener noreferrer">@jseuki_</a></p>
+            <p><strong>ISSEORA:</strong> <a href="https://instagram.com/rishaat__" target="_blank" rel="noopener noreferrer">@rishaat__</a>, <a href="https://instagram.com/suuak_" target="_blank" rel="noopener noreferrer">@suuak_</a>, <a href="https://instagram.com/elfklm__" target="_blank" rel="noopener noreferrer">@elfklm__</a>, <a href="https://instagram.com/x_unseo" target="_blank" rel="noopener noreferrer">@x_unseo</a></p>
+            <p><strong>SIA HOUSE:</strong> <a href="https://instagram.com/0xuxiii" target="_blank" rel="noopener noreferrer">@0xuxiii</a>, <a href="https://instagram.com/xzxz_sy" target="_blank" rel="noopener noreferrer">@xzxz_sy</a>, <a href="https://instagram.com/troydi__ulmtd" target="_blank" rel="noopener noreferrer">@troydi__ulmtd</a>, <a href="https://instagram.com/xdpfla" target="_blank" rel="noopener noreferrer">@xdpfla</a>, <a href="https://instagram.com/taekyung.sss" target="_blank" rel="noopener noreferrer">@taekyung.sss</a>, <a href="https://instagram.com/c_s__lee_" target="_blank" rel="noopener noreferrer">@c_s__lee_</a>, <a href="https://instagram.com/obvlque" target="_blank" rel="noopener noreferrer">@obvlque</a>, <a href="https://instagram.com/dlm0teo_" target="_blank" rel="noopener noreferrer">@dlm0teo_</a>, <a href="https://instagram.com/aaarxxm" target="_blank" rel="noopener noreferrer">@aaarxxm</a></p>
             <br>
             <p>Presented by <a href="https://instagram.com/meottaero__" target="_blank" rel="noopener noreferrer">@meottaero__</a></p>
-            <p>
-              <a href="https://instagram.com/__jon_ji" target="_blank" rel="noopener noreferrer">@__jon_ji</a>
-              <a href="https://instagram.com/rock.bawe" target="_blank" rel="noopener noreferrer">@rock.bawe</a>
-              <a href="https://instagram.com/thisnicework" target="_blank" rel="noopener noreferrer">@thisnicework</a>
-              <a href="https://instagram.com/t0r1nsight" target="_blank" rel="noopener noreferrer">@t0r1nsight</a>
+            <p class="small" style="font-size: 0.85em; opacity: 0.8;">
+              <a href="https://instagram.com/__jon_ji" target="_blank" rel="noopener noreferrer">@__jon_ji</a>, 
+              <a href="https://instagram.com/rock.bawe" target="_blank" rel="noopener noreferrer">@rock.bawe</a>, 
+              <a href="https://instagram.com/thisnicework" target="_blank" rel="noopener noreferrer">@thisnicework</a>, 
+              <a href="https://instagram.com/t0r1nsight" target="_blank" rel="noopener noreferrer">@t0r1nsight</a>, 
               <a href="https://instagram.com/98.0811" target="_blank" rel="noopener noreferrer">@98.0811</a>
             </p>
           </div>
