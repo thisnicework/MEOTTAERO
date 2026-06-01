@@ -63,7 +63,7 @@
                     </div>
                   </div>
                   <div id="form-error" class="form-error-msg" style="display: none;"></div>
-                  <button type="submit" class="submit-btn bold" style="display: none;">예매하기 (RESERVE)</button>
+                  <button type="submit" class="submit-btn bold" disabled>예매하기 (RESERVE)</button>
                 </form>
 
                 <!-- Glassmorphic Success State (initially hidden) -->
@@ -94,14 +94,14 @@
                   const submitBtn = form.querySelector('.submit-btn');
 
                   if (privacyConsent && submitBtn) {
-                    submitBtn.style.display = privacyConsent.checked ? 'block' : 'none';
+                    submitBtn.disabled = !privacyConsent.checked;
 
                     privacyConsent.addEventListener('change', function () {
-                      submitBtn.style.display = this.checked ? 'block' : 'none';
+                      submitBtn.disabled = !this.checked;
                     });
 
                     form.addEventListener('reset', function () {
-                      submitBtn.style.display = 'none';
+                      submitBtn.disabled = true;
                     });
                   }
 
