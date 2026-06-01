@@ -164,13 +164,6 @@ app.get('/about', (req, res) => {
   });
 });
 
-// AJAX endpoint for container reload
-app.get('/reload/container', (req, res) => {
-  const project = db.getRandomProject();
-  const student = project ? db.getStudent(project.studentId) : null;
-  // Render partial content without layout shell
-  res.render('partials/reload_container', { project, student });
-});
 
 // Route: POST Booking Form
 app.post('/projects/:semesterId/book', async (req, res) => {

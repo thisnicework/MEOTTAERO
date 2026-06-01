@@ -231,6 +231,10 @@ main div.gallery {
 	margin-bottom:var(--margin);
 }
 
+main div.gallery a::after {
+	content: none;
+}
+
 main div.gallery > div.iframe {
 	background-color:var(--color-mid);
 	margin-bottom:var(--margin);

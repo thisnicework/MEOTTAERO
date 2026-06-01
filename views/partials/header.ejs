@@ -12,12 +12,6 @@
     <% if (activeMenu === 'projects' || activeMenu === 'students') { %>
       <script src="/assets/js/scroll.js"></script>
     <% } %>
-    
-    <% if (activeMenu === 'projects' && typeof activeSemester === 'undefined' && typeof project === 'undefined') { %>
-      <script defer src="/assets/js/reload.js"></script>
-    <% } %>
-    
-    <script defer src="/assets/js/script.js"></script>
     <title><%= title %></title>
   </head>
   <body>
