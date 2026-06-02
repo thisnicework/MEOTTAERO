@@ -29,7 +29,7 @@
       </div>
       <hr>
 
-            <% if (activeSemester.id==='춤출자유vol-2' ) { %>
+            <% if (activeSemester.id==='춤출자유vol-2' && false) { %>
               <div id="booking-container" class="booking-section">
                 <h2 class="bold"
                   style="color: var(--color-high); margin-bottom: 1.5rem;">
@@ -83,6 +83,11 @@
                 <%- activeSemester.description %>
               <% } %>
 
+              <% if (activeSemester.id==='춤출자유vol-2') { %>
+                <hr>
+                <p>Archiving coming soon.</p>
+              <% } %>
+
               <% if (activeSemester.id==='춤출자유vol-1') { %>
                 <hr>
                 <video autoplay loop muted playsinline preload="auto" style="width: 100%; border: none;">
@@ -90,7 +95,7 @@
                 </video>
               <% } %>
 
-              <% if (activeSemester.id==='춤출자유vol-2' ) { %>
+              <% if (activeSemester.id==='춤출자유vol-2' && false) { %>
 
               <script>
                 document.addEventListener('DOMContentLoaded', function () {

@@ -173,17 +173,7 @@ app.get('/about', (req, res) => {
 
 // Route: POST Booking Form
 app.post('/projects/:semesterId/book', async (req, res) => {
-  const { name, studentId, phone, tickets } = req.body;
-  if (!name || !studentId || !phone) {
-    return res.status(400).json({ error: '모든 필드를 올바르게 입력해 주세요.' });
-  }
-  try {
-    const newBooking = await db.saveBooking({ name, studentId, phone, tickets });
-    res.json({ success: true, booking: newBooking });
-  } catch (error) {
-    console.error('Error in POST /projects/춤출자유vol-2/book:', error);
-    res.status(500).json({ error: '예매 처리 중 서버 오류가 발생했습니다.' });
-  }
+  return res.status(400).json({ error: '예매가 마감되었습니다.' });
 });
 
 // Auth middleware for admin routes (cookie-based)
