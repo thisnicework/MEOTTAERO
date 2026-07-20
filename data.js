@@ -403,12 +403,16 @@ export async function updateBookingStatus(code, updates) {
         .select();
 
       if (!error && data && data.length > 0) {
-        // Also update local JSON cache
+        // Also update local JSON cache safely
         const bookingIndex = bookings.findIndex(b => b.code === code);
         if (bookingIndex !== -1) {
           bookings[bookingIndex].paymentConfirmed = paymentConfirmed;
           bookings[bookingIndex].smsSent = smsSent;
-          fs.writeFileSync(BOOKINGS_FILE, JSON.stringify(bookings, null, 2), 'utf8');
+          try {
+            fs.writeFileSync(BOOKINGS_FILE, JSON.stringify(bookings, null, 2), 'utf8');
+          } catch (writeErr) {
+            console.warn('Failed to write local bookings.json cache (expected in serverless/Vercel):', writeErr);
+          }
         }
         return true;
       }
@@ -422,7 +426,11 @@ export async function updateBookingStatus(code, updates) {
   if (bookingIndex !== -1) {
     bookings[bookingIndex].paymentConfirmed = paymentConfirmed;
     bookings[bookingIndex].smsSent = smsSent;
-    fs.writeFileSync(BOOKINGS_FILE, JSON.stringify(bookings, null, 2), 'utf8');
+    try {
+      fs.writeFileSync(BOOKINGS_FILE, JSON.stringify(bookings, null, 2), 'utf8');
+    } catch (writeErr) {
+      console.warn('Failed to write local bookings.json fallback:', writeErr);
+    }
     return true;
   }
   return false;
@@ -435,7 +443,11 @@ export function getCapacities() {
       "the-sia-vol-2": 150,
       "다놀다농": 50
     };
-    fs.writeFileSync(filePath, JSON.stringify(defaults, null, 2), 'utf8');
+    try {
+      fs.writeFileSync(filePath, JSON.stringify(defaults, null, 2), 'utf8');
+    } catch (e) {
+      // Ignore
+    }
     return defaults;
   }
   try {
@@ -451,10 +463,10 @@ export function getCapacities() {
 
 export function saveCapacities(capacities) {
   const filePath = path.resolve(__dirname, 'capacity_config.json');
-  fs.writeFileSync(filePath, JSON.stringify(capacities, null, 2), 'utf8');
+  try {
+    fs.writeFileSync(filePath, JSON.stringify(capacities, null, 2), 'utf8');
+  } catch (e) {
+    console.warn('Failed to write local capacity_config.json (expected in serverless/Vercel):', e);
+  }
   return true;
 }
-
-
-
-
