@@ -14,6 +14,11 @@
     <div class="student">
       <div class="info">
         <h2 class="bold"><%= activeStudent.name %></h2>
+        <% if (activeStudent.description) { %>
+          <div class="description" style="margin-top: 1rem; line-height: 1.6; white-space: pre-line; font-size: 0.95rem; color: var(--color-fg);">
+            <%= activeStudent.description %>
+          </div>
+        <% } %>
         <% if (false) { %>
         <ul class="links">
           <% if (activeStudent.links) { %>
