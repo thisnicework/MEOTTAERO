@@ -5,20 +5,17 @@
       <div class="semesters">
         <% semesters.forEach(function(semester) { %>
           <a class="semester block <%= semester.id === activeSemester.id ? 'active' : '' %> <%= semester.isEmpty ? 'empty' : '' %>"
-            href="/projects/<%= semester.id %>"
-            <% if (!semester.isUpcoming) { %>style="opacity: 0.65;"<% } %>>
+            href="/projects/<%= semester.id %>">
             <h2 class="bold">
               <%= semester.title %>
             </h2>
-            <% if (semester.isUpcoming) { %>
-              <h3 style="color: var(--color-high); font-weight: bold;">
+            <h3>
+              <% if (semester.isUpcoming) { %>
                 COMING SOON &thinsp;&mdash;&thinsp; <%= semester.term %>
-              </h3>
-            <% } else { %>
-              <h3>
+              <% } else { %>
                 <%= semester.term %>
-              </h3>
-            <% } %>
+              <% } %>
+            </h3>
           </a>
           <% }); %>
       </div>
