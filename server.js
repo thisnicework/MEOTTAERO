@@ -219,7 +219,14 @@ app.post('/login', (req, res) => {
 // Route: Admin Bookings Dashboard
 app.get('/admin', requireAdminAuth, async (req, res) => {
   try {
-    const bookings = await db.getBookings();
+    let bookings = await db.getBookings();
+    bookings = bookings.map(b => {
+      let eventId = '춤출자유vol-2';
+      if (b.studentId && (b.studentId.includes('참가') || b.studentId.includes('관람'))) {
+        eventId = 'the-sia-vol-2';
+      }
+      return { ...b, eventId };
+    });
     res.render('bookings', {
       title: '// MOTTAERO — Admin Dashboard',
       activeMenu: 'admin',
@@ -237,16 +244,40 @@ app.get('/admin/bookings', (req, res) => {
 });
 
 // Route: Export Bookings as CSV
-app.get('/admin/export', requireAdminAuth, async (_req, res) => {
+app.get('/admin/export', requireAdminAuth, async (req, res) => {
   try {
-    const bookings = await db.getBookings();
-    const headers = ['이름', '학번/학과', '연락처', '예매일시'];
-    const rows = bookings.map(b => [b.name, b.studentId, b.phone, b.createdAt || '']);
+    let bookings = await db.getBookings();
+    const { event } = req.query;
+
+    // Classify bookings
+    bookings = bookings.map(b => {
+      let eventId = '춤출자유vol-2';
+      if (b.studentId && (b.studentId.includes('참가') || b.studentId.includes('관람'))) {
+        eventId = 'the-sia-vol-2';
+      }
+      return { ...b, eventId };
+    });
+
+    // Filter if requested
+    if (event && event !== 'all') {
+      bookings = bookings.filter(b => b.eventId === event);
+    }
+
+    const headers = ['공연', '이름', '구분 (학번/참가)', '연락처', '예매일시'];
+    const rows = bookings.map(b => [
+      b.eventId === 'the-sia-vol-2' ? 'THE SIA Vol.2' : '춤 출 자유 Vol.2',
+      b.name,
+      b.studentId,
+      b.phone,
+      b.createdAt || ''
+    ]);
     const csv = [headers, ...rows]
       .map(row => row.map(v => `"${String(v).replace(/"/g, '""')}"`).join(','))
       .join('\n');
     res.setHeader('Content-Type', 'text/csv; charset=utf-8');
-    res.setHeader('Content-Disposition', 'attachment; filename="bookings.csv"');
+    
+    const filename = event && event !== 'all' ? `bookings_${event}.csv` : 'bookings_all.csv';
+    res.setHeader('Content-Disposition', `attachment; filename="${filename}"`);
     res.send('﻿' + csv);
   } catch (error) {
     console.error('Error in GET /admin/export:', error);

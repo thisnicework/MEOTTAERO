@@ -6,27 +6,50 @@
       <div class="admin-sidebar" style="padding-right: 1.5rem;">
         <!-- <h2 class="bold" style="color: var(--color-high); margin-bottom: 1.5rem;">ADMIN PANEL</h2> -->
 
-        <div class="stats-panel" style="margin-bottom: 2rem;">
+        <div class="stats-panel" style="margin-bottom: 2rem; display: flex; flex-direction: column; gap: 0.75rem;">
           <div class="stat-card"
-            style="background: var(--color-low); padding: 1.5rem; border-left: 4px solid var(--color-high);">
-            <h3 class="bold" style="font-size: 0.85rem; margin-bottom: 0.5rem; color: #555;">총 예매 건수 (인원)</h3>
-            <p class="bold" style="font-size: 2rem; color: var(--color-high);" id="total-bookings">
-              <%= bookings.length %>
+            style="background: var(--color-low); padding: 1rem; border-left: 4px solid var(--color-high);">
+            <h3 class="bold" style="font-size: 0.8rem; margin-bottom: 0.25rem; color: #555;">전체 예매</h3>
+            <p class="bold" style="font-size: 1.5rem; color: var(--color-high); margin: 0;" id="total-bookings">
+              <%= bookings.length %> 명
+            </p>
+          </div>
+          <% const siaCount = bookings.filter(b => b.eventId === 'the-sia-vol-2').length; %>
+          <% const freedomCount = bookings.filter(b => b.eventId === '춤출자유vol-2').length; %>
+          <div class="stat-card"
+            style="background: var(--color-low); padding: 1rem; border-left: 4px solid #4caf50;">
+            <h3 class="bold" style="font-size: 0.8rem; margin-bottom: 0.25rem; color: #555;">THE SIA Vol.2</h3>
+            <p class="bold" style="font-size: 1.5rem; color: #4caf50; margin: 0;" id="sia-bookings">
+              <%= siaCount %> 명
+            </p>
+          </div>
+          <div class="stat-card"
+            style="background: var(--color-low); padding: 1rem; border-left: 4px solid #2196f3;">
+            <h3 class="bold" style="font-size: 0.8rem; margin-bottom: 0.25rem; color: #555;">춤 출 자유 Vol.2</h3>
+            <p class="bold" style="font-size: 1.5rem; color: #2196f3; margin: 0;" id="freedom-bookings">
+              <%= freedomCount %> 명
             </p>
           </div>
         </div>
 
-        <div class="search-panel">
-          <label for="search-input" class="bold" style="display: block; font-size: 0.85rem; margin-bottom: 0.5rem;">예매
-            내역 검색 (Search)</label>
+        <div class="search-panel" style="margin-bottom: 1.5rem;">
+          <label for="search-input" class="bold" style="display: block; font-size: 0.85rem; margin-bottom: 0.5rem;">예매 내역 검색 (Search)</label>
           <input type="text" id="search-input" placeholder="이름 또는 연락처 입력..."
             style="width: 100%; padding: 0.75rem; border: 1px solid var(--color-fg); outline: none;">
         </div>
 
+        <div class="filter-panel" style="margin-bottom: 1.5rem;">
+          <label for="event-filter" class="bold" style="display: block; font-size: 0.85rem; margin-bottom: 0.5rem;">공연 필터 (Filter by Show)</label>
+          <select id="event-filter" style="width: 100%; padding: 0.75rem; border: 1px solid var(--color-fg); outline: none; background: white; font-family: inherit;">
+            <option value="all">전체 보기 (All Shows)</option>
+            <option value="the-sia-vol-2">THE SIA Vol.2</option>
+            <option value="춤출자유vol-2">춤 출 자유 Vol.2</option>
+          </select>
+        </div>
+
         <div style="margin-top: 1.5rem;">
-          <a href="/admin/export" class="bold"
-            style="display: inline-block; padding: 0.75rem 1.25rem; border: 1px solid var(--color-fg); text-decoration: none; font-size: 0.85rem;">CSV
-            내보내기 (Excel)</a>
+          <a href="/admin/export?event=all" class="bold" id="export-link"
+            style="display: inline-block; padding: 0.75rem 1.25rem; border: 1px solid var(--color-fg); text-decoration: none; font-size: 0.85rem;">CSV 내보내기 (Excel)</a>
         </div>
       </div>
     </section>
@@ -42,8 +65,9 @@
             style="width: 100%; border-collapse: collapse; text-align: left; min-width: 500px;">
             <thead>
               <tr style="border-bottom: 2px solid var(--color-fg);">
+                <th class="bold" style="padding: 0.75rem 0.5rem;">공연</th>
                 <th class="bold" style="padding: 0.75rem 0.5rem;">이름</th>
-                <th class="bold" style="padding: 0.75rem 0.5rem;">학번 / 학과</th>
+                <th class="bold" style="padding: 0.75rem 0.5rem;">구분 (학번/참가)</th>
                 <th class="bold" style="padding: 0.75rem 0.5rem;">연락처</th>
                 <th class="bold" style="padding: 0.75rem 0.5rem; text-align: right;">관리</th>
               </tr>
@@ -51,13 +75,16 @@
             <tbody id="bookings-table-body">
               <% if (bookings.length===0) { %>
                 <tr class="no-bookings-row">
-                  <td colspan="4" style="padding: 2rem; text-align: center; color: var(--color-mid);">등록된 예매 내역이 없습니다.
+                  <td colspan="5" style="padding: 2rem; text-align: center; color: var(--color-mid);">등록된 예매 내역이 없습니다.
                   </td>
                 </tr>
                 <% } else { %>
                   <% bookings.forEach(function(b) { %>
                     <tr class="booking-row" data-code="<%= b.code %>" data-name="<%= b.name %>"
-                      data-phone="<%= b.phone %>" style="border-bottom: 1px solid var(--color-low);">
+                      data-phone="<%= b.phone %>" data-event-id="<%= b.eventId %>" style="border-bottom: 1px solid var(--color-low);">
+                      <td class="bold" style="padding: 0.75rem 0.5rem; font-size: 0.85rem; color: var(--color-mid);">
+                        <%= b.eventId === 'the-sia-vol-2' ? 'THE SIA Vol.2' : '춤 출 자유 Vol.2' %>
+                      </td>
                       <td class="bold" style="padding: 0.75rem 0.5rem;">
                         <%= b.name %>
                       </td>
@@ -85,41 +112,58 @@
 
     <script>
       document.addEventListener('DOMContentLoaded', function () {
-        // 1. Search Filter
+        // 1. Search and Event Filtering
         const searchInput = document.getElementById('search-input');
+        const eventFilter = document.getElementById('event-filter');
+        const exportLink = document.getElementById('export-link');
         const tableBody = document.getElementById('bookings-table-body');
-        const rows = tableBody.querySelectorAll('.booking-row');
+        
+        function filterBookings() {
+          const query = searchInput ? searchInput.value.toLowerCase().trim() : '';
+          const selectedEvent = eventFilter ? eventFilter.value : 'all';
+          const rows = tableBody.querySelectorAll('.booking-row');
+          let matchCount = 0;
 
-        if (searchInput) {
-          searchInput.addEventListener('input', function () {
-            const query = this.value.toLowerCase().trim();
-            let matchCount = 0;
+          rows.forEach(row => {
+            const name = row.getAttribute('data-name').toLowerCase();
+            const phone = row.getAttribute('data-phone').toLowerCase();
+            const eventId = row.getAttribute('data-event-id');
 
-            rows.forEach(row => {
-              const name = row.getAttribute('data-name').toLowerCase();
-              const phone = row.getAttribute('data-phone').toLowerCase();
+            const matchesQuery = query === '' || name.includes(query) || phone.includes(query);
+            const matchesEvent = selectedEvent === 'all' || eventId === selectedEvent;
 
-              if (name.includes(query) || phone.includes(query)) {
-                row.style.display = '';
-                matchCount++;
-              } else {
-                row.style.display = 'none';
-              }
-            });
-
-            // Toggle no results row
-            let noResultsRow = document.getElementById('no-results-row');
-            if (matchCount === 0 && query !== '') {
-              if (!noResultsRow) {
-                noResultsRow = document.createElement('tr');
-                noResultsRow.id = 'no-results-row';
-                noResultsRow.innerHTML = '<td colspan="4" style="padding: 2rem; text-align: center; color: var(--color-mid);">검색 결과가 없습니다.</td>';
-                tableBody.appendChild(noResultsRow);
-              }
+            if (matchesQuery && matchesEvent) {
+              row.style.display = '';
+              matchCount++;
             } else {
-              if (noResultsRow) {
-                noResultsRow.remove();
-              }
+              row.style.display = 'none';
+            }
+          });
+
+          // Toggle no results row
+          let noResultsRow = document.getElementById('no-results-row');
+          if (matchCount === 0 && rows.length > 0) {
+            if (!noResultsRow) {
+              noResultsRow = document.createElement('tr');
+              noResultsRow.id = 'no-results-row';
+              noResultsRow.innerHTML = '<td colspan="5" style="padding: 2rem; text-align: center; color: var(--color-mid);">검색 결과가 없습니다.</td>';
+              tableBody.appendChild(noResultsRow);
+            }
+          } else {
+            if (noResultsRow) {
+              noResultsRow.remove();
+            }
+          }
+        }
+
+        if (searchInput) searchInput.addEventListener('input', filterBookings);
+        
+        if (eventFilter) {
+          eventFilter.addEventListener('change', function () {
+            filterBookings();
+            // Update CSV export link with the current filter parameter
+            if (exportLink) {
+              exportLink.href = `/admin/export?event=${this.value}`;
             }
           });
         }
@@ -148,6 +192,7 @@
               .then(data => {
                 if (data.success) {
                   const row = btn.closest('.booking-row');
+                  const eventId = row.getAttribute('data-event-id');
 
                   // Fade-out row & delete
                   row.style.transition = 'opacity 0.2s';
@@ -157,15 +202,30 @@
 
                     // Recalculate stats on client side
                     const totalBookingsEl = document.getElementById('total-bookings');
-                    const currentBookings = parseInt(totalBookingsEl.textContent, 10) || 0;
-                    totalBookingsEl.textContent = Math.max(0, currentBookings - 1);
+                    const siaBookingsEl = document.getElementById('sia-bookings');
+                    const freedomBookingsEl = document.getElementById('freedom-bookings');
+                    
+                    const currentTotal = parseInt(totalBookingsEl.textContent, 10) || 0;
+                    totalBookingsEl.textContent = Math.max(0, currentTotal - 1) + ' 명';
+                    
+                    if (eventId === 'the-sia-vol-2') {
+                      if (siaBookingsEl) {
+                        const currentSia = parseInt(siaBookingsEl.textContent, 10) || 0;
+                        siaBookingsEl.textContent = Math.max(0, currentSia - 1) + ' 명';
+                      }
+                    } else {
+                      if (freedomBookingsEl) {
+                        const currentFreedom = parseInt(freedomBookingsEl.textContent, 10) || 0;
+                        freedomBookingsEl.textContent = Math.max(0, currentFreedom - 1) + ' 명';
+                      }
+                    }
 
                     // Check if table is empty now
                     const remainingRows = tableBody.querySelectorAll('.booking-row');
                     if (remainingRows.length === 0) {
                       tableBody.innerHTML = `
                   <tr class="no-bookings-row">
-                    <td colspan="4" style="padding: 2rem; text-align: center; color: var(--color-mid);">등록된 예매 내역이 없습니다.</td>
+                    <td colspan="5" style="padding: 2rem; text-align: center; color: var(--color-mid);">등록된 예매 내역이 없습니다.</td>
                   </tr>
                 `;
                     }
