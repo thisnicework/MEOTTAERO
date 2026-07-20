@@ -231,20 +231,20 @@
           offscreenCtx.drawImage(video, 0, 0, w, h);
           offscreenCtx.restore();
 
-          const scanSpeed = 3; // Perfect speed for organic movement distortion
+          const scanSpeed = 2; // Incremented resolution for cleaner details
 
-          // Draw the thin horizontal slice from the mirrored offscreen frame
+          // Draw the thin horizontal slice from the mirrored offscreen frame (completely overwrites the previous indicator)
           ctx.drawImage(offscreen, 0, scanY, w, scanSpeed, 0, scanY, w, scanSpeed);
 
-          // Draw scanline indicator in MEOTTAERO Blue
-          ctx.fillStyle = 'var(--color-high)';
-          ctx.fillRect(0, scanY, w, 2);
-
-          // Increment scan position
+          // Advance scan position
           scanY += scanSpeed;
           if (scanY >= h) {
             scanY = 0;
           }
+
+          // Draw the blue scanline indicator at the NEXT scan position so it gets cleanly overwritten in the next frame
+          ctx.fillStyle = 'var(--color-high)';
+          ctx.fillRect(0, scanY, w, scanSpeed);
         }
         else if (currentFilter === 'kinetic') {
           // Dreamy Pixelated Lerp Trail
