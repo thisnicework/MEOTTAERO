@@ -1,6 +1,6 @@
 <%- include('partials/header') %>
-<!-- Import High-Performance MediaPipe Face Detection -->
-<script src="https://cdn.jsdelivr.net/npm/@mediapipe/face_detection/face_detection.js" crossorigin="anonymous"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/tracking.js/1.1.3/tracking-min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/tracking.js/1.1.3/data/face-min.js"></script>
 
 <style>
   /* Indifferent, raw typography styles for filter options */
@@ -59,8 +59,8 @@
     
     <!-- Webcam Video / Canvas Wrap -->
     <div class="video-wrap" style="position: relative; width: 100%; aspect-ratio: 4/3; background: #000; border: 1px solid var(--color-fg); margin-bottom: 1.5rem; overflow: hidden; display: flex; align-items: center; justify-content: center;">
-      <!-- Hidden Video Element -->
-      <video id="webcam" autoplay playsinline muted style="position: absolute; opacity: 0; pointer-events: none; width: 100%; height: 100%; object-fit: cover; transform: scaleX(-1);"></video>
+      <!-- Hidden Video Element with explicit dimensions for tracking.js -->
+      <video id="webcam" autoplay playsinline muted width="640" height="480" style="position: absolute; opacity: 0; pointer-events: none; width: 100%; height: 100%; object-fit: cover; transform: scaleX(-1);"></video>
       <!-- Visible Canvas Preview (displays everything unified) -->
       <canvas id="canvas-preview" style="width: 100%; height: 100%; object-fit: cover;"></canvas>
       
@@ -123,12 +123,12 @@
     let scanY = 0;
     let slitscanReset = true;
 
-    // Face Tracking Target Coordinates (Calculated via MediaPipe Face Detection)
+    // Face Tracking Target Coordinates (Calculated via tracking.js)
     let targetFaceX = 320;
     let targetFaceY = 240;
     let targetFaceSize = 150; // Default baseline face width in 640x480
     
-    // Smoothly interpolated values for the visual effect
+    // Smoothly interpolated coordinate values for the visual effect
     let mouseX = 320;
     let mouseY = 240;
     let faceSize = 150;
@@ -163,52 +163,32 @@
       }
     }
 
-    // Initialize MediaPipe BlazeFace Tracker (Highly robust deep-learning tracking)
+    // Initialize tracking.js (optimized for higher accuracy and sensitivity)
     function initFaceTracker() {
       try {
-        const faceDetection = new FaceDetection({
-          locateFile: (file) => `https://cdn.jsdelivr.net/npm/@mediapipe/face_detection/${file}`
-        });
+        const tracker = new tracking.ObjectTracker('face');
+        tracker.setInitialScale(2.5); // Finer search scale to detect distant or smaller faces
+        tracker.setStepSize(1.6);     // Finer step size for higher precision detection
+        tracker.setEdgesDensity(0.1);
 
-        faceDetection.setOptions({
-          model: 'short', // short-range camera face detection model (BlazeFace)
-          minDetectionConfidence: 0.5
-        });
-
-        faceDetection.onResults(function (results) {
-          if (results.detections && results.detections.length > 0) {
-            // Find largest face box (closest to camera)
-            let maxFace = results.detections[0];
-            for (let i = 1; i < results.detections.length; i++) {
-              const currentBox = results.detections[i].boundingBox;
-              const maxBox = maxFace.boundingBox;
-              if (currentBox.width * currentBox.height > maxBox.width * maxBox.height) {
-                maxFace = results.detections[i];
+        tracker.on('track', function (event) {
+          if (event.data.length > 0) {
+            // Find largest face box
+            let maxFace = event.data[0];
+            for (let i = 1; i < event.data.length; i++) {
+              if (event.data[i].width * event.data[i].height > maxFace.width * maxFace.height) {
+                maxFace = event.data[i];
               }
             }
             
-            const box = maxFace.boundingBox;
-            const w = video.videoWidth || 640;
-            const h = video.videoHeight || 480;
-
-            // Map normalized center to pixel coordinates
-            targetFaceX = (box.xmin + box.width / 2) * w;
-            targetFaceY = (box.ymin + box.height / 2) * h;
-            targetFaceSize = box.width * w;
+            // Calculate center of face in 640x480 space
+            targetFaceX = maxFace.x + maxFace.width / 2;
+            targetFaceY = maxFace.y + maxFace.height / 2;
+            targetFaceSize = maxFace.width;
           }
         });
 
-        // Run face detection on frame interval (approx. 16.6fps for battery/CPU efficiency)
-        setInterval(async () => {
-          if (stream && currentFilter === 'tunnel') {
-            try {
-              await faceDetection.send({ image: video });
-            } catch (err) {
-              // Ignore frame errors
-            }
-          }
-        }, 60);
-
+        tracking.track('#webcam', tracker);
       } catch (e) {
         console.warn('Face tracker init failed:', e);
       }
@@ -279,24 +259,26 @@
           ctx.scale(-1, 1);
           ctx.drawImage(video, 0, 0, w, h);
           
-          // Map face size (depth) to recursive spacing:
+          // Map face size (depth) to recursive exponential scaling factor:
           // faceSize typically ranges from 80 (far) to 300 (close).
           const clampedSize = Math.max(80, Math.min(300, faceSize));
-          // Spacing varies between 0.05 (tight, when close) and 0.20 (loose/deep, when far)
-          const spacing = 0.22 - ((clampedSize - 80) / 220) * 0.17;
+          // Exponential decay factor varies between 0.65 (steep/far) and 0.88 (slow/close)
+          const factor = 0.65 + ((clampedSize - 80) / 220) * 0.23;
           
-          // Total 6 images (1 background + 5 nested layers)
-          for (let i = 1; i <= 5; i++) {
-            const scale = 1 - (i * spacing);
-            if (scale <= 0) continue; // Prevent scale going negative
+          // Draw exactly 6 recursive images
+          for (let i = 1; i <= 6; i++) {
+            const scale = Math.pow(factor, i);
             
             const nw = w * scale;
             const nh = h * scale;
             
-            // Use mouseX directly since the canvas context is already horizontally flipped (mirrored) via translate/scale
-            const bias = i / 5;
-            const targetCenterX = w / 2 + (mouseX - w / 2) * bias;
-            const targetCenterY = h / 2 + (mouseY - h / 2) * bias;
+            // Map face coordinates to mirrored coordinates space (with Y-axis inverted)
+            const mirroredMouseX = w - mouseX;
+            const mirroredMouseY = h - mouseY; // Y-axis inverted
+            
+            const bias = i / 6;
+            const targetCenterX = w / 2 + (mirroredMouseX - w / 2) * bias;
+            const targetCenterY = h / 2 + (mirroredMouseY - h / 2) * bias;
             
             const nx = targetCenterX - nw / 2;
             const ny = targetCenterY - nh / 2;
