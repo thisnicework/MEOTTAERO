@@ -72,9 +72,7 @@ function loadSemesters() {
             <p class="bold" style="color: var(--color-high);">✪ 문의</p>
             <p style="margin-bottom: 1.5rem;">📞 010-2692-8501</p>
             
-            <p style="margin-top: 1.5rem;">
-              <a href="https://docs.google.com/forms/d/e/1FAIpQLSfHmtKuK4RpNmr8g9Yfz_LUDJLzJzYhw-3QV1_YsKeCJi-Wgg/viewform" target="_blank" rel="noopener noreferrer" class="bold" style="display: inline-block; padding: 0.75rem 1.25rem; border: 1px solid var(--color-fg); text-decoration: none; font-size: 0.85rem; background: var(--color-fg); color: var(--color-bg);">신청하러 가기 (Google Form)</a>
-            </p>
+
           </div>
         `
       };
