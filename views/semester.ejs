@@ -192,6 +192,15 @@
                 <%- activeSemester.description %>
                   <% } %>
 
+                    <% if (activeSemester.id==='da-nol-da-nong' ) { %>
+                      <hr>
+                      <div class="danoldanong-gallery" style="display: flex; flex-direction: column; gap: 1.5rem; max-width: 480px; width: 100%; margin-top: 1.5rem; margin-bottom: 1.5rem;">
+                        <img src="/다놀다농_1.jpeg" alt="다놀다농 이미지 1" style="width: 100%; height: auto; display: block; border: 1px solid var(--color-low);">
+                        <img src="/다놀다농_2.jpeg" alt="다놀다농 이미지 2" style="width: 100%; height: auto; display: block; border: 1px solid var(--color-low);">
+                        <img src="/다놀다농_3.jpeg" alt="다놀다농 이미지 3" style="width: 100%; height: auto; display: block; border: 1px solid var(--color-low);">
+                      </div>
+                      <% } %>
+
                     <% if (activeSemester.id==='the-sia-vol-2' ) { %>
                       <hr>
                       <img src="/thesia_vol.2_a3.png" alt="THE SIA Vol.2 Poster"

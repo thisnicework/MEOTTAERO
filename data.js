@@ -42,6 +42,43 @@ function loadStudents() {
 function loadSemesters() {
   const semestersRaw = JSON.parse(fs.readFileSync(path.resolve(__dirname, 'semesters.json'), 'utf8'));
   return semestersRaw.map(sem => {
+    if (sem.id === 'da-nol-da-nong') {
+      return {
+        ...sem,
+        description: `
+          <div class="project-text" style="max-width: 480px; margin-bottom: 2rem;">
+            <p class="bold" style="font-size: 1.25rem; margin-bottom: 0.5rem; color: var(--color-high);">&lt;다놀다농&gt; 댄스워크숍</p>
+            <p style="margin-bottom: 1.5rem; font-size: 0.95rem;">멋대로 X 다농마트 다같이 놀자 다농 한바퀴~ 💃🏿🪩🕺🏿</p>
+            <p style="margin-bottom: 1.5rem; font-size: 0.95rem; line-height: 1.6;">
+              춤과 음악을 중심으로 자유롭게 감각을 경험하고 머물 수 있는 로컬 기반 문화 프로젝트 &lt;다놀다농&gt;에서 음악·움직임·휴식·파티 문화를 보다 가볍고 열린 방식으로 즐길 분들을 모집합니다!
+            </p>
+            
+            <p class="bold" style="color: var(--color-high);">✪ 모집 대상</p>
+            <p style="margin-bottom: 1rem;">10대 - 60대 지역주민</p>
+            
+            <p class="bold" style="color: var(--color-high);">✪ 모집 기간</p>
+            <p style="margin-bottom: 1rem;">2026. 07. 19 ~ 08. 06</p>
+            
+            <p class="bold" style="color: var(--color-high);">✪ 프로그램</p>
+            <p style="margin-bottom: 1rem; line-height: 1.6;">
+              <strong>1. 하우스댄스 워크숍</strong> (7.24 ~ 7.25 / 19시~21시)<br>
+              &nbsp;&nbsp;- 하우스 댄스 기본기 익히기, 간단한 안무 배우기, 영상 촬영<br>
+              <strong>2. 파티댄스 워크숍</strong> (7.31 ~ 8.01 / 19시~21시)<br>
+              &nbsp;&nbsp;- 파티 댄스 기본기 익히기, 간단한 안무 배우기, 몸풀기, 영상 촬영<br>
+              <strong>3. 댄스파티</strong> (8.07 / 19시~21시) *필수 참여<br>
+              &nbsp;&nbsp;- DJ의 음악을 들으며 다함께 즐기기, 쇼케이스 공연
+            </p>
+            
+            <p class="bold" style="color: var(--color-high);">✪ 문의</p>
+            <p style="margin-bottom: 1.5rem;">📞 010-2692-8501</p>
+            
+            <p style="margin-top: 1.5rem;">
+              <a href="https://docs.google.com/forms/d/e/1FAIpQLSfHmtKuK4RpNmr8g9Yfz_LUDJLzJzYhw-3QV1_YsKeCJi-Wgg/viewform" target="_blank" rel="noopener noreferrer" class="bold" style="display: inline-block; padding: 0.75rem 1.25rem; border: 1px solid var(--color-fg); text-decoration: none; font-size: 0.85rem; background: var(--color-fg); color: var(--color-bg);">신청하러 가기 (Google Form)</a>
+            </p>
+          </div>
+        `
+      };
+    }
     if (sem.id === 'the-sia-vol-2') {
       return {
         ...sem,
