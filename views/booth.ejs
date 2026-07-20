@@ -1,6 +1,7 @@
 <%- include('partials/header') %>
-<!-- MediaPipe Face Detection CDN (Highly accurate, GPU-accelerated ML model) -->
-<script src="https://cdn.jsdelivr.net/npm/@mediapipe/face_detection/face_detection.js" crossorigin="anonymous"></script>
+<!-- clmtrackr CDN (Pure JS face tracking model, 100% reliable without WASM or security blocks) -->
+<script src="https://cdn.jsdelivr.net/npm/clmtrackr@1.1.2/build/clmtrackr.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/clmtrackr@1.1.2/models/model_pca_20_svm.js"></script>
 
 <style>
   /* Indifferent, raw typography styles for filter options */
@@ -123,7 +124,7 @@
     let scanY = 0;
     let slitscanReset = true;
 
-    // Face Tracking Target Coordinates (Calculated via MediaPipe Face Detection)
+    // Face Tracking Target Coordinates (Calculated via clmtrackr)
     let targetFaceX = 320;
     let targetFaceY = 240;
     let targetFaceSize = 150; // Default baseline face width in 640x480
@@ -133,13 +134,11 @@
     let mouseY = 240;
     let faceSize = 150;
 
-    // MediaPipe FaceDetection instance
-    let faceDetection = null;
-    let lastDetectTime = 0;
-
-    // Initialize webcam
+    // clmtrackr instance
+    let tracker = null;
     let trackerInitialized = false;
 
+    // Initialize webcam
     async function initCamera() {
       try {
         warningOverlay.style.display = 'none';
@@ -155,8 +154,9 @@
         
         // Wait until video is active and playing before initiating computer vision tracking
         video.onplaying = () => {
-          if (!faceDetection) {
+          if (!trackerInitialized) {
             initFaceTracker();
+            trackerInitialized = true;
           }
           startRenderLoop();
         };
@@ -166,17 +166,32 @@
       }
     }
 
+    // Initialize clmtrackr (100% local, standard Javascript model file)
+    function initFaceTracker() {
+      try {
+        tracker = new clm.tracker();
+        tracker.init(pModel); // pModel is defined globally in model_pca_20_svm.js
+        tracker.start(video);
+      } catch (e) {
+        console.warn('clmtrackr initialization failed:', e);
+      }
+    }
+
     // Stop and release camera hardware
     function stopCamera() {
       if (stream) {
         stream.getTracks().forEach(track => track.stop());
         stream = null;
       }
+      if (tracker) {
+        tracker.stop();
+      }
       if (loopId) {
         cancelAnimationFrame(loopId);
         loopId = null;
       }
       video.srcObject = null;
+      trackerInitialized = false;
     }
 
     // Stop camera instantly when page is hidden, tab is changed, minimized, or navigated away
@@ -190,42 +205,6 @@
 
     window.addEventListener('pagehide', stopCamera);
     window.addEventListener('beforeunload', stopCamera);
-
-    // Initialize MediaPipe Face Detection
-    function initFaceTracker() {
-      try {
-        faceDetection = new FaceDetection({
-          locateFile: (file) => `https://cdn.jsdelivr.net/npm/@mediapipe/face_detection/${file}`
-        });
-
-        faceDetection.setOptions({
-          model: 'short', // 'short' is BlazeFace, optimized for front-facing selfie cameras
-          minDetectionConfidence: 0.5
-        });
-
-        faceDetection.onResults(function (results) {
-          if (results.detections && results.detections.length > 0) {
-            // Find largest face box (closest user)
-            let maxDet = results.detections[0];
-            for (let i = 1; i < results.detections.length; i++) {
-              const currentArea = results.detections[i].boundingBox.width * results.detections[i].boundingBox.height;
-              const maxArea = maxDet.boundingBox.width * maxDet.boundingBox.height;
-              if (currentArea > maxArea) {
-                maxDet = results.detections[i];
-              }
-            }
-
-            const box = maxDet.boundingBox;
-            // Map normalized center coordinates (0 to 1) to video space (640x480)
-            targetFaceX = (box.xCenter || (box.xMin + box.width / 2)) * 640;
-            targetFaceY = (box.yCenter || (box.yMin + box.height / 2)) * 480;
-            targetFaceSize = box.width * 640;
-          }
-        });
-      } catch (e) {
-        console.warn('MediaPipe FaceDetection initialization failed:', e);
-      }
-    }
 
     // Retry permission
     retryBtn.addEventListener('click', initCamera);
@@ -266,11 +245,19 @@
           canvasPreview.height = h;
         }
 
-        // Periodically run MediaPipe Face Detection asynchronously (every 80ms ~12fps for low CPU overhead)
-        const now = Date.now();
-        if (faceDetection && now - lastDetectTime > 80 && video.readyState >= 2) {
-          lastDetectTime = now;
-          faceDetection.send({ image: video }).catch(err => console.warn('Detection send error:', err));
+        // Get coordinates from clmtrackr
+        if (tracker) {
+          const position = tracker.getCurrentPosition();
+          if (position) {
+            // Position point 62 is the nose tip (face center)
+            targetFaceX = position[62][0];
+            targetFaceY = position[62][1];
+            
+            // Calculate distance between left cheek (14) and right cheek (0) for dynamic face depth size
+            const dx = position[14][0] - position[0][0];
+            const dy = position[14][1] - position[0][1];
+            targetFaceSize = Math.sqrt(dx * dx + dy * dy) * 1.5; // scale factor to align with video width ratio
+          }
         }
 
         // Smoothly interpolate current coordinates towards target face coordinates (10% Lerp)
