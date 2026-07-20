@@ -134,6 +134,29 @@
     let mouseY = 240;
     let faceSize = 150;
 
+    // Moving Average Filter class to cancel out high-frequency coordinate noise (jitter)
+    class MovingAverage {
+      constructor(size) {
+        this.size = size;
+        this.history = [];
+      }
+      add(val) {
+        this.history.push(val);
+        if (this.history.length > this.size) {
+          this.history.shift();
+        }
+      }
+      get(defaultVal) {
+        if (this.history.length === 0) return defaultVal;
+        const sum = this.history.reduce((a, b) => a + b, 0);
+        return sum / this.history.length;
+      }
+    }
+
+    const filterX = new MovingAverage(15); // 15-frame history window
+    const filterY = new MovingAverage(15);
+    const filterSize = new MovingAverage(15);
+
     // clmtrackr instance
     let tracker = null;
     let trackerInitialized = false;
@@ -249,33 +272,41 @@
           canvasPreview.height = h;
         }
 
-        // Get coordinates from clmtrackr and map them to high-resolution canvas space
-        let canvasFaceX = w / 2;
-        let canvasFaceY = h / 2;
-        let canvasFaceSize = 150 * (w / (video.width || 640));
-
+        // Get coordinates from clmtrackr, scale, filter with moving average, and interpolate
         if (tracker) {
           const position = tracker.getCurrentPosition();
           if (position) {
-            // Scale factors from 640x480 tracker coordinates to actual high-resolution canvas coordinates
             const scaleX = w / (video.width || 640);
             const scaleY = h / (video.height || 480);
 
-            // Position point 62 is the nose tip (face center)
-            canvasFaceX = position[62][0] * scaleX;
-            canvasFaceY = position[62][1] * scaleY;
+            // Nose tip coordinates (center of the face)
+            filterX.add(position[62][0] * scaleX);
+            filterY.add(position[62][1] * scaleY);
             
-            // Calculate distance between left cheek (14) and right cheek (0) for dynamic face depth size
+            // Distance between cheeks
             const dx = position[14][0] - position[0][0];
             const dy = position[14][1] - position[0][1];
-            canvasFaceSize = Math.sqrt(dx * dx + dy * dy) * 1.5 * scaleX;
+            filterSize.add(Math.sqrt(dx * dx + dy * dy) * 1.5 * scaleX);
+          } else {
+            // If face is lost, slowly feed the center default to avoid snapping
+            filterX.add(w / 2);
+            filterY.add(h / 2);
+            filterSize.add(150 * (w / (video.width || 640)));
           }
+        } else {
+          filterX.add(w / 2);
+          filterY.add(h / 2);
+          filterSize.add(150 * (w / (video.width || 640)));
         }
 
-        // Smoothly interpolate current coordinates towards scaled target face coordinates (10% Lerp)
-        mouseX += (canvasFaceX - mouseX) * 0.1;
-        mouseY += (canvasFaceY - mouseY) * 0.1;
-        faceSize += (canvasFaceSize - faceSize) * 0.1;
+        const smoothedTargetX = filterX.get(w / 2);
+        const smoothedTargetY = filterY.get(h / 2);
+        const smoothedTargetSize = filterSize.get(150 * (w / (video.width || 640)));
+
+        // Double smoothing layer: apply a gentle 6% linear interpolation (lerp) for cinematic drift inertia
+        mouseX += (smoothedTargetX - mouseX) * 0.06;
+        mouseY += (smoothedTargetY - mouseY) * 0.06;
+        faceSize += (smoothedTargetSize - faceSize) * 0.06;
 
         ctx.save();
         
