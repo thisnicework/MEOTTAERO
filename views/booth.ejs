@@ -343,7 +343,7 @@
             const nh = h * scale;
             
             // Map face coordinates to mirrored coordinates space (with both X and Y axes inverted for opposite motion)
-            const oppositeX = mouseX; // Directly using mouseX in mirrored space draws it on the opposite side
+            const oppositeX = w - mouseX; // w - mouseX in mirrored space draws it on the opposite side of the face
             const oppositeY = h - mouseY; // Inverts Y axis
             
             const bias = i / 5;
