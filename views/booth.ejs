@@ -1,0 +1,344 @@
+<%- include('partials/header') %>
+
+<style>
+  .filter-opt-btn {
+    transition: all 0.2s ease;
+  }
+  .filter-opt-btn.active {
+    background: var(--color-fg) !important;
+    color: var(--color-bg) !important;
+  }
+  .captured-photo-card {
+    position: relative;
+    border: 1px solid var(--color-fg);
+    overflow: hidden;
+    background: white;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+    transition: transform 0.2s ease;
+  }
+  .captured-photo-card:hover {
+    transform: translateY(-2px);
+  }
+  .captured-photo-card img {
+    width: 100%;
+    aspect-ratio: 4/3;
+    object-fit: cover;
+    display: block;
+  }
+  .captured-photo-actions {
+    display: flex;
+    justify-content: space-between;
+    padding: 0.6rem;
+    border-top: 1px solid var(--color-low);
+    background: #fafafa;
+  }
+  .captured-photo-actions button, .captured-photo-actions a {
+    background: none;
+    border: none;
+    cursor: pointer;
+    font-size: 0.75rem;
+    color: var(--color-fg);
+    text-decoration: underline;
+    font-family: inherit;
+    padding: 0;
+  }
+  .captured-photo-actions a {
+    display: inline-block;
+  }
+  .captured-photo-actions button.btn-delete {
+    color: var(--color-err);
+  }
+  
+  /* Filter Preview CSS rules applied to video preview */
+  .filter-normal { filter: none; }
+  .filter-mono { filter: contrast(180%) grayscale(100%); }
+  .filter-invert { filter: invert(100%); }
+  .filter-thermal { filter: hue-rotate(90deg) saturate(300%) contrast(150%); }
+  .filter-vintage { filter: sepia(70%) contrast(140%) saturate(140%); }
+  .filter-xray { filter: grayscale(100%) invert(100%) contrast(130%); }
+</style>
+
+<main class="fixed">
+  <!-- Left Side: Camera Preview & Filters -->
+  <section id="one" class="left" aria-expanded="true" style="overflow-y: auto; padding: 2rem; padding-bottom: 4rem;">
+    <div class="booth-container" style="max-width: 480px; width: 100%;">
+      <p class="bold" style="font-size: 1.25rem; margin-bottom: 0.5rem; color: var(--color-high);">PHOTO BOOTH</p>
+      <p style="margin-bottom: 1.5rem; font-size: 0.95rem;">멋대로 움직임을 기록해보세요. 📸🪩</p>
+      
+      <!-- Webcam Video Wrap -->
+      <div class="video-wrap" style="position: relative; width: 100%; aspect-ratio: 4/3; background: #000; border: 1px solid var(--color-fg); margin-bottom: 1.5rem; overflow: hidden; display: flex; align-items: center; justify-content: center;">
+        <video id="webcam" autoplay playsinline style="width: 100%; height: 100%; object-fit: cover; transform: scaleX(-1); transition: filter 0.1s ease;"></video>
+        
+        <!-- Countdown overlay -->
+        <div id="countdown" style="display: none; position: absolute; font-size: 8rem; font-weight: 900; color: white; text-shadow: 0 0 25px rgba(0,0,0,0.85); z-index: 10; pointer-events: none; font-family: monospace;">3</div>
+        
+        <!-- Flash overlay -->
+        <div id="flash" style="display: none; position: absolute; top:0; left:0; width:100%; height:100%; background: white; z-index: 11; pointer-events: none;"></div>
+        
+        <!-- Permission warning -->
+        <div id="permission-warning" style="display: none; position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: #111; z-index: 5; flex-direction: column; align-items: center; justify-content: center; padding: 1.5rem; text-align: center; color: white;">
+          <p style="margin-bottom: 1rem; font-size: 0.95rem;">📷 카메라 권한이 필요합니다.</p>
+          <button id="retry-permission-btn" style="padding: 0.5rem 1rem; border: 1px solid white; background: transparent; color: white; cursor: pointer; font-family: inherit;">허용 요청</button>
+        </div>
+      </div>
+      
+      <!-- Capture Controls -->
+      <div style="margin-bottom: 1.5rem;">
+        <button id="capture-btn" class="bold" style="width: 100%; padding: 0.9rem; border: 1px solid var(--color-fg); background: var(--color-fg); color: var(--color-bg); cursor: pointer; font-size: 0.95rem; text-transform: uppercase; transition: opacity 0.2s;">
+          TAKE PHOTO (3s COUNTDOWN)
+        </button>
+      </div>
+
+      <!-- Filters Selection -->
+      <div>
+        <p class="bold" style="font-size: 0.85rem; margin-bottom: 0.75rem; text-transform: uppercase; color: var(--color-mid);">Select Filter</p>
+        <div class="filter-options-grid" style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 0.5rem;">
+          <button class="filter-opt-btn active" data-filter="normal" style="padding: 0.6rem; border: 1px solid var(--color-fg); background: white; cursor: pointer; font-family: inherit; font-size: 0.8rem;">Normal</button>
+          <button class="filter-opt-btn" data-filter="mono" style="padding: 0.6rem; border: 1px solid var(--color-fg); background: white; cursor: pointer; font-family: inherit; font-size: 0.8rem;">Mono</button>
+          <button class="filter-opt-btn" data-filter="invert" style="padding: 0.6rem; border: 1px solid var(--color-fg); background: white; cursor: pointer; font-family: inherit; font-size: 0.8rem;">Invert</button>
+          <button class="filter-opt-btn" data-filter="thermal" style="padding: 0.6rem; border: 1px solid var(--color-fg); background: white; cursor: pointer; font-family: inherit; font-size: 0.8rem;">Thermal</button>
+          <button class="filter-opt-btn" data-filter="vintage" style="padding: 0.6rem; border: 1px solid var(--color-fg); background: white; cursor: pointer; font-family: inherit; font-size: 0.8rem;">Vintage</button>
+          <button class="filter-opt-btn" data-filter="xray" style="padding: 0.6rem; border: 1px solid var(--color-fg); background: white; cursor: pointer; font-family: inherit; font-size: 0.8rem;">X-Ray</button>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Right Side: Gallery -->
+  <section id="two" class="right" aria-expanded="true" style="overflow-y: auto; padding: 2rem; padding-bottom: 4rem;">
+    <div class="gallery-container" style="width: 100%;">
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
+        <h2 class="bold" style="margin: 0; font-size: 1.25rem;">CAPTURED GALLERY</h2>
+        <button id="clear-gallery-btn" style="background: none; border: none; text-decoration: underline; cursor: pointer; font-size: 0.8rem; color: var(--color-err); display: none;">Clear All</button>
+      </div>
+      <hr>
+      
+      <!-- Photos Grid -->
+      <div id="photos-grid" style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 1rem; margin-top: 1.5rem;">
+        <!-- Dynamically added captures go here -->
+      </div>
+      
+      <!-- Placeholder when empty -->
+      <div id="gallery-placeholder" style="text-align: center; color: var(--color-mid); padding: 5rem 0; font-size: 0.9rem; line-height: 1.5;">
+        아직 촬영된 사진이 없습니다.<br>왼쪽의 카메라로 순간을 기록해 보세요!
+      </div>
+    </div>
+  </section>
+</main>
+
+<script>
+  document.addEventListener('DOMContentLoaded', function () {
+    const video = document.getElementById('webcam');
+    const captureBtn = document.getElementById('capture-btn');
+    const filterBtns = document.querySelectorAll('.filter-opt-btn');
+    const countdownOverlay = document.getElementById('countdown');
+    const flashOverlay = document.getElementById('flash');
+    const warningOverlay = document.getElementById('permission-warning');
+    const retryBtn = document.getElementById('retry-permission-btn');
+    const photosGrid = document.getElementById('photos-grid');
+    const placeholder = document.getElementById('gallery-placeholder');
+    const clearBtn = document.getElementById('clear-gallery-btn');
+
+    let stream = null;
+    let currentFilter = 'normal';
+    let captures = [];
+
+    // Filter Canvas values mapping to match CSS
+    const filterCanvasMappings = {
+      'normal': 'none',
+      'mono': 'contrast(180%) grayscale(100%)',
+      'invert': 'invert(100%)',
+      'thermal': 'hue-rotate(90deg) saturate(300%) contrast(150%)',
+      'vintage': 'sepia(70%) contrast(140%) saturate(140%)',
+      'xray': 'grayscale(100%) invert(100%) contrast(130%)'
+    };
+
+    // Load captures from localStorage
+    function loadCaptures() {
+      const stored = localStorage.getItem('meottaero_captures');
+      if (stored) {
+        try {
+          captures = JSON.parse(stored);
+          renderGallery();
+        } catch (e) {
+          console.error(e);
+        }
+      }
+    }
+
+    // Save captures to localStorage
+    function saveCaptures() {
+      localStorage.setItem('meottaero_captures', JSON.stringify(captures));
+      renderGallery();
+    }
+
+    // Render captures gallery
+    function renderGallery() {
+      photosGrid.innerHTML = '';
+      if (captures.length === 0) {
+        placeholder.style.display = 'block';
+        clearBtn.style.display = 'none';
+      } else {
+        placeholder.style.display = 'none';
+        clearBtn.style.display = 'block';
+
+        captures.forEach((dataUrl, idx) => {
+          const card = document.createElement('div');
+          card.className = 'captured-photo-card';
+          card.innerHTML = `
+            <img src="${dataUrl}" alt="Capture ${idx + 1}">
+            <div class="captured-photo-actions">
+              <a href="${dataUrl}" download="meottaero_capture_${Date.now()}.jpg">Download</a>
+              <button class="btn-delete" data-index="${idx}">Delete</button>
+            </div>
+          `;
+          photosGrid.appendChild(card);
+        });
+      }
+    }
+
+    // Initialize webcam
+    async function initCamera() {
+      try {
+        warningOverlay.style.display = 'none';
+        if (stream) {
+          stream.getTracks().forEach(track => track.stop());
+        }
+
+        stream = await navigator.mediaDevices.getUserMedia({
+          video: { width: 640, height: 480, facingMode: 'user' },
+          audio: false
+        });
+        video.srcObject = stream;
+      } catch (err) {
+        console.error('Camera access error:', err);
+        warningOverlay.style.display = 'flex';
+      }
+    }
+
+    // Retry permission
+    retryBtn.addEventListener('click', initCamera);
+
+    // Apply Filter selection
+    filterBtns.forEach(btn => {
+      btn.addEventListener('click', function () {
+        filterBtns.forEach(b => b.classList.remove('active'));
+        this.classList.add('active');
+
+        currentFilter = this.getAttribute('data-filter');
+        // Clear old classes
+        video.className = '';
+        // Add selected filter class
+        video.classList.add('filter-' + currentFilter);
+      });
+    });
+
+    // Web Audio dynamic camera shutter sound synthesizer
+    function playShutterSound() {
+      try {
+        const AudioContext = window.AudioContext || window.webkitAudioContext;
+        if (!AudioContext) return;
+        const ctx = new AudioContext();
+        const osc = ctx.createOscillator();
+        const gain = ctx.createGain();
+        osc.connect(gain);
+        gain.connect(ctx.destination);
+
+        osc.type = 'triangle';
+        osc.frequency.setValueAtTime(800, ctx.currentTime);
+        osc.frequency.exponentialRampToValueAtTime(150, ctx.currentTime + 0.15);
+
+        gain.gain.setValueAtTime(0.2, ctx.currentTime);
+        gain.gain.linearRampToValueAtTime(0.01, ctx.currentTime + 0.15);
+
+        osc.start();
+        osc.stop(ctx.currentTime + 0.15);
+      } catch (e) {
+        console.warn(e);
+      }
+    }
+
+    // Capture functionality
+    captureBtn.addEventListener('click', function () {
+      if (!stream) return;
+
+      captureBtn.disabled = true;
+      let count = 3;
+      countdownOverlay.textContent = count;
+      countdownOverlay.style.display = 'block';
+
+      const interval = setInterval(() => {
+        count--;
+        if (count > 0) {
+          countdownOverlay.textContent = count;
+        } else {
+          clearInterval(interval);
+          countdownOverlay.style.display = 'none';
+          
+          // Flash effect
+          flashOverlay.style.display = 'block';
+          flashOverlay.style.opacity = 1;
+          playShutterSound();
+
+          // Smooth flash animation
+          setTimeout(() => {
+            flashOverlay.style.transition = 'opacity 0.25s ease';
+            flashOverlay.style.opacity = 0;
+            setTimeout(() => {
+              flashOverlay.style.display = 'none';
+              flashOverlay.style.transition = '';
+            }, 250);
+          }, 50);
+
+          // Render video stream frame to Canvas
+          const canvas = document.createElement('canvas');
+          canvas.width = video.videoWidth || 640;
+          canvas.height = video.videoHeight || 480;
+          const ctx = canvas.getContext('2d');
+
+          // Mirror frame
+          ctx.translate(canvas.width, 0);
+          ctx.scale(-1, 1);
+
+          // Apply selected filter to canvas
+          ctx.filter = filterCanvasMappings[currentFilter] || 'none';
+
+          // Draw
+          ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+
+          // Convert to JPEG base64 & prepend to captures list
+          const dataUrl = canvas.toDataURL('image/jpeg', 0.9);
+          captures.unshift(dataUrl);
+          saveCaptures();
+
+          captureBtn.disabled = false;
+        }
+      }, 1000);
+    });
+
+    // Delete single capture
+    photosGrid.addEventListener('click', function (e) {
+      if (e.target.classList.contains('btn-delete')) {
+        const idx = parseInt(e.target.getAttribute('data-index'), 10);
+        if (confirm('이 사진을 삭제하시겠습니까?')) {
+          captures.splice(idx, 1);
+          saveCaptures();
+        }
+      }
+    });
+
+    // Clear whole gallery
+    clearBtn.addEventListener('click', function () {
+      if (confirm('정말로 촬영된 모든 사진을 삭제하시겠습니까? (로컬 저장소도 비워집니다.)')) {
+        captures = [];
+        saveCaptures();
+      }
+    });
+
+    // Run camera and load gallery
+    initCamera();
+    loadCaptures();
+  });
+</script>
+
+<%- include('partials/footer') %>

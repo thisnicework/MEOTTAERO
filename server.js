@@ -210,6 +210,14 @@ app.get('/about', (req, res) => {
   });
 });
 
+// Route: Photo Booth Page
+app.get('/booth', (req, res) => {
+  res.render('booth', {
+    title: '// MOTTAERO — Booth',
+    activeMenu: 'booth'
+  });
+});
+
 
 // Route: POST Booking Form
 app.post('/projects/:semesterId/book', async (req, res) => {

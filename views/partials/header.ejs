@@ -18,27 +18,17 @@
     <% if (activeMenu === 'projects' || activeMenu === 'crew') { %>
       <script src="/assets/js/scroll.js"></script>
     <% } %>
-    <% if (activeMenu !== 'admin') { %>
-      <script src="/assets/js/interaction.js" defer></script>
-    <% } %>
     <title><%= title %></title>
   </head>
   <body>
-    <% if (activeMenu !== 'admin') { %>
-      <canvas id="interaction-canvas"></canvas>
-      <div id="interaction-panel">
-        <button id="control-mode">MODE: RIBBON</button>
-        <button id="control-color">THEME: COSMIC</button>
-      </div>
-    <% } %>
     <header>
       <h1><a href="/"><span class="bold">// MEOTTAERO</span></a></h1>
       <% if (activeMenu !== 'admin') { %>
       <nav id="menu">
         <a <%= activeMenu === 'projects' ? 'aria-current="page"' : '' %> href="/projects">projects</a>
         <a <%= activeMenu === 'crew' ? 'aria-current="page"' : '' %> href="/crew">crew</a>
+        <a <%= activeMenu === 'booth' ? 'aria-current="page"' : '' %> href="/booth">booth</a>
         <a <%= activeMenu === 'about' ? 'aria-current="page"' : '' %> href="/about">about</a>
-        <a href="#" id="interaction-toggle">interaction <span class="dot"></span></a>
       </nav>
       <% } %>
     </header>
