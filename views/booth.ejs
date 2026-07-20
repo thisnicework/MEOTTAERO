@@ -1,7 +1,6 @@
 <%- include('partials/header') %>
-<!-- clmtrackr CDN (Pure JS face tracking model, 100% reliable without WASM or security blocks) -->
-<script src="https://cdn.jsdelivr.net/npm/clmtrackr@1.1.2/build/clmtrackr.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/clmtrackr@1.1.2/models/model_pca_20_svm.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/tracking.js/1.1.3/tracking-min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/tracking.js/1.1.3/data/face-min.js"></script>
 
 <style>
   /* Indifferent, raw typography styles for filter options */
@@ -60,7 +59,7 @@
     
     <!-- Webcam Video / Canvas Wrap -->
     <div class="video-wrap" style="position: relative; width: 100%; aspect-ratio: 4/3; background: #000; border: 1px solid var(--color-fg); margin-bottom: 1.5rem; overflow: hidden; display: flex; align-items: center; justify-content: center;">
-      <!-- Hidden Video Element (keeps stream active in background, explicit width/height required by clmtrackr) -->
+      <!-- Hidden Video Element with explicit dimensions for tracking.js -->
       <video id="webcam" autoplay playsinline muted width="640" height="480" style="position: absolute; opacity: 0; pointer-events: none; width: 100%; height: 100%; object-fit: cover; transform: scaleX(-1);"></video>
       <!-- Visible Canvas Preview (displays everything unified) -->
       <canvas id="canvas-preview" style="width: 100%; height: 100%; object-fit: cover;"></canvas>
@@ -86,7 +85,9 @@
 
     <!-- Filters Selection (Indifferent Text Links) -->
     <div style="display: flex; gap: 0.75rem; align-items: center; justify-content: center; font-size: 0.95rem; user-select: none;">
-      <button class="filter-opt-btn active" data-filter="kinetic">kinetic</button>
+      <button class="filter-opt-btn active" data-filter="normal">normal</button>
+      <span style="color: var(--color-mid); font-size: 0.85rem; opacity: 0.5;">/</span>
+      <button class="filter-opt-btn" data-filter="kinetic">kinetic</button>
       <span style="color: var(--color-mid); font-size: 0.85rem; opacity: 0.5;">/</span>
       <button class="filter-opt-btn" data-filter="tunnel">tunnel</button>
       <span style="color: var(--color-mid); font-size: 0.85rem; opacity: 0.5;">/</span>
@@ -110,7 +111,7 @@
     const retryBtn = document.getElementById('retry-permission-btn');
 
     let stream = null;
-    let currentFilter = 'kinetic';
+    let currentFilter = 'normal';
     
     // Kinetic filter variables
     let loopId = null;
@@ -122,44 +123,19 @@
     let scanY = 0;
     let slitscanReset = true;
 
-    // Face Tracking Target Coordinates (Calculated via clmtrackr)
+    // Face Tracking Target Coordinates (Calculated via tracking.js)
     let targetFaceX = 320;
     let targetFaceY = 240;
     let targetFaceSize = 150; // Default baseline face width in 640x480
     
-    // Smoothly interpolated values for the visual effect
+    // Smoothly interpolated coordinate values for the visual effect
     let mouseX = 320;
     let mouseY = 240;
     let faceSize = 150;
 
-    // Moving Average Filter class to cancel out high-frequency coordinate noise (jitter)
-    class MovingAverage {
-      constructor(size) {
-        this.size = size;
-        this.history = [];
-      }
-      add(val) {
-        this.history.push(val);
-        if (this.history.length > this.size) {
-          this.history.shift();
-        }
-      }
-      get(defaultVal) {
-        if (this.history.length === 0) return defaultVal;
-        const sum = this.history.reduce((a, b) => a + b, 0);
-        return sum / this.history.length;
-      }
-    }
-
-    const filterX = new MovingAverage(15); // 15-frame history window
-    const filterY = new MovingAverage(15);
-    const filterSize = new MovingAverage(15);
-
-    // clmtrackr instance
-    let tracker = null;
+    // Initialize webcam
     let trackerInitialized = false;
 
-    // Initialize webcam
     async function initCamera() {
       try {
         warningOverlay.style.display = 'none';
@@ -169,9 +145,9 @@
 
         stream = await navigator.mediaDevices.getUserMedia({
           video: { 
-            width: { ideal: 1920 }, 
-            height: { ideal: 1080 }, 
-            facingMode: 'user' 
+            width: { ideal: 1920 },
+            height: { ideal: 1080 },
+            facingMode: 'user'
           },
           audio: false
         });
@@ -179,6 +155,16 @@
         
         // Wait until video is active and playing before initiating computer vision tracking
         video.onplaying = () => {
+          // Adjust hidden video tag size attributes to match actual stream resolution
+          // so tracking.js operates on maximum native camera resolution
+          video.width = video.videoWidth;
+          video.height = video.videoHeight;
+
+          // Initialize target coordinates to the actual center of the high-res stream
+          targetFaceX = video.videoWidth / 2;
+          targetFaceY = video.videoHeight / 2;
+          targetFaceSize = video.videoWidth * 0.25;
+
           if (!trackerInitialized) {
             initFaceTracker();
             trackerInitialized = true;
@@ -191,45 +177,36 @@
       }
     }
 
-    // Initialize clmtrackr (100% local, standard Javascript model file)
+    // Initialize tracking.js (optimized for higher accuracy and sensitivity)
     function initFaceTracker() {
       try {
-        tracker = new clm.tracker();
-        tracker.init(pModel); // pModel is defined globally in model_pca_20_svm.js
-        tracker.start(video);
+        const tracker = new tracking.ObjectTracker('face');
+        tracker.setInitialScale(2.5); // Finer search scale to detect distant or smaller faces
+        tracker.setStepSize(1.6);     // Finer step size for higher precision detection
+        tracker.setEdgesDensity(0.1);
+
+        tracker.on('track', function (event) {
+          if (event.data.length > 0) {
+            // Find largest face box
+            let maxFace = event.data[0];
+            for (let i = 1; i < event.data.length; i++) {
+              if (event.data[i].width * event.data[i].height > maxFace.width * maxFace.height) {
+                maxFace = event.data[i];
+              }
+            }
+            
+            // Calculate center of face in 640x480 space
+            targetFaceX = maxFace.x + maxFace.width / 2;
+            targetFaceY = maxFace.y + maxFace.height / 2;
+            targetFaceSize = maxFace.width;
+          }
+        });
+
+        tracking.track('#webcam', tracker);
       } catch (e) {
-        console.warn('clmtrackr initialization failed:', e);
+        console.warn('Face tracker init failed:', e);
       }
     }
-
-    // Stop and release camera hardware
-    function stopCamera() {
-      if (stream) {
-        stream.getTracks().forEach(track => track.stop());
-        stream = null;
-      }
-      if (tracker) {
-        tracker.stop();
-      }
-      if (loopId) {
-        cancelAnimationFrame(loopId);
-        loopId = null;
-      }
-      video.srcObject = null;
-      trackerInitialized = false;
-    }
-
-    // Stop camera instantly when page is hidden, tab is changed, minimized, or navigated away
-    document.addEventListener('visibilitychange', function () {
-      if (document.visibilityState === 'hidden') {
-        stopCamera();
-      } else if (document.visibilityState === 'visible') {
-        initCamera();
-      }
-    });
-
-    window.addEventListener('pagehide', stopCamera);
-    window.addEventListener('beforeunload', stopCamera);
 
     // Retry permission
     retryBtn.addEventListener('click', initCamera);
@@ -270,41 +247,10 @@
           canvasPreview.height = h;
         }
 
-        // Get coordinates from clmtrackr, scale, filter with moving average, and interpolate
-        if (tracker) {
-          const position = tracker.getCurrentPosition();
-          if (position) {
-            const scaleX = w / (video.width || 640);
-            const scaleY = h / (video.height || 480);
-
-            // Nose tip coordinates (center of the face)
-            filterX.add(position[62][0] * scaleX);
-            filterY.add(position[62][1] * scaleY);
-            
-            // Distance between cheeks
-            const dx = position[14][0] - position[0][0];
-            const dy = position[14][1] - position[0][1];
-            filterSize.add(Math.sqrt(dx * dx + dy * dy) * 1.5 * scaleX);
-          } else {
-            // If face is lost, slowly feed the center default to avoid snapping
-            filterX.add(w / 2);
-            filterY.add(h / 2);
-            filterSize.add(150 * (w / (video.width || 640)));
-          }
-        } else {
-          filterX.add(w / 2);
-          filterY.add(h / 2);
-          filterSize.add(150 * (w / (video.width || 640)));
-        }
-
-        const smoothedTargetX = filterX.get(w / 2);
-        const smoothedTargetY = filterY.get(h / 2);
-        const smoothedTargetSize = filterSize.get(150 * (w / (video.width || 640)));
-
-        // Double smoothing layer: apply a gentle 6% linear interpolation (lerp) for cinematic drift inertia
-        mouseX += (smoothedTargetX - mouseX) * 0.06;
-        mouseY += (smoothedTargetY - mouseY) * 0.06;
-        faceSize += (smoothedTargetSize - faceSize) * 0.06;
+        // Smoothly interpolate current coordinates towards target face coordinates (10% Lerp)
+        mouseX += (targetFaceX - mouseX) * 0.1;
+        mouseY += (targetFaceY - mouseY) * 0.1;
+        faceSize += (targetFaceSize - faceSize) * 0.1;
 
         ctx.save();
         
@@ -315,35 +261,36 @@
         }
         ctx.filter = 'none';
 
-        if (currentFilter === 'tunnel') {
+        if (currentFilter === 'normal') {
+          // Standard Mirrored Draw
+          ctx.translate(w, 0);
+          ctx.scale(-1, 1);
+          ctx.drawImage(video, 0, 0, w, h);
+        } 
+        else if (currentFilter === 'tunnel') {
           // Interactive Infinite Recursive Tunnel (Mirrored background + Offset nested recursion following face)
           ctx.translate(w, 0);
           ctx.scale(-1, 1);
           ctx.drawImage(video, 0, 0, w, h);
-          
           // Map face size (depth) to recursive exponential scaling factor:
-          // faceSize typically ranges from 80 (far) to 300 (close).
-          const clampedSize = Math.max(80, Math.min(300, faceSize));
+          // Using resolution-independent relative face size ratio (faceSize / stream width)
+          const relativeFaceRatio = faceSize / w;
+          const clampedRatio = Math.max(0.1, Math.min(0.45, relativeFaceRatio));
+          // Exponential decay factor varies between 0.65 (steep/far) and 0.88 (slow/close)
+          const factor = 0.65 + ((clampedRatio - 0.1) / 0.35) * 0.23;
           
-          // Exponential decay factor varies between 0.58 (deep/far) and 0.90 (loose/close)
-          const factor = 0.58 + ((clampedSize - 80) / 220) * 0.32;
-          
-          // Stretch multiplier (determines how wildly the tunnel bends opposite to head motion)
-          // Leaning closer (larger face) makes the bend offset more dramatic (up to 1.8x stretch!)
-          const stretchMultiplier = 0.5 + ((clampedSize - 80) / 220) * 1.3;
-          
-          // Draw exactly 5 nested recursive images (Total 6 images including the background)
-          for (let i = 1; i <= 5; i++) {
+          // Draw exactly 6 recursive images
+          for (let i = 1; i <= 6; i++) {
             const scale = Math.pow(factor, i);
             
             const nw = w * scale;
             const nh = h * scale;
             
             // Map face coordinates to mirrored coordinates space (with both X and Y axes inverted for opposite motion)
-            const oppositeX = w - mouseX; // w - mouseX in mirrored space draws it on the opposite side of the face
+            const oppositeX = mouseX; // Directly using mouseX in mirrored space draws it on the opposite side
             const oppositeY = h - mouseY; // Inverts Y axis
             
-            const bias = (i / 5) * stretchMultiplier;
+            const bias = i / 6;
             const targetCenterX = w / 2 + (oppositeX - w / 2) * bias;
             const targetCenterY = h / 2 + (oppositeY - h / 2) * bias;
             
