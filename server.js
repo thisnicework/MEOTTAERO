@@ -230,7 +230,7 @@ app.get('/admin', requireAdminAuth, async (req, res) => {
         }
       }
       return { ...b, eventId };
-    }).filter(b => b.eventId !== '춤출자유vol-2');
+    });
     const capacities = db.getCapacities();
     res.render('bookings', {
       title: '// MOTTAERO — Admin Dashboard',
@@ -266,7 +266,7 @@ app.get('/admin/export', requireAdminAuth, async (req, res) => {
         }
       }
       return { ...b, eventId };
-    }).filter(b => b.eventId !== '춤출자유vol-2');
+    });
 
     // Filter if requested
     if (event && event !== 'all') {
