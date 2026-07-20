@@ -692,7 +692,7 @@ main img + * {
 	justify-content: center;
 	font-size: 1.5rem;
 	font-weight: bold;
-	margin-bottom: 0.5rem;
+	margin: 0 auto 0.5rem auto;
 }
 
 .success-desc {
