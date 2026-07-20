@@ -57,7 +57,7 @@ function loadSemesters() {
             <p style="margin-bottom: 1rem;">10대 - 60대 지역주민</p>
             
             <p class="bold" style="color: var(--color-high);">✪ 모집 기간</p>
-            <p style="margin-bottom: 1rem;">2026. 07. 19 ~ 08. 06</p>
+            <p style="margin-bottom: 1rem;">2026. 07. 20 ~ 08. 06</p>
             
             <p class="bold" style="color: var(--color-high);">✪ 프로그램</p>
             <p style="margin-bottom: 1rem; line-height: 1.6;">
