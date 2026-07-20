@@ -15,12 +15,20 @@
             </p>
           </div>
           <% const siaCount = bookings.filter(b => b.eventId === 'the-sia-vol-2').length; %>
+          <% const danongCount = bookings.filter(b => b.eventId === 'da-nol-da-nong').length; %>
           <% const freedomCount = bookings.filter(b => b.eventId === '춤출자유vol-2').length; %>
           <div class="stat-card"
             style="background: var(--color-low); padding: 1rem; border-left: 4px solid #4caf50;">
             <h3 class="bold" style="font-size: 0.8rem; margin-bottom: 0.25rem; color: #555;">THE SIA Vol.2</h3>
             <p class="bold" style="font-size: 1.5rem; color: #4caf50; margin: 0;" id="sia-bookings">
               <%= siaCount %> 명
+            </p>
+          </div>
+          <div class="stat-card"
+            style="background: var(--color-low); padding: 1rem; border-left: 4px solid #ff9800;">
+            <h3 class="bold" style="font-size: 0.8rem; margin-bottom: 0.25rem; color: #555;">다놀다농</h3>
+            <p class="bold" style="font-size: 1.5rem; color: #ff9800; margin: 0;" id="danong-bookings">
+              <%= danongCount %> 명
             </p>
           </div>
           <div class="stat-card"
@@ -43,6 +51,7 @@
           <select id="event-filter" style="width: 100%; padding: 0.75rem; border: 1px solid var(--color-fg); outline: none; background: white; font-family: inherit;">
             <option value="all">전체 보기 (All Shows)</option>
             <option value="the-sia-vol-2">THE SIA Vol.2</option>
+            <option value="da-nol-da-nong">다놀다농</option>
             <option value="춤출자유vol-2">춤 출 자유 Vol.2</option>
           </select>
         </div>
@@ -85,7 +94,7 @@
                     <tr class="booking-row" data-code="<%= b.code %>" data-name="<%= b.name %>"
                       data-phone="<%= b.phone %>" data-event-id="<%= b.eventId %>" style="border-bottom: 1px solid var(--color-low);">
                       <td class="bold" style="padding: 0.75rem 0.5rem; font-size: 0.85rem; color: var(--color-mid);">
-                        <%= b.eventId === 'the-sia-vol-2' ? 'THE SIA Vol.2' : '춤 출 자유 Vol.2' %>
+                        <%= b.eventId === 'the-sia-vol-2' ? 'THE SIA Vol.2' : (b.eventId === 'da-nol-da-nong' ? '다놀다농' : '춤 출 자유 Vol.2') %>
                       </td>
                       <td class="bold" style="padding: 0.75rem 0.5rem;">
                         <%= b.name %>
@@ -216,10 +225,16 @@
                     const currentTotal = parseInt(totalBookingsEl.textContent, 10) || 0;
                     totalBookingsEl.textContent = Math.max(0, currentTotal - 1) + ' 명';
                     
+                    const danongBookingsEl = document.getElementById('danong-bookings');
                     if (eventId === 'the-sia-vol-2') {
                       if (siaBookingsEl) {
                         const currentSia = parseInt(siaBookingsEl.textContent, 10) || 0;
                         siaBookingsEl.textContent = Math.max(0, currentSia - 1) + ' 명';
+                      }
+                    } else if (eventId === 'da-nol-da-nong') {
+                      if (danongBookingsEl) {
+                        const currentDanong = parseInt(danongBookingsEl.textContent, 10) || 0;
+                        danongBookingsEl.textContent = Math.max(0, currentDanong - 1) + ' 명';
                       }
                     } else {
                       if (freedomBookingsEl) {
