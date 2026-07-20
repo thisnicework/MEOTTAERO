@@ -8,46 +8,6 @@
     background: var(--color-fg) !important;
     color: var(--color-bg) !important;
   }
-  .captured-photo-card {
-    position: relative;
-    border: 1px solid var(--color-fg);
-    overflow: hidden;
-    background: white;
-    box-shadow: 0 2px 8px rgba(0,0,0,0.06);
-    transition: transform 0.2s ease;
-  }
-  .captured-photo-card:hover {
-    transform: translateY(-2px);
-  }
-  .captured-photo-card img {
-    width: 100%;
-    aspect-ratio: 4/3;
-    object-fit: cover;
-    display: block;
-  }
-  .captured-photo-actions {
-    display: flex;
-    justify-content: space-between;
-    padding: 0.6rem;
-    border-top: 1px solid var(--color-low);
-    background: #fafafa;
-  }
-  .captured-photo-actions button, .captured-photo-actions a {
-    background: none;
-    border: none;
-    cursor: pointer;
-    font-size: 0.75rem;
-    color: var(--color-fg);
-    text-decoration: underline;
-    font-family: inherit;
-    padding: 0;
-  }
-  .captured-photo-actions a {
-    display: inline-block;
-  }
-  .captured-photo-actions button.btn-delete {
-    color: var(--color-err);
-  }
   
   /* Filter Preview CSS rules applied to video preview */
   .filter-normal { filter: none; }
@@ -58,72 +18,48 @@
   .filter-xray { filter: grayscale(100%) invert(100%) contrast(130%); }
 </style>
 
-<main class="fixed">
-  <!-- Left Side: Camera Preview & Filters -->
-  <section id="one" class="left" aria-expanded="true" style="overflow-y: auto; padding: 2rem; padding-bottom: 4rem;">
-    <div class="booth-container" style="max-width: 480px; width: 100%;">
-      <p class="bold" style="font-size: 1.25rem; margin-bottom: 0.5rem; color: var(--color-high);">PHOTO BOOTH</p>
-      <p style="margin-bottom: 1.5rem; font-size: 0.95rem;">멋대로 움직임을 기록해보세요. 📸🪩</p>
+<main>
+  <div class="column" style="max-width: 500px; margin: 0 auto; padding: 2rem 1rem 4rem 1rem;">
+    <p class="bold" style="font-size: 1.25rem; margin-bottom: 0.5rem; color: var(--color-high);">PHOTO BOOTH</p>
+    <p style="margin-bottom: 1.5rem; font-size: 0.95rem;">멋대로 움직임을 기록해보세요. 📸🪩</p>
+    
+    <!-- Webcam Video Wrap -->
+    <div class="video-wrap" style="position: relative; width: 100%; aspect-ratio: 4/3; background: #000; border: 1px solid var(--color-fg); margin-bottom: 1.5rem; overflow: hidden; display: flex; align-items: center; justify-content: center;">
+      <video id="webcam" autoplay playsinline style="width: 100%; height: 100%; object-fit: cover; transform: scaleX(-1); transition: filter 0.1s ease;"></video>
       
-      <!-- Webcam Video Wrap -->
-      <div class="video-wrap" style="position: relative; width: 100%; aspect-ratio: 4/3; background: #000; border: 1px solid var(--color-fg); margin-bottom: 1.5rem; overflow: hidden; display: flex; align-items: center; justify-content: center;">
-        <video id="webcam" autoplay playsinline style="width: 100%; height: 100%; object-fit: cover; transform: scaleX(-1); transition: filter 0.1s ease;"></video>
-        
-        <!-- Countdown overlay -->
-        <div id="countdown" style="display: none; position: absolute; font-size: 8rem; font-weight: 900; color: white; text-shadow: 0 0 25px rgba(0,0,0,0.85); z-index: 10; pointer-events: none; font-family: monospace;">3</div>
-        
-        <!-- Flash overlay -->
-        <div id="flash" style="display: none; position: absolute; top:0; left:0; width:100%; height:100%; background: white; z-index: 11; pointer-events: none;"></div>
-        
-        <!-- Permission warning -->
-        <div id="permission-warning" style="display: none; position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: #111; z-index: 5; flex-direction: column; align-items: center; justify-content: center; padding: 1.5rem; text-align: center; color: white;">
-          <p style="margin-bottom: 1rem; font-size: 0.95rem;">📷 카메라 권한이 필요합니다.</p>
-          <button id="retry-permission-btn" style="padding: 0.5rem 1rem; border: 1px solid white; background: transparent; color: white; cursor: pointer; font-family: inherit;">허용 요청</button>
-        </div>
-      </div>
+      <!-- Countdown overlay -->
+      <div id="countdown" style="display: none; position: absolute; font-size: 8rem; font-weight: 900; color: white; text-shadow: 0 0 25px rgba(0,0,0,0.85); z-index: 10; pointer-events: none; font-family: monospace;">3</div>
       
-      <!-- Capture Controls -->
-      <div style="margin-bottom: 1.5rem;">
-        <button id="capture-btn" class="bold" style="width: 100%; padding: 0.9rem; border: 1px solid var(--color-fg); background: var(--color-fg); color: var(--color-bg); cursor: pointer; font-size: 0.95rem; text-transform: uppercase; transition: opacity 0.2s;">
-          TAKE PHOTO (3s COUNTDOWN)
-        </button>
-      </div>
-
-      <!-- Filters Selection -->
-      <div>
-        <p class="bold" style="font-size: 0.85rem; margin-bottom: 0.75rem; text-transform: uppercase; color: var(--color-mid);">Select Filter</p>
-        <div class="filter-options-grid" style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 0.5rem;">
-          <button class="filter-opt-btn active" data-filter="normal" style="padding: 0.6rem; border: 1px solid var(--color-fg); background: white; cursor: pointer; font-family: inherit; font-size: 0.8rem;">Normal</button>
-          <button class="filter-opt-btn" data-filter="mono" style="padding: 0.6rem; border: 1px solid var(--color-fg); background: white; cursor: pointer; font-family: inherit; font-size: 0.8rem;">Mono</button>
-          <button class="filter-opt-btn" data-filter="invert" style="padding: 0.6rem; border: 1px solid var(--color-fg); background: white; cursor: pointer; font-family: inherit; font-size: 0.8rem;">Invert</button>
-          <button class="filter-opt-btn" data-filter="thermal" style="padding: 0.6rem; border: 1px solid var(--color-fg); background: white; cursor: pointer; font-family: inherit; font-size: 0.8rem;">Thermal</button>
-          <button class="filter-opt-btn" data-filter="vintage" style="padding: 0.6rem; border: 1px solid var(--color-fg); background: white; cursor: pointer; font-family: inherit; font-size: 0.8rem;">Vintage</button>
-          <button class="filter-opt-btn" data-filter="xray" style="padding: 0.6rem; border: 1px solid var(--color-fg); background: white; cursor: pointer; font-family: inherit; font-size: 0.8rem;">X-Ray</button>
-        </div>
+      <!-- Flash overlay -->
+      <div id="flash" style="display: none; position: absolute; top:0; left:0; width:100%; height:100%; background: white; z-index: 11; pointer-events: none;"></div>
+      
+      <!-- Permission warning -->
+      <div id="permission-warning" style="display: none; position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: #111; z-index: 5; flex-direction: column; align-items: center; justify-content: center; padding: 1.5rem; text-align: center; color: white;">
+        <p style="margin-bottom: 1rem; font-size: 0.95rem;">📷 카메라 권한이 필요합니다.</p>
+        <button id="retry-permission-btn" style="padding: 0.5rem 1rem; border: 1px solid white; background: transparent; color: white; cursor: pointer; font-family: inherit;">허용 요청</button>
       </div>
     </div>
-  </section>
+    
+    <!-- Capture Controls -->
+    <div style="margin-bottom: 2rem;">
+      <button id="capture-btn" class="bold" style="width: 100%; padding: 0.9rem; border: 1px solid var(--color-fg); background: var(--color-fg); color: var(--color-bg); cursor: pointer; font-size: 0.95rem; text-transform: uppercase; transition: opacity 0.2s;">
+        TAKE PHOTO (3s COUNTDOWN)
+      </button>
+    </div>
 
-  <!-- Right Side: Gallery -->
-  <section id="two" class="right" aria-expanded="true" style="overflow-y: auto; padding: 2rem; padding-bottom: 4rem;">
-    <div class="gallery-container" style="width: 100%;">
-      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
-        <h2 class="bold" style="margin: 0; font-size: 1.25rem;">CAPTURED GALLERY</h2>
-        <button id="clear-gallery-btn" style="background: none; border: none; text-decoration: underline; cursor: pointer; font-size: 0.8rem; color: var(--color-err); display: none;">Clear All</button>
-      </div>
-      <hr>
-      
-      <!-- Photos Grid -->
-      <div id="photos-grid" style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 1rem; margin-top: 1.5rem;">
-        <!-- Dynamically added captures go here -->
-      </div>
-      
-      <!-- Placeholder when empty -->
-      <div id="gallery-placeholder" style="text-align: center; color: var(--color-mid); padding: 5rem 0; font-size: 0.9rem; line-height: 1.5;">
-        아직 촬영된 사진이 없습니다.<br>왼쪽의 카메라로 순간을 기록해 보세요!
+    <!-- Filters Selection -->
+    <div>
+      <p class="bold" style="font-size: 0.85rem; margin-bottom: 0.75rem; text-transform: uppercase; color: var(--color-mid);">Select Filter</p>
+      <div class="filter-options-grid" style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 0.5rem;">
+        <button class="filter-opt-btn active" data-filter="normal" style="padding: 0.6rem; border: 1px solid var(--color-fg); background: white; cursor: pointer; font-family: inherit; font-size: 0.8rem;">Normal</button>
+        <button class="filter-opt-btn" data-filter="mono" style="padding: 0.6rem; border: 1px solid var(--color-fg); background: white; cursor: pointer; font-family: inherit; font-size: 0.8rem;">Mono</button>
+        <button class="filter-opt-btn" data-filter="invert" style="padding: 0.6rem; border: 1px solid var(--color-fg); background: white; cursor: pointer; font-family: inherit; font-size: 0.8rem;">Invert</button>
+        <button class="filter-opt-btn" data-filter="thermal" style="padding: 0.6rem; border: 1px solid var(--color-fg); background: white; cursor: pointer; font-family: inherit; font-size: 0.8rem;">Thermal</button>
+        <button class="filter-opt-btn" data-filter="vintage" style="padding: 0.6rem; border: 1px solid var(--color-fg); background: white; cursor: pointer; font-family: inherit; font-size: 0.8rem;">Vintage</button>
+        <button class="filter-opt-btn" data-filter="xray" style="padding: 0.6rem; border: 1px solid var(--color-fg); background: white; cursor: pointer; font-family: inherit; font-size: 0.8rem;">X-Ray</button>
       </div>
     </div>
-  </section>
+  </div>
 </main>
 
 <script>
@@ -135,13 +71,9 @@
     const flashOverlay = document.getElementById('flash');
     const warningOverlay = document.getElementById('permission-warning');
     const retryBtn = document.getElementById('retry-permission-btn');
-    const photosGrid = document.getElementById('photos-grid');
-    const placeholder = document.getElementById('gallery-placeholder');
-    const clearBtn = document.getElementById('clear-gallery-btn');
 
     let stream = null;
     let currentFilter = 'normal';
-    let captures = [];
 
     // Filter Canvas values mapping to match CSS
     const filterCanvasMappings = {
@@ -152,50 +84,6 @@
       'vintage': 'sepia(70%) contrast(140%) saturate(140%)',
       'xray': 'grayscale(100%) invert(100%) contrast(130%)'
     };
-
-    // Load captures from localStorage
-    function loadCaptures() {
-      const stored = localStorage.getItem('meottaero_captures');
-      if (stored) {
-        try {
-          captures = JSON.parse(stored);
-          renderGallery();
-        } catch (e) {
-          console.error(e);
-        }
-      }
-    }
-
-    // Save captures to localStorage
-    function saveCaptures() {
-      localStorage.setItem('meottaero_captures', JSON.stringify(captures));
-      renderGallery();
-    }
-
-    // Render captures gallery
-    function renderGallery() {
-      photosGrid.innerHTML = '';
-      if (captures.length === 0) {
-        placeholder.style.display = 'block';
-        clearBtn.style.display = 'none';
-      } else {
-        placeholder.style.display = 'none';
-        clearBtn.style.display = 'block';
-
-        captures.forEach((dataUrl, idx) => {
-          const card = document.createElement('div');
-          card.className = 'captured-photo-card';
-          card.innerHTML = `
-            <img src="${dataUrl}" alt="Capture ${idx + 1}">
-            <div class="captured-photo-actions">
-              <a href="${dataUrl}" download="meottaero_capture_${Date.now()}.jpg">Download</a>
-              <button class="btn-delete" data-index="${idx}">Delete</button>
-            </div>
-          `;
-          photosGrid.appendChild(card);
-        });
-      }
-    }
 
     // Initialize webcam
     async function initCamera() {
@@ -306,38 +194,20 @@
           // Draw
           ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
 
-          // Convert to JPEG base64 & prepend to captures list
+          // Convert to JPEG base64 & trigger direct download
           const dataUrl = canvas.toDataURL('image/jpeg', 0.9);
-          captures.unshift(dataUrl);
-          saveCaptures();
+          const link = document.createElement('a');
+          link.download = `meottaero_capture_${Date.now()}.jpg`;
+          link.href = dataUrl;
+          link.click();
 
           captureBtn.disabled = false;
         }
       }, 1000);
     });
 
-    // Delete single capture
-    photosGrid.addEventListener('click', function (e) {
-      if (e.target.classList.contains('btn-delete')) {
-        const idx = parseInt(e.target.getAttribute('data-index'), 10);
-        if (confirm('이 사진을 삭제하시겠습니까?')) {
-          captures.splice(idx, 1);
-          saveCaptures();
-        }
-      }
-    });
-
-    // Clear whole gallery
-    clearBtn.addEventListener('click', function () {
-      if (confirm('정말로 촬영된 모든 사진을 삭제하시겠습니까? (로컬 저장소도 비워집니다.)')) {
-        captures = [];
-        saveCaptures();
-      }
-    });
-
-    // Run camera and load gallery
+    // Run camera
     initCamera();
-    loadCaptures();
   });
 </script>
 
