@@ -1,125 +1,58 @@
 <%- include('partials/header') %>
 
 <style>
-  /* Aligning completely with the site's raw, minimal, wireframe-like aesthetic */
   .filter-opt-btn {
-    border: 1px solid var(--color-fg);
-    background: transparent;
-    color: var(--color-fg);
-    cursor: pointer;
-    font-family: inherit;
-    font-size: 0.8rem;
-    font-weight: normal;
-    padding: 0.5rem;
-    transition: all 0.15s ease;
-  }
-  .filter-opt-btn:hover {
-    color: var(--color-high);
-    border-color: var(--color-high);
+    transition: all 0.2s ease;
   }
   .filter-opt-btn.active {
     background: var(--color-fg) !important;
     color: var(--color-bg) !important;
   }
-  
-  #capture-btn {
-    width: 100%;
-    padding: 0.9rem;
-    border: 1px solid var(--color-fg);
-    background: var(--color-fg);
-    color: var(--color-bg);
-    cursor: pointer;
-    font-size: 0.9rem;
-    text-transform: uppercase;
-    font-family: inherit;
-    font-weight: bold;
-    transition: all 0.15s ease;
-  }
-  #capture-btn:hover {
-    background: transparent !important;
-    color: var(--color-high) !important;
-    border-color: var(--color-high) !important;
-  }
-
-  /* Viewfinder blinking square animation (No round circles) */
-  @keyframes blink {
-    0% { opacity: 1; }
-    50% { opacity: 0.25; }
-    100% { opacity: 1; }
-  }
-
-  /* Countdown scale/fade pulse */
-  @keyframes pulse-countdown {
-    0% { transform: scale(1.6); opacity: 0; }
-    20% { transform: scale(1); opacity: 1; }
-    80% { transform: scale(0.95); opacity: 1; }
-    100% { transform: scale(0.85); opacity: 0; }
-  }
-
-  .countdown-active {
-    animation: pulse-countdown 1s ease-out forwards;
-  }
-  
-  /* Filter Preview CSS rules applied to video preview */
-  .filter-normal { filter: none; }
-  .filter-mono { filter: contrast(180%) grayscale(100%); }
-  .filter-invert { filter: invert(100%); }
-  .filter-thermal { filter: hue-rotate(90deg) saturate(300%) contrast(150%); }
-  .filter-film { filter: sepia(35%) contrast(115%) brightness(95%) saturate(130%) hue-rotate(-5deg); }
-  .filter-xray { filter: grayscale(100%) invert(100%) contrast(130%); }
 </style>
 
 <main>
-  <div class="column" style="max-width: 720px; margin: 0 auto; padding: 2rem 1rem 4rem 1rem;">
+  <div class="column" style="max-width: 500px; margin: 0 auto; padding: 2rem 1rem 4rem 1rem;">
     
     <!-- Webcam Video / Canvas Wrap -->
-    <div class="video-wrap" style="position: relative; width: 100%; aspect-ratio: 4/3; background: #000; border: 1px solid var(--color-fg); margin-bottom: 1.5rem; overflow: hidden; display: flex; align-items: center; justify-content: center; user-select: none;">
-      <video id="webcam" autoplay playsinline muted style="width: 100%; height: 100%; object-fit: cover; transform: scaleX(-1); transition: filter 0.1s ease;"></video>
-      <canvas id="canvas-preview" style="display: none; width: 100%; height: 100%; object-fit: cover;"></canvas>
-      
-      <!-- Viewfinder corner sharp brackets (No rounded guides) -->
-      <div style="position: absolute; top: 15px; left: 15px; width: 12px; height: 12px; border-top: 1px solid rgba(255,255,255,0.85); border-left: 1px solid rgba(255,255,255,0.85); pointer-events: none; z-index: 2;"></div>
-      <div style="position: absolute; top: 15px; right: 15px; width: 12px; height: 12px; border-top: 1px solid rgba(255,255,255,0.85); border-right: 1px solid rgba(255,255,255,0.85); pointer-events: none; z-index: 2;"></div>
-      <div style="position: absolute; bottom: 15px; left: 15px; width: 12px; height: 12px; border-bottom: 1px solid rgba(255,255,255,0.85); border-left: 1px solid rgba(255,255,255,0.85); pointer-events: none; z-index: 2;"></div>
-      <div style="position: absolute; bottom: 15px; right: 15px; width: 12px; height: 12px; border-bottom: 1px solid rgba(255,255,255,0.85); border-right: 1px solid rgba(255,255,255,0.85); pointer-events: none; z-index: 2;"></div>
-      
-      <!-- Live Indicator (Minimalist square indicator aligned with site font) -->
-      <div style="position: absolute; top: 15px; left: 50%; transform: translateX(-50%); display: flex; align-items: center; gap: 0.4rem; font-size: 0.65rem; color: rgba(255,255,255,0.9); background: rgba(0,0,0,0.8); padding: 0.25rem 0.6rem; font-family: monospace; z-index: 2; pointer-events: none; letter-spacing: 0.12em; border: 1px solid rgba(255,255,255,0.2);">
-        <!-- Square red indicator instead of circle -->
-        <span style="display: inline-block; width: 5px; height: 5px; background: #ff3b30; animation: blink 1.5s infinite;"></span> LIVE
-      </div>
+    <div class="video-wrap" style="position: relative; width: 100%; aspect-ratio: 4/3; background: #000; border: 1px solid var(--color-fg); margin-bottom: 1.5rem; overflow: hidden; display: flex; align-items: center; justify-content: center;">
+      <!-- Hidden Video Element (keeps stream active in background) -->
+      <video id="webcam" autoplay playsinline muted style="position: absolute; opacity: 0; pointer-events: none; width: 100%; height: 100%; object-fit: cover; transform: scaleX(-1);"></video>
+      <!-- Visible Canvas Preview (displays everything unified) -->
+      <canvas id="canvas-preview" style="width: 100%; height: 100%; object-fit: cover;"></canvas>
       
       <!-- Countdown overlay -->
-      <div id="countdown" style="display: none; position: absolute; font-size: 8.5rem; font-weight: bold; color: white; text-shadow: 0 0 25px rgba(0,0,0,0.85); z-index: 10; pointer-events: none; font-family: monospace;">3</div>
+      <div id="countdown" style="display: none; position: absolute; font-size: 8rem; font-weight: 900; color: white; text-shadow: 0 0 25px rgba(0,0,0,0.85); z-index: 10; pointer-events: none; font-family: monospace;">3</div>
       
       <!-- Flash overlay -->
       <div id="flash" style="display: none; position: absolute; top:0; left:0; width:100%; height:100%; background: white; z-index: 11; pointer-events: none;"></div>
       
       <!-- Permission warning -->
       <div id="permission-warning" style="display: none; position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: #111; z-index: 5; flex-direction: column; align-items: center; justify-content: center; padding: 1.5rem; text-align: center; color: white;">
-        <p style="margin-bottom: 1rem; font-size: 0.95rem; font-family: inherit;">📷 카메라 권한이 필요합니다.</p>
+        <p style="margin-bottom: 1rem; font-size: 0.95rem;">📷 카메라 권한이 필요합니다.</p>
         <button id="retry-permission-btn" style="padding: 0.5rem 1rem; border: 1px solid white; background: transparent; color: white; cursor: pointer; font-family: inherit;">허용 요청</button>
       </div>
     </div>
     
     <!-- Capture Controls -->
-    <div style="margin-bottom: 1.5rem;">
-      <button id="capture-btn" class="bold">
-        TAKE PHOTO
+    <div style="margin-bottom: 2rem;">
+      <button id="capture-btn" class="bold" style="width: 100%; padding: 0.9rem; border: 1px solid var(--color-fg); background: var(--color-fg); color: var(--color-bg); cursor: pointer; font-size: 0.95rem; text-transform: uppercase; transition: opacity 0.2s;">
+        TAKE PHOTO (3s COUNTDOWN)
       </button>
     </div>
 
     <!-- Filters Selection -->
     <div>
-      <p class="bold" style="font-size: 0.8rem; margin-bottom: 0.75rem; text-transform: uppercase; color: var(--color-fg); letter-spacing: 0.05em;">Select Filter</p>
+      <p class="bold" style="font-size: 0.85rem; margin-bottom: 0.75rem; text-transform: uppercase; color: var(--color-mid);">Select Filter</p>
       <div class="filter-options-grid" style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 0.5rem;">
-        <button class="filter-opt-btn active" data-filter="normal">Normal</button>
-        <button class="filter-opt-btn" data-filter="mono">Mono</button>
-        <button class="filter-opt-btn" data-filter="film">Retro Film</button>
-        <button class="filter-opt-btn" data-filter="kinetic">Kinetic</button>
-        <button class="filter-opt-btn" data-filter="thermal">Thermal</button>
-        <button class="filter-opt-btn" data-filter="invert">Invert</button>
-        <button class="filter-opt-btn" data-filter="xray" style="grid-column: span 3;">X-Ray</button>
+        <button class="filter-opt-btn active" data-filter="normal" style="padding: 0.6rem; border: 1px solid var(--color-fg); background: white; cursor: pointer; font-family: inherit; font-size: 0.8rem;">Normal</button>
+        <button class="filter-opt-btn" data-filter="mono" style="padding: 0.6rem; border: 1px solid var(--color-fg); background: white; cursor: pointer; font-family: inherit; font-size: 0.8rem;">Mono</button>
+        <button class="filter-opt-btn" data-filter="mirror" style="padding: 0.6rem; border: 1px solid var(--color-fg); background: white; cursor: pointer; font-family: inherit; font-size: 0.8rem;">Mirror</button>
+        <button class="filter-opt-btn" data-filter="kaleido" style="padding: 0.6rem; border: 1px solid var(--color-fg); background: white; cursor: pointer; font-family: inherit; font-size: 0.8rem;">Kaleido</button>
+        <button class="filter-opt-btn" data-filter="tunnel" style="padding: 0.6rem; border: 1px solid var(--color-fg); background: white; cursor: pointer; font-family: inherit; font-size: 0.8rem;">Tunnel</button>
+        <button class="filter-opt-btn" data-filter="squeeze" style="padding: 0.6rem; border: 1px solid var(--color-fg); background: white; cursor: pointer; font-family: inherit; font-size: 0.8rem;">Squeeze</button>
+        <button class="filter-opt-btn" data-filter="kinetic" style="padding: 0.6rem; border: 1px solid var(--color-fg); background: white; cursor: pointer; font-family: inherit; font-size: 0.8rem;">Kinetic</button>
+        <button class="filter-opt-btn" data-filter="thermal" style="padding: 0.6rem; border: 1px solid var(--color-fg); background: white; cursor: pointer; font-family: inherit; font-size: 0.8rem;">Thermal</button>
+        <button class="filter-opt-btn" data-filter="xray" style="padding: 0.6rem; border: 1px solid var(--color-fg); background: white; cursor: pointer; font-family: inherit; font-size: 0.8rem;">X-Ray</button>
       </div>
     </div>
   </div>
@@ -140,17 +73,16 @@
     let currentFilter = 'normal';
     
     // Kinetic filter variables
-    let kineticLoopId = null;
+    let loopId = null;
     let lerpBuffer = null;
     const pixelSize = 8;
+    const lerpWeight = 0.03;
 
     // Filter Canvas values mapping to match CSS
     const filterCanvasMappings = {
       'normal': 'none',
       'mono': 'contrast(180%) grayscale(100%)',
-      'invert': 'invert(100%)',
       'thermal': 'hue-rotate(90deg) saturate(300%) contrast(150%)',
-      'film': 'sepia(35%) contrast(115%) brightness(95%) saturate(130%) hue-rotate(-5deg)',
       'xray': 'grayscale(100%) invert(100%) contrast(130%)'
     };
 
@@ -168,9 +100,8 @@
         });
         video.srcObject = stream;
         
-        if (currentFilter === 'kinetic') {
-          startKineticLoop();
-        }
+        // Start unified canvas animation loop
+        startRenderLoop();
       } catch (err) {
         console.error('Camera access error:', err);
         warningOverlay.style.display = 'flex';
@@ -185,45 +116,21 @@
       btn.addEventListener('click', function () {
         filterBtns.forEach(b => b.classList.remove('active'));
         this.classList.add('active');
-
         currentFilter = this.getAttribute('data-filter');
-        
-        if (currentFilter === 'kinetic') {
-          // Switch viewing to canvas
-          video.style.opacity = '0';
-          video.style.position = 'absolute';
-          video.style.pointerEvents = 'none';
-          
-          canvasPreview.style.display = 'block';
-          startKineticLoop();
-        } else {
-          // Switch viewing back to video
-          stopKineticLoop();
-          canvasPreview.style.display = 'none';
-          
-          video.style.opacity = '1';
-          video.style.position = '';
-          video.style.pointerEvents = '';
-          
-          video.className = '';
-          video.classList.add('filter-' + currentFilter);
-        }
       });
     });
 
-    // Kinetic (Dreamy Pixel Trail) filter loop implementation (Optimized Canvas implementation)
-    function startKineticLoop() {
-      if (kineticLoopId) return;
+    // Unified 60fps Canvas Render Loop
+    function startRenderLoop() {
+      if (loopId) return;
       
       const ctx = canvasPreview.getContext('2d');
       const offscreen = document.createElement('canvas');
       const offscreenCtx = offscreen.getContext('2d');
-      
-      const lerpWeight = 0.03; // Smooth delay weight matching user's config
 
       function drawFrame() {
-        if (currentFilter !== 'kinetic') {
-          kineticLoopId = null;
+        if (!stream) {
+          loopId = requestAnimationFrame(drawFrame);
           return;
         }
 
@@ -235,55 +142,126 @@
           canvasPreview.height = h;
         }
 
-        const cols = Math.floor(w / pixelSize);
-        const rows = Math.floor(h / pixelSize);
-
-        if (offscreen.width !== cols || offscreen.height !== rows) {
-          offscreen.width = cols;
-          offscreen.height = rows;
-          lerpBuffer = new Float32Array(cols * rows * 3);
-        }
-
-        offscreenCtx.drawImage(video, 0, 0, cols, rows);
-        const imgData = offscreenCtx.getImageData(0, 0, cols, rows).data;
-
-        ctx.fillStyle = '#dcdcdc'; 
+        ctx.save();
+        
+        // Clear background
+        ctx.fillStyle = '#000';
         ctx.fillRect(0, 0, w, h);
 
-        for (let y = 0; y < rows; y++) {
-          for (let x = 0; x < cols; x++) {
-            const pixelIdx = (y * cols + x);
-            const imgDataIdx = pixelIdx * 4;
-            const bufIdx = pixelIdx * 3;
+        // Apply native CSS filters on Canvas context if matching
+        ctx.filter = filterCanvasMappings[currentFilter] || 'none';
 
-            const targetR = imgData[imgDataIdx];
-            const targetG = imgData[imgDataIdx + 1];
-            const targetB = imgData[imgDataIdx + 2];
+        if (currentFilter === 'normal' || currentFilter === 'mono' || currentFilter === 'thermal' || currentFilter === 'xray') {
+          // Standard Mirrored Draw
+          ctx.translate(w, 0);
+          ctx.scale(-1, 1);
+          ctx.drawImage(video, 0, 0, w, h);
+        } 
+        else if (currentFilter === 'mirror') {
+          // Decalcomanie Left half mirrored to Right
+          ctx.translate(w, 0);
+          ctx.scale(-1, 1);
+          ctx.drawImage(video, 0, 0, w, h);
+          
+          ctx.restore();
+          ctx.save();
+          // Draw left half mirrored onto right half
+          ctx.translate(w, 0);
+          ctx.scale(-1, 1);
+          ctx.drawImage(canvasPreview, 0, 0, w / 2, h, 0, 0, w / 2, h);
+        }
+        else if (currentFilter === 'kaleido') {
+          // 4-Way Symmetry Mirror
+          ctx.translate(w, 0);
+          ctx.scale(-1, 1);
+          ctx.drawImage(video, 0, 0, w, h);
+          
+          ctx.restore();
+          ctx.save();
+          
+          // Mirror Top-Left to Top-Right
+          ctx.translate(w, 0);
+          ctx.scale(-1, 1);
+          ctx.drawImage(canvasPreview, 0, 0, w / 2, h / 2, 0, 0, w / 2, h / 2);
+          ctx.restore();
+          ctx.save();
+          
+          // Mirror Top-Left to Bottom-Left
+          ctx.translate(0, h);
+          ctx.scale(1, -1);
+          ctx.drawImage(canvasPreview, 0, 0, w / 2, h / 2, 0, 0, w / 2, h / 2);
+          ctx.restore();
+          ctx.save();
+          
+          // Mirror Top-Left to Bottom-Right
+          ctx.translate(w, h);
+          ctx.scale(-1, -1);
+          ctx.drawImage(canvasPreview, 0, 0, w / 2, h / 2, 0, 0, w / 2, h / 2);
+        }
+        else if (currentFilter === 'tunnel') {
+          // Infinite Recursive Tunnel
+          ctx.translate(w, 0);
+          ctx.scale(-1, 1);
+          ctx.drawImage(video, 0, 0, w, h);
+          
+          for (let i = 1; i <= 5; i++) {
+            const scale = 1 - (i * 0.15);
+            const nw = w * scale;
+            const nh = h * scale;
+            const nx = (w - nw) / 2;
+            const ny = (h - nh) / 2;
+            ctx.drawImage(video, nx, ny, nw, nh);
+          }
+        }
+        else if (currentFilter === 'squeeze') {
+          // Alien Squeeze Face (Funny narrow stretch)
+          ctx.translate(w, 0);
+          ctx.scale(-1, 1);
+          ctx.drawImage(video, w / 6, 0, w * 0.66, h);
+        }
+        else if (currentFilter === 'kinetic') {
+          // Dreamy Pixelated Lerp Trail
+          const cols = Math.floor(w / pixelSize);
+          const rows = Math.floor(h / pixelSize);
 
-            // Linear Interpolation (Lerp) over time
-            lerpBuffer[bufIdx] += (targetR - lerpBuffer[bufIdx]) * lerpWeight;
-            lerpBuffer[bufIdx + 1] += (targetG - lerpBuffer[bufIdx + 1]) * lerpWeight;
-            lerpBuffer[bufIdx + 2] += (targetB - lerpBuffer[bufIdx + 2]) * lerpWeight;
+          if (offscreen.width !== cols || offscreen.height !== rows) {
+            offscreen.width = cols;
+            offscreen.height = rows;
+            lerpBuffer = new Float32Array(cols * rows * 3);
+          }
 
-            ctx.fillStyle = `rgb(${Math.round(lerpBuffer[bufIdx])}, ${Math.round(lerpBuffer[bufIdx + 1])}, ${Math.round(lerpBuffer[bufIdx + 2])})`;
-            
-            // Mirror horizontally
-            const mirroredX = cols - 1 - x;
-            ctx.fillRect(mirroredX * pixelSize, y * pixelSize, pixelSize, pixelSize);
+          offscreenCtx.drawImage(video, 0, 0, cols, rows);
+          const imgData = offscreenCtx.getImageData(0, 0, cols, rows).data;
+
+          ctx.fillStyle = '#dcdcdc'; // equivalent to background(220)
+          ctx.fillRect(0, 0, w, h);
+
+          for (let y = 0; y < rows; y++) {
+            for (let x = 0; x < cols; x++) {
+              const pixelIdx = (y * cols + x);
+              const imgDataIdx = pixelIdx * 4;
+              const bufIdx = pixelIdx * 3;
+
+              const targetR = imgData[imgDataIdx];
+              const targetG = imgData[imgDataIdx + 1];
+              const targetB = imgData[imgDataIdx + 2];
+
+              lerpBuffer[bufIdx] += (targetR - lerpBuffer[bufIdx]) * lerpWeight;
+              lerpBuffer[bufIdx + 1] += (targetG - lerpBuffer[bufIdx + 1]) * lerpWeight;
+              lerpBuffer[bufIdx + 2] += (targetB - lerpBuffer[bufIdx + 2]) * lerpWeight;
+
+              ctx.fillStyle = `rgb(${Math.round(lerpBuffer[bufIdx])}, ${Math.round(lerpBuffer[bufIdx + 1])}, ${Math.round(lerpBuffer[bufIdx + 2])})`;
+              const mirroredX = cols - 1 - x;
+              ctx.fillRect(mirroredX * pixelSize, y * pixelSize, pixelSize, pixelSize);
+            }
           }
         }
 
-        kineticLoopId = requestAnimationFrame(drawFrame);
+        ctx.restore();
+        loopId = requestAnimationFrame(drawFrame);
       }
 
-      kineticLoopId = requestAnimationFrame(drawFrame);
-    }
-
-    function stopKineticLoop() {
-      if (kineticLoopId) {
-        cancelAnimationFrame(kineticLoopId);
-        kineticLoopId = null;
-      }
+      loopId = requestAnimationFrame(drawFrame);
     }
 
     // Web Audio dynamic camera shutter sound synthesizer
@@ -317,25 +295,16 @@
 
       captureBtn.disabled = true;
       let count = 3;
-      
-      // Initial trigger for countdown active class animation
       countdownOverlay.textContent = count;
       countdownOverlay.style.display = 'block';
-      countdownOverlay.classList.remove('countdown-active');
-      void countdownOverlay.offsetWidth;
-      countdownOverlay.classList.add('countdown-active');
 
       const interval = setInterval(() => {
         count--;
         if (count > 0) {
           countdownOverlay.textContent = count;
-          countdownOverlay.classList.remove('countdown-active');
-          void countdownOverlay.offsetWidth;
-          countdownOverlay.classList.add('countdown-active');
         } else {
           clearInterval(interval);
           countdownOverlay.style.display = 'none';
-          countdownOverlay.classList.remove('countdown-active');
           
           // Flash effect
           flashOverlay.style.display = 'block';
@@ -352,27 +321,8 @@
             }, 250);
           }, 50);
 
-          let dataUrl;
-
-          if (currentFilter === 'kinetic') {
-            dataUrl = canvasPreview.toDataURL('image/jpeg', 0.9);
-          } else {
-            const canvas = document.createElement('canvas');
-            canvas.width = video.videoWidth || 640;
-            canvas.height = video.videoHeight || 480;
-            const ctx = canvas.getContext('2d');
-
-            // Mirror frame
-            ctx.translate(canvas.width, 0);
-            ctx.scale(-1, 1);
-
-            // Apply selected filter
-            ctx.filter = filterCanvasMappings[currentFilter] || 'none';
-
-            // Draw
-            ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
-            dataUrl = canvas.toDataURL('image/jpeg', 0.9);
-          }
+          // Get image directly from canvasPreview (unified pipeline guarantees exact visual download)
+          const dataUrl = canvasPreview.toDataURL('image/jpeg', 0.9);
 
           // Trigger direct file download
           const link = document.createElement('a');
