@@ -138,6 +138,8 @@
     let lastDetectTime = 0;
 
     // Initialize webcam
+    let trackerInitialized = false;
+
     async function initCamera() {
       try {
         warningOverlay.style.display = 'none';
@@ -163,6 +165,31 @@
         warningOverlay.style.display = 'flex';
       }
     }
+
+    // Stop and release camera hardware
+    function stopCamera() {
+      if (stream) {
+        stream.getTracks().forEach(track => track.stop());
+        stream = null;
+      }
+      if (loopId) {
+        cancelAnimationFrame(loopId);
+        loopId = null;
+      }
+      video.srcObject = null;
+    }
+
+    // Stop camera instantly when page is hidden, tab is changed, minimized, or navigated away
+    document.addEventListener('visibilitychange', function () {
+      if (document.visibilityState === 'hidden') {
+        stopCamera();
+      } else if (document.visibilityState === 'visible') {
+        initCamera();
+      }
+    });
+
+    window.addEventListener('pagehide', stopCamera);
+    window.addEventListener('beforeunload', stopCamera);
 
     // Initialize MediaPipe Face Detection
     function initFaceTracker() {
