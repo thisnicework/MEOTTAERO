@@ -230,7 +230,7 @@ app.get('/admin', requireAdminAuth, async (req, res) => {
         }
       }
       return { ...b, eventId };
-    });
+    }).filter(b => b.eventId !== '춤출자유vol-2');
     const capacities = db.getCapacities();
     res.render('bookings', {
       title: '// MOTTAERO — Admin Dashboard',
@@ -260,13 +260,13 @@ app.get('/admin/export', requireAdminAuth, async (req, res) => {
       let eventId = '춤출자유vol-2';
       if (b.studentId) {
         if (b.studentId.includes('10대') || b.studentId.includes('20대') || b.studentId.includes('30대') || b.studentId.includes('40대') || b.studentId.includes('50대') || b.studentId.includes('60대')) {
-          eventId = 'da-nol-da-nong';
+          eventId = '다놀다농';
         } else if (b.studentId.includes('참가') || b.studentId.includes('관람')) {
           eventId = 'the-sia-vol-2';
         }
       }
       return { ...b, eventId };
-    });
+    }).filter(b => b.eventId !== '춤출자유vol-2');
 
     // Filter if requested
     if (event && event !== 'all') {
@@ -275,7 +275,7 @@ app.get('/admin/export', requireAdminAuth, async (req, res) => {
 
     const headers = ['공연', '이름', '구분 (학번/참가)', '연락처', '예매일시'];
     const rows = bookings.map(b => [
-      b.eventId === 'the-sia-vol-2' ? 'THE SIA Vol.2' : (b.eventId === 'da-nol-da-nong' ? '다놀다농' : '춤 출 자유 Vol.2'),
+      b.eventId === 'the-sia-vol-2' ? 'THE SIA Vol.2' : (b.eventId === '다놀다농' ? '다놀다농' : '춤 출 자유 Vol.2'),
       b.name,
       b.studentId,
       b.phone,
