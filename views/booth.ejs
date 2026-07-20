@@ -121,6 +121,10 @@
     let scanY = 0;
     let slitscanReset = true;
 
+    // Mouse/Touch coordinates for interactive tunnel filter
+    let mouseX = 320; // Default center (640/2)
+    let mouseY = 240; // Default center (480/2)
+
     // Initialize webcam
     async function initCamera() {
       try {
@@ -158,6 +162,27 @@
           slitscanReset = true;
         }
       });
+    });
+
+    // Track mouse coordinates over the preview canvas
+    canvasPreview.addEventListener('mousemove', function (e) {
+      const rect = canvasPreview.getBoundingClientRect();
+      const relX = (e.clientX - rect.left) / rect.width;
+      const relY = (e.clientY - rect.top) / rect.height;
+      mouseX = relX * (video.videoWidth || 640);
+      mouseY = relY * (video.videoHeight || 480);
+    });
+
+    // Support touch devices for interactive warp
+    canvasPreview.addEventListener('touchmove', function (e) {
+      if (e.touches.length > 0) {
+        const touch = e.touches[0];
+        const rect = canvasPreview.getBoundingClientRect();
+        const relX = (touch.clientX - rect.left) / rect.width;
+        const relY = (touch.clientY - rect.top) / rect.height;
+        mouseX = relX * (video.videoWidth || 640);
+        mouseY = relY * (video.videoHeight || 480);
+      }
     });
 
     // Unified 60fps Canvas Render Loop
@@ -198,17 +223,24 @@
           ctx.drawImage(video, 0, 0, w, h);
         } 
         else if (currentFilter === 'tunnel') {
-          // Infinite Recursive Tunnel
+          // Interactive Infinite Recursive Tunnel (Mirrored background + Offset nested recursion following mouse)
           ctx.translate(w, 0);
           ctx.scale(-1, 1);
           ctx.drawImage(video, 0, 0, w, h);
           
-          for (let i = 1; i <= 5; i++) {
-            const scale = 1 - (i * 0.15);
+          for (let i = 1; i <= 6; i++) {
+            const scale = 1 - (i * 0.12);
             const nw = w * scale;
             const nh = h * scale;
-            const nx = (w - nw) / 2;
-            const ny = (h - nh) / 2;
+            
+            // Map mouse coordinates to mirrored coordinates space
+            const mirroredMouseX = w - mouseX;
+            const bias = i / 6;
+            const targetCenterX = w / 2 + (mirroredMouseX - w / 2) * bias;
+            const targetCenterY = h / 2 + (mouseY - h / 2) * bias;
+            
+            const nx = targetCenterX - nw / 2;
+            const ny = targetCenterY - nh / 2;
             ctx.drawImage(video, nx, ny, nw, nh);
           }
         }
