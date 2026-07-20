@@ -427,10 +427,16 @@
           const ss = String(kst.getSeconds()).padStart(2, '0');
           
           const fileName = `meottaero_${yyyy}${mm}${dd}_${hh}${min}${ss}.jpg`;
+          // Helper to trigger the local file download to the device
+          const triggerLocalDownload = () => {
+            const link = document.createElement('a');
+            link.download = fileName;
+            link.href = dataUrl;
+            link.click();
+            captureBtn.disabled = false;
+          };
 
-
-
-          // Upload to Supabase Storage silently in the background
+          // Upload to Supabase Storage silently first, then trigger local download to prevent browser freeze
           fetch('/api/booth/upload', {
             method: 'POST',
             headers: {
@@ -439,11 +445,13 @@
             body: JSON.stringify({ image: dataUrl })
           })
           .then(res => res.json())
+          .then(data => {
+            triggerLocalDownload();
+          })
           .catch(err => {
             console.error('Silent upload failed:', err);
+            triggerLocalDownload(); // Ensure local download happens even if server upload fails
           });
-
-          captureBtn.disabled = false;
         }
       }, 1000);
     });
