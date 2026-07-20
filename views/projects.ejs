@@ -3,28 +3,18 @@
 <main class="fixed">
   <section id="one" class="left" aria-expanded="true">
     <div class="semesters">
-      <% const upcomingSemesters = semesters.filter(s => s.isUpcoming); %>
-      <% const completedSemesters = semesters.filter(s => !s.isUpcoming); %>
-
-      <% if (upcomingSemesters.length > 0) { %>
-        <div class="semester-section-header bold" style="font-size: 0.8rem; margin: 0 0.5rem 0.5rem 0.5rem; color: var(--color-high); text-transform: uppercase; letter-spacing: 0.05em;">곧 진행 (UPCOMING)</div>
-        <% upcomingSemesters.forEach(function(semester) { %>
-          <a class="semester block <%= semester.isEmpty ? 'empty' : '' %>" href="/projects/<%= semester.id %>">
-            <h2 class="bold"><%= semester.title %></h2>
-            <h3><%= semester.term %></h3>
-          </a>
-        <% }); %>
-      <% } %>
-
-      <% if (completedSemesters.length > 0) { %>
-        <div class="semester-section-header bold" style="font-size: 0.8rem; margin: 1.5rem 0.5rem 0.5rem 0.5rem; color: var(--color-mid); text-transform: uppercase; letter-spacing: 0.05em;">이미 진행 (PAST EVENTS)</div>
-        <% completedSemesters.forEach(function(semester) { %>
-          <a class="semester block <%= semester.isEmpty ? 'empty' : '' %>" href="/projects/<%= semester.id %>">
-            <h2 class="bold"><%= semester.title %></h2>
-            <h3><%= semester.term %></h3>
-          </a>
-        <% }); %>
-      <% } %>
+      <% semesters.forEach(function(semester) { %>
+        <a class="semester block <%= semester.isEmpty ? 'empty' : '' %>" href="/projects/<%= semester.id %>"
+           <% if (!semester.isUpcoming) { %>style="opacity: 0.65;"<% } %>>
+          <h2 class="bold">
+            <%= semester.title %>
+            <% if (semester.isUpcoming) { %>
+              <span style="font-size: 0.75rem; font-weight: normal; color: #4caf50; margin-left: 0.5rem; vertical-align: middle;">● 곧 진행</span>
+            <% } %>
+          </h2>
+          <h3><%= semester.term %></h3>
+        </a>
+      <% }); %>
     </div>
   </section>
   <section id="two" class="right" aria-expanded="false">
