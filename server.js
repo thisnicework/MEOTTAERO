@@ -70,7 +70,7 @@ app.get('/projects', (req, res) => {
 });
 
 // Route: Specific Semester (Projects in that semester)
-app.get('/projects/:semester_id', (req, res) => {
+app.get('/projects/:semester_id', async (req, res) => {
   const semesterId = req.params.semester_id;
   const semester = db.getSemester(semesterId);
   if (!semester) {
@@ -78,12 +78,52 @@ app.get('/projects/:semester_id', (req, res) => {
   }
   const semesters = db.getSemesters();
   const projects = db.getProjectsBySemester(semesterId);
+
+  let isSoldOut = false;
+  try {
+    const capacities = db.getCapacities();
+    const bookings = await db.getBookings();
+    
+    if (semesterId === 'the-sia-vol-2') {
+      const siaCount = bookings.filter(b => {
+        let eventId = '춤출자유vol-2';
+        if (b.studentId) {
+          if (b.studentId.includes('10대') || b.studentId.includes('20대') || b.studentId.includes('30대') || b.studentId.includes('40대') || b.studentId.includes('50대') || b.studentId.includes('60대')) {
+            eventId = '다놀다농';
+          } else if (b.studentId.includes('참가') || b.studentId.includes('관람')) {
+            eventId = 'the-sia-vol-2';
+          }
+        }
+        return eventId === 'the-sia-vol-2';
+      }).length;
+      const maxCapacity = capacities['the-sia-vol-2'] !== undefined ? capacities['the-sia-vol-2'] : 150;
+      isSoldOut = siaCount >= maxCapacity;
+    } else if (semesterId === '다놀다농') {
+      const danongCount = bookings.filter(b => {
+        let eventId = '춤출자유vol-2';
+        if (b.studentId) {
+          if (b.studentId.includes('10대') || b.studentId.includes('20대') || b.studentId.includes('30대') || b.studentId.includes('40대') || b.studentId.includes('50대') || b.studentId.includes('60대')) {
+            eventId = '다놀다농';
+          } else if (b.studentId.includes('참가') || b.studentId.includes('관람')) {
+            eventId = 'the-sia-vol-2';
+          }
+        }
+        return eventId === '다놀다농';
+      }).length;
+      const maxCapacity = capacities['다놀다농'] !== undefined ? capacities['다놀다농'] : 50;
+      isSoldOut = danongCount >= maxCapacity;
+    }
+  } catch (error) {
+    console.error('Error calculating isSoldOut in GET /projects/:semester_id:', error);
+  }
+
   res.render('semester', {
     title: `// MOTTAERO — ${semester.title}`,
     activeMenu: 'projects',
     semesters,
     activeSemester: semester,
-    projects
+    projects,
+    isSoldOut
   });
 });
 
@@ -174,21 +214,68 @@ app.get('/about', (req, res) => {
 // Route: POST Booking Form
 app.post('/projects/:semesterId/book', async (req, res) => {
   const { semesterId } = req.params;
-  if (semesterId === 'the-sia-vol-2') {
-    const { name, phone, type, genre } = req.body;
-    if (!name || !phone || !type || !genre) {
-      return res.status(400).json({ error: '모든 필드를 올바르게 입력해 주세요.' });
-    }
-    const studentId = `${type} / ${genre}`;
-    try {
+  
+  try {
+    const capacities = db.getCapacities();
+    const bookings = await db.getBookings();
+
+    if (semesterId === 'the-sia-vol-2') {
+      const count = bookings.filter(b => {
+        let eventId = '춤출자유vol-2';
+        if (b.studentId) {
+          if (b.studentId.includes('10대') || b.studentId.includes('20대') || b.studentId.includes('30대') || b.studentId.includes('40대') || b.studentId.includes('50대') || b.studentId.includes('60대')) {
+            eventId = '다놀다농';
+          } else if (b.studentId.includes('참가') || b.studentId.includes('관람')) {
+            eventId = 'the-sia-vol-2';
+          }
+        }
+        return eventId === 'the-sia-vol-2';
+      }).length;
+      const maxCapacity = capacities['the-sia-vol-2'] !== undefined ? capacities['the-sia-vol-2'] : 150;
+      if (count >= maxCapacity) {
+        return res.status(400).json({ error: '예매가 마감되었습니다.' });
+      }
+
+      const { name, phone, type, genre } = req.body;
+      if (!name || !phone || !type || !genre) {
+        return res.status(400).json({ error: '모든 필드를 올바르게 입력해 주세요.' });
+      }
+      const studentId = `${type} / ${genre}`;
       const newBooking = await db.saveBooking({ name, studentId, phone, tickets: 1 });
-      res.json({ success: true, booking: newBooking });
-    } catch (error) {
-      console.error('Error in POST /projects/the-sia-vol-2/book:', error);
-      res.status(500).json({ error: '예매 처리 중 서버 오류가 발생했습니다.' });
+      return res.json({ success: true, booking: newBooking });
     }
-    return;
+
+    if (semesterId === '다놀다농') {
+      const count = bookings.filter(b => {
+        let eventId = '춤출자유vol-2';
+        if (b.studentId) {
+          if (b.studentId.includes('10대') || b.studentId.includes('20대') || b.studentId.includes('30대') || b.studentId.includes('40대') || b.studentId.includes('50대') || b.studentId.includes('60대')) {
+            eventId = '다놀다농';
+          } else if (b.studentId.includes('참가') || b.studentId.includes('관람')) {
+            eventId = 'the-sia-vol-2';
+          }
+        }
+        return eventId === '다놀다농';
+      }).length;
+      const maxCapacity = capacities['다놀다농'] !== undefined ? capacities['다놀다농'] : 50;
+      if (count >= maxCapacity) {
+        return res.status(400).json({ error: '예매가 마감되었습니다.' });
+      }
+
+      const { name, phone, ageGroup, residence, referral, sessions } = req.body;
+      if (!name || !phone || !ageGroup || !residence || !referral || !sessions || !Array.isArray(sessions) || sessions.length === 0) {
+        return res.status(400).json({ error: '모든 필드를 올바르게 입력하고 신청 회차를 최소 하나 이상 선택해 주세요.' });
+      }
+      
+      const studentId = `${ageGroup} / ${residence} / ${referral} / ${sessions.join(', ')}`;
+      const newBooking = await db.saveBooking({ name, studentId, phone, tickets: 1 });
+      return res.json({ success: true, booking: newBooking });
+    }
+  } catch (error) {
+    console.error(`Error in POST /projects/${semesterId}/book:`, error);
+    return res.status(500).json({ error: '예매 처리 중 서버 오류가 발생했습니다.' });
   }
+
   return res.status(400).json({ error: '예매가 마감되었습니다.' });
 });
 
