@@ -132,6 +132,8 @@
     let mouseY = 240;
 
     // Initialize webcam
+    let trackerInitialized = false;
+
     async function initCamera() {
       try {
         warningOverlay.style.display = 'none';
@@ -145,23 +147,26 @@
         });
         video.srcObject = stream;
         
-        // Initialize tracking.js Face Tracker
-        initFaceTracker();
-        
-        // Start unified canvas animation loop
-        startRenderLoop();
+        // Wait until video is active and playing before initiating computer vision tracking
+        video.onplaying = () => {
+          if (!trackerInitialized) {
+            initFaceTracker();
+            trackerInitialized = true;
+          }
+          startRenderLoop();
+        };
       } catch (err) {
         console.error('Camera access error:', err);
         warningOverlay.style.display = 'flex';
       }
     }
 
-    // Initialize tracking.js
+    // Initialize tracking.js (optimized for higher accuracy and sensitivity)
     function initFaceTracker() {
       try {
         const tracker = new tracking.ObjectTracker('face');
-        tracker.setInitialScale(4);
-        tracker.setStepSize(2);
+        tracker.setInitialScale(2.5); // Finer search scale to detect distant or smaller faces
+        tracker.setStepSize(1.6);     // Finer step size for higher precision detection
         tracker.setEdgesDensity(0.1);
 
         tracker.on('track', function (event) {
