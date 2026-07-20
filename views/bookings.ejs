@@ -161,7 +161,9 @@
             const eventId = row.getAttribute('data-event-id');
 
             const matchesQuery = query === '' || name.includes(query) || phone.includes(query);
-            const matchesEvent = selectedEvent === 'all' || eventId === selectedEvent;
+            const hiddenEvents = ['춤출자유vol-2', '춤출자유vol-1'];
+            const isHidden = hiddenEvents.includes(eventId);
+            const matchesEvent = !isHidden && (selectedEvent === 'all' || eventId === selectedEvent);
 
             if (matchesQuery && matchesEvent) {
               row.style.display = '';
