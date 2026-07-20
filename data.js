@@ -478,7 +478,7 @@ export async function uploadBoothPhoto(fileName, buffer) {
       .from('booth')
       .upload(fileName, buffer, {
         contentType: 'image/jpeg',
-        upsert: true
+        upsert: false
       });
     if (error) {
       // If bucket does not exist, try creating it and retry upload
@@ -488,7 +488,7 @@ export async function uploadBoothPhoto(fileName, buffer) {
           .from('booth')
           .upload(fileName, buffer, {
             contentType: 'image/jpeg',
-            upsert: true
+            upsert: false
           });
         if (retry.error) throw retry.error;
         return { success: true, path: retry.data.path };
