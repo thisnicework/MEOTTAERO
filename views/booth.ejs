@@ -332,8 +332,13 @@
           // Map face size (depth) to recursive exponential scaling factor:
           // faceSize typically ranges from 80 (far) to 300 (close).
           const clampedSize = Math.max(80, Math.min(300, faceSize));
-          // Exponential decay factor varies between 0.65 (steep/far) and 0.88 (slow/close)
-          const factor = 0.65 + ((clampedSize - 80) / 220) * 0.23;
+          
+          // Exponential decay factor varies between 0.58 (deep/far) and 0.90 (loose/close)
+          const factor = 0.58 + ((clampedSize - 80) / 220) * 0.32;
+          
+          // Stretch multiplier (determines how wildly the tunnel bends opposite to head motion)
+          // Leaning closer (larger face) makes the bend offset more dramatic (up to 1.8x stretch!)
+          const stretchMultiplier = 0.5 + ((clampedSize - 80) / 220) * 1.3;
           
           // Draw exactly 5 nested recursive images (Total 6 images including the background)
           for (let i = 1; i <= 5; i++) {
@@ -346,7 +351,7 @@
             const oppositeX = w - mouseX; // w - mouseX in mirrored space draws it on the opposite side of the face
             const oppositeY = h - mouseY; // Inverts Y axis
             
-            const bias = i / 5;
+            const bias = (i / 5) * stretchMultiplier;
             const targetCenterX = w / 2 + (oppositeX - w / 2) * bias;
             const targetCenterY = h / 2 + (oppositeY - h / 2) * bias;
             
