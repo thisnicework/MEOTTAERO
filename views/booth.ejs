@@ -1,44 +1,24 @@
 <%- include('partials/header') %>
 
 <style>
-  .filter-options-grid button {
-    position: relative;
-    padding: 0.75rem;
-    border: 1px solid var(--color-fg);
-    background: white;
-    color: var(--color-fg);
+  /* Indifferent, raw typography styles for filter options */
+  .filter-opt-btn {
+    background: none;
+    border: none;
     cursor: pointer;
-    font-family: monospace, sans-serif;
-    font-size: 0.75rem;
-    font-weight: bold;
-    text-align: left;
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
-    text-transform: uppercase;
-    transition: all 0.15s ease;
-    border-radius: 0;
-    width: 100%;
+    font-family: inherit;
+    font-size: 0.95rem;
+    color: var(--color-fg);
+    padding: 0;
+    transition: color 0.15s ease;
+    text-transform: lowercase;
   }
-  .filter-options-grid button .indicator {
-    width: 6px;
-    height: 6px;
-    border-radius: 50%;
-    background: #ccc;
-    display: inline-block;
-    transition: background 0.15s, box-shadow 0.15s;
+  .filter-opt-btn:hover {
+    color: var(--color-high);
   }
-  .filter-options-grid button:hover {
-    background: var(--color-low);
-  }
-  .filter-options-grid button.active {
-    background: var(--color-fg) !important;
-    color: var(--color-bg) !important;
-    border-color: var(--color-fg) !important;
-  }
-  .filter-options-grid button.active .indicator {
-    background: var(--color-high);
-    box-shadow: 0 0 8px var(--color-high);
+  .filter-opt-btn.active {
+    color: var(--color-high) !important;
+    text-decoration: underline;
   }
   
   /* Circular Shutter Button in MEOTTAERO Blue */
@@ -97,26 +77,15 @@
       <button id="capture-btn" class="shutter-btn" aria-label="Take Photo"></button>
     </div>
 
-    <!-- Filters Selection (Camera Controls Panel) -->
-    <div class="camera-controls-panel" style="border: 1px solid var(--color-fg); padding: 1rem; background: #fafafa; font-family: monospace, sans-serif; letter-spacing: 0.05em; font-size: 0.75rem;">
-      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.75rem; border-bottom: 1px solid var(--color-fg); padding-bottom: 0.35rem; color: var(--color-fg); text-transform: uppercase;">
-        <span class="bold">▼ FX MODE SELECT</span>
-        <span style="opacity: 0.6; font-size: 0.65rem;">SYS.VER 1.0</span>
-      </div>
-      <div class="filter-options-grid" style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 0.5rem;">
-        <button class="filter-opt-btn active" data-filter="normal">
-          <span class="indicator"></span> [01] NORMAL
-        </button>
-        <button class="filter-opt-btn" data-filter="kinetic">
-          <span class="indicator"></span> [02] KINETIC
-        </button>
-        <button class="filter-opt-btn" data-filter="tunnel">
-          <span class="indicator"></span> [03] TUNNEL
-        </button>
-        <button class="filter-opt-btn" data-filter="squeeze">
-          <span class="indicator"></span> [04] SQUEEZE
-        </button>
-      </div>
+    <!-- Filters Selection (Indifferent Text Links) -->
+    <div style="display: flex; gap: 0.75rem; align-items: center; justify-content: center; font-size: 0.95rem; user-select: none;">
+      <button class="filter-opt-btn active" data-filter="normal">normal</button>
+      <span style="color: var(--color-mid); font-size: 0.85rem; opacity: 0.5;">/</span>
+      <button class="filter-opt-btn" data-filter="kinetic">kinetic</button>
+      <span style="color: var(--color-mid); font-size: 0.85rem; opacity: 0.5;">/</span>
+      <button class="filter-opt-btn" data-filter="tunnel">tunnel</button>
+      <span style="color: var(--color-mid); font-size: 0.85rem; opacity: 0.5;">/</span>
+      <button class="filter-opt-btn" data-filter="squeeze">squeeze</button>
     </div>
   </div>
 </main>
