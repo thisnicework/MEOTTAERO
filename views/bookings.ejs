@@ -265,9 +265,9 @@
             const paymentConfirmed = paymentCheckbox.checked;
             const smsSent = smsCheckbox.checked;
             
-            // Disable checkboxes while saving
-            paymentCheckbox.disabled = true;
-            smsCheckbox.disabled = true;
+            // Disable interactions while saving without changing opacity
+            paymentCheckbox.style.pointerEvents = 'none';
+            smsCheckbox.style.pointerEvents = 'none';
             
             fetch('/admin/update-status', {
               method: 'POST',
@@ -278,8 +278,8 @@
             })
               .then(res => res.json())
               .then(data => {
-                paymentCheckbox.disabled = false;
-                smsCheckbox.disabled = false;
+                paymentCheckbox.style.pointerEvents = 'auto';
+                smsCheckbox.style.pointerEvents = 'auto';
                 if (!data.success) {
                   alert(data.error || '상태 업데이트 중 오류가 발생했습니다.');
                   // Revert state
@@ -287,8 +287,8 @@
                 }
               })
               .catch(err => {
-                paymentCheckbox.disabled = false;
-                smsCheckbox.disabled = false;
+                paymentCheckbox.style.pointerEvents = 'auto';
+                smsCheckbox.style.pointerEvents = 'auto';
                 alert('서버 통신 오류가 발생했습니다.');
                 checkbox.checked = !checkbox.checked;
               });
