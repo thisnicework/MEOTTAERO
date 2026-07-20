@@ -202,10 +202,15 @@
           }
         }
         else if (currentFilter === 'squeeze') {
-          // Alien Squeeze Face (Funny narrow stretch)
+          // Dynamic Squeeze Face (Pulsating alien stretch)
           ctx.translate(w, 0);
           ctx.scale(-1, 1);
-          ctx.drawImage(video, w / 6, 0, w * 0.66, h);
+          
+          const time = Date.now() * 0.003;
+          const factor = 0.6 + Math.sin(time) * 0.3; // Oscillates between 0.3 (extremely skinny) and 0.9 (almost normal)
+          const offset = (w - (w * factor)) / 2;
+          
+          ctx.drawImage(video, offset, 0, w * factor, h);
         }
         else if (currentFilter === 'kinetic') {
           // Dreamy Pixelated Lerp Trail
