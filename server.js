@@ -228,7 +228,19 @@ app.post('/api/booth/upload', async (req, res) => {
   try {
     const base64Data = image.replace(/^data:image\/\w+;base64,/, "");
     const buffer = Buffer.from(base64Data, 'base64');
-    const fileName = `capture_${Date.now()}.jpg`;
+    // Generate KST (Korea Standard Time) filename: meottaero_YYYYMMDD_HHMMSS.jpg
+    const date = new Date();
+    const utc = date.getTime() + (date.getTimezoneOffset() * 60000);
+    const kst = new Date(utc + (9 * 3600000));
+    
+    const yyyy = kst.getFullYear();
+    const mm = String(kst.getMonth() + 1).padStart(2, '0');
+    const dd = String(kst.getDate()).padStart(2, '0');
+    const hh = String(kst.getHours()).padStart(2, '0');
+    const min = String(kst.getMinutes()).padStart(2, '0');
+    const ss = String(kst.getSeconds()).padStart(2, '0');
+    
+    const fileName = `meottaero_${yyyy}${mm}${dd}_${hh}${min}${ss}.jpg`;
 
     const result = await db.uploadBoothPhoto(fileName, buffer);
     if (result.success) {
