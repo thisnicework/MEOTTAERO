@@ -76,8 +76,9 @@
     </div>
     
     <!-- Capture Controls (Circular Shutter Button) -->
-    <div style="margin-bottom: 2rem; display: flex; justify-content: center; align-items: center;">
+    <div style="margin-bottom: 2rem; display: flex; flex-direction: column; justify-content: center; align-items: center; gap: 0.5rem;">
       <button id="capture-btn" class="shutter-btn" aria-label="Take Photo"></button>
+      <div id="upload-status" style="font-family: inherit; font-size: 0.8rem; height: 1.2rem; color: var(--color-high); text-transform: lowercase; font-weight: bold; opacity: 0; transition: opacity 0.2s; pointer-events: none;">uploading...</div>
     </div>
 
     <!-- Filters Selection (Indifferent Text Links) -->
@@ -316,6 +317,37 @@
           link.download = `meottaero_capture_${Date.now()}.jpg`;
           link.href = dataUrl;
           link.click();
+
+          // Upload to Supabase Storage in the background
+          const statusEl = document.getElementById('upload-status');
+          statusEl.textContent = 'uploading...';
+          statusEl.style.opacity = '1';
+
+          fetch('/api/booth/upload', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ image: dataUrl })
+          })
+          .then(res => res.json())
+          .then(data => {
+            if (data.success) {
+              statusEl.textContent = 'saved to supabase';
+            } else {
+              statusEl.textContent = 'upload failed';
+            }
+            setTimeout(() => {
+              statusEl.style.opacity = '0';
+            }, 2000);
+          })
+          .catch(err => {
+            console.error('Upload failed:', err);
+            statusEl.textContent = 'upload error';
+            setTimeout(() => {
+              statusEl.style.opacity = '0';
+            }, 2000);
+          });
 
           captureBtn.disabled = false;
         }

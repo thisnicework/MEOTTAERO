@@ -470,3 +470,35 @@ export function saveCapacities(capacities) {
   }
   return true;
 }
+
+export async function uploadBoothPhoto(fileName, buffer) {
+  if (!supabase) return { success: false, error: 'Supabase not configured' };
+  try {
+    const { data, error } = await supabase.storage
+      .from('booth')
+      .upload(fileName, buffer, {
+        contentType: 'image/jpeg',
+        upsert: true
+      });
+    if (error) {
+      // If bucket does not exist, try creating it and retry upload
+      if (error.message && error.message.includes('Bucket not found')) {
+        await supabase.storage.createBucket('booth', { public: true });
+        const retry = await supabase.storage
+          .from('booth')
+          .upload(fileName, buffer, {
+            contentType: 'image/jpeg',
+            upsert: true
+          });
+        if (retry.error) throw retry.error;
+        return { success: true, path: retry.data.path };
+      }
+      throw error;
+    }
+    return { success: true, path: data.path };
+  } catch (err) {
+    console.error('Supabase storage upload error:', err);
+    return { success: false, error: err.message };
+  }
+}
+

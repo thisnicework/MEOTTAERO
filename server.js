@@ -32,9 +32,9 @@ app.use(express.static(path.join(__dirname, 'public'), {
   }
 }));
 
-// Parse JSON and form request bodies
-app.use(express.json());
-app.use(express.urlencoded({ extended: true }));
+// Parse JSON and form request bodies (with larger limit for photo booth base64 uploads)
+app.use(express.json({ limit: '10mb' }));
+app.use(express.urlencoded({ limit: '10mb', extended: true }));
 
 // Middleware to inject active page and database helpers to templates
 app.use((req, res, next) => {
@@ -216,6 +216,30 @@ app.get('/booth', (req, res) => {
     title: '// MOTTAERO — Booth',
     activeMenu: 'booth'
   });
+});
+
+// Route: API Upload to Supabase Storage
+app.post('/api/booth/upload', async (req, res) => {
+  const { image } = req.body;
+  if (!image) {
+    return res.status(400).json({ error: 'No image data provided' });
+  }
+
+  try {
+    const base64Data = image.replace(/^data:image\/\w+;base64,/, "");
+    const buffer = Buffer.from(base64Data, 'base64');
+    const fileName = `capture_${Date.now()}.jpg`;
+
+    const result = await db.uploadBoothPhoto(fileName, buffer);
+    if (result.success) {
+      return res.json({ success: true, path: result.path });
+    } else {
+      return res.status(500).json({ error: result.error });
+    }
+  } catch (err) {
+    console.error('Booth upload route error:', err);
+    return res.status(500).json({ error: err.message });
+  }
 });
 
 
