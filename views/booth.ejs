@@ -184,9 +184,11 @@
 
         ctx.save();
         
-        // Clear background
-        ctx.fillStyle = '#000';
-        ctx.fillRect(0, 0, w, h);
+        // Clear background (except for slitscan which accumulates slices over time)
+        if (currentFilter !== 'slitscan') {
+          ctx.fillStyle = '#000';
+          ctx.fillRect(0, 0, w, h);
+        }
         ctx.filter = 'none';
 
         if (currentFilter === 'normal') {
