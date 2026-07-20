@@ -126,10 +126,12 @@
     // Face Tracking Target Coordinates (Calculated via tracking.js)
     let targetFaceX = 320;
     let targetFaceY = 240;
+    let targetFaceSize = 150; // Default baseline face width in 640x480
     
     // Smoothly interpolated coordinate values for the visual effect
     let mouseX = 320;
     let mouseY = 240;
+    let faceSize = 150;
 
     // Initialize webcam
     let trackerInitialized = false;
@@ -182,6 +184,7 @@
             // Calculate center of face in 640x480 space
             targetFaceX = maxFace.x + maxFace.width / 2;
             targetFaceY = maxFace.y + maxFace.height / 2;
+            targetFaceSize = maxFace.width;
           }
         });
 
@@ -233,6 +236,7 @@
         // Smoothly interpolate current coordinates towards target face coordinates (10% Lerp)
         mouseX += (targetFaceX - mouseX) * 0.1;
         mouseY += (targetFaceY - mouseY) * 0.1;
+        faceSize += (targetFaceSize - faceSize) * 0.1;
 
         ctx.save();
         
@@ -255,8 +259,16 @@
           ctx.scale(-1, 1);
           ctx.drawImage(video, 0, 0, w, h);
           
+          // Map face size (depth) to recursive spacing:
+          // faceSize typically ranges from 80 (far) to 300 (close).
+          const clampedSize = Math.max(80, Math.min(300, faceSize));
+          // Spacing varies between 0.05 (tight, when close) and 0.20 (loose/deep, when far)
+          const spacing = 0.22 - ((clampedSize - 80) / 220) * 0.17;
+          
           for (let i = 1; i <= 6; i++) {
-            const scale = 1 - (i * 0.12);
+            const scale = 1 - (i * spacing);
+            if (scale <= 0) continue; // Prevent scale going negative
+            
             const nw = w * scale;
             const nh = h * scale;
             
