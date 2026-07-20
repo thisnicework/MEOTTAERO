@@ -62,20 +62,22 @@
 
         <div style="overflow-x: auto;">
           <table class="admin-table"
-            style="width: 100%; border-collapse: collapse; text-align: left; min-width: 500px;">
+            style="width: 100%; border-collapse: collapse; text-align: left; min-width: 700px;">
             <thead>
               <tr style="border-bottom: 2px solid var(--color-fg);">
                 <th class="bold" style="padding: 0.75rem 0.5rem;">공연</th>
                 <th class="bold" style="padding: 0.75rem 0.5rem;">이름</th>
                 <th class="bold" style="padding: 0.75rem 0.5rem;">구분 (학번/참가)</th>
                 <th class="bold" style="padding: 0.75rem 0.5rem;">연락처</th>
+                <th class="bold" style="padding: 0.75rem 0.5rem; text-align: center; width: 100px;">입금 확인</th>
+                <th class="bold" style="padding: 0.75rem 0.5rem; text-align: center; width: 100px;">문자 전송</th>
                 <th class="bold" style="padding: 0.75rem 0.5rem; text-align: right;">관리</th>
               </tr>
             </thead>
             <tbody id="bookings-table-body">
               <% if (bookings.length===0) { %>
                 <tr class="no-bookings-row">
-                  <td colspan="5" style="padding: 2rem; text-align: center; color: var(--color-mid);">등록된 예매 내역이 없습니다.
+                  <td colspan="7" style="padding: 2rem; text-align: center; color: var(--color-mid);">등록된 예매 내역이 없습니다.
                   </td>
                 </tr>
                 <% } else { %>
@@ -93,6 +95,12 @@
                       </td>
                       <td style="padding: 0.75rem 0.5rem;">
                         <%= b.phone %>
+                      </td>
+                      <td style="padding: 0.75rem 0.5rem; text-align: center;">
+                        <input type="checkbox" class="status-checkbox payment-checkbox" data-code="<%= b.code %>" style="transform: scale(1.2); cursor: pointer;" <%= b.paymentConfirmed ? 'checked' : '' %>>
+                      </td>
+                      <td style="padding: 0.75rem 0.5rem; text-align: center;">
+                        <input type="checkbox" class="status-checkbox sms-checkbox" data-code="<%= b.code %>" style="transform: scale(1.2); cursor: pointer;" <%= b.smsSent ? 'checked' : '' %>>
                       </td>
                       <td style="padding: 0.75rem 0.5rem; text-align: right;">
                         <button class="delete-booking-btn" data-code="<%= b.code %>"
@@ -146,7 +154,7 @@
             if (!noResultsRow) {
               noResultsRow = document.createElement('tr');
               noResultsRow.id = 'no-results-row';
-              noResultsRow.innerHTML = '<td colspan="5" style="padding: 2rem; text-align: center; color: var(--color-mid);">검색 결과가 없습니다.</td>';
+              noResultsRow.innerHTML = '<td colspan="7" style="padding: 2rem; text-align: center; color: var(--color-mid);">검색 결과가 없습니다.</td>';
               tableBody.appendChild(noResultsRow);
             }
           } else {
@@ -225,7 +233,7 @@
                     if (remainingRows.length === 0) {
                       tableBody.innerHTML = `
                   <tr class="no-bookings-row">
-                    <td colspan="5" style="padding: 2rem; text-align: center; color: var(--color-mid);">등록된 예매 내역이 없습니다.</td>
+                    <td colspan="7" style="padding: 2rem; text-align: center; color: var(--color-mid);">등록된 예매 내역이 없습니다.</td>
                   </tr>
                 `;
                     }
@@ -240,6 +248,49 @@
                 alert('서버 통신 오류가 발생했습니다.');
                 btn.disabled = false;
                 btn.textContent = '취소';
+              });
+          }
+        });
+
+        // 3. Update status checkboxes (paymentConfirmed, smsSent)
+        tableBody.addEventListener('change', function (e) {
+          if (e.target.classList.contains('status-checkbox')) {
+            const checkbox = e.target;
+            const code = checkbox.getAttribute('data-code');
+            const row = checkbox.closest('.booking-row');
+            
+            const paymentCheckbox = row.querySelector('.payment-checkbox');
+            const smsCheckbox = row.querySelector('.sms-checkbox');
+            
+            const paymentConfirmed = paymentCheckbox.checked;
+            const smsSent = smsCheckbox.checked;
+            
+            // Disable checkboxes while saving
+            paymentCheckbox.disabled = true;
+            smsCheckbox.disabled = true;
+            
+            fetch('/admin/update-status', {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json'
+              },
+              body: JSON.stringify({ code, paymentConfirmed, smsSent })
+            })
+              .then(res => res.json())
+              .then(data => {
+                paymentCheckbox.disabled = false;
+                smsCheckbox.disabled = false;
+                if (!data.success) {
+                  alert(data.error || '상태 업데이트 중 오류가 발생했습니다.');
+                  // Revert state
+                  checkbox.checked = !checkbox.checked;
+                }
+              })
+              .catch(err => {
+                paymentCheckbox.disabled = false;
+                smsCheckbox.disabled = false;
+                alert('서버 통신 오류가 발생했습니다.');
+                checkbox.checked = !checkbox.checked;
               });
           }
         });

@@ -230,10 +230,10 @@ export async function getBookings() {
           studentId: b.student_id,
           phone: b.phone,
           tickets: b.tickets,
-          createdAt: b.created_at
+          createdAt: b.created_at,
+          paymentConfirmed: b.payment_confirmed || false,
+          smsSent: b.sms_sent || false
         }));
-      } else {
-        console.error('Supabase getBookings error:', error);
       }
     } catch (e) {
       console.error('Supabase getBookings failed, falling back to local storage:', e);
@@ -252,7 +252,6 @@ export async function getBookings() {
 }
 
 export async function saveBooking(booking) {
-  // Create a unique confirmation code: MTR-YYYYMMDD-XXXX
   const dateStr = new Date().toISOString().slice(0, 10).replace(/-/g, '');
   const randomSuffix = Math.floor(1000 + Math.random() * 9000);
   const bookingCode = `MTR-${dateStr}-${randomSuffix}`;
@@ -279,10 +278,10 @@ export async function saveBooking(booking) {
           studentId: b.student_id,
           phone: b.phone,
           tickets: b.tickets,
-          createdAt: b.created_at
+          createdAt: b.created_at,
+          paymentConfirmed: b.payment_confirmed || false,
+          smsSent: b.sms_sent || false
         };
-      } else {
-        console.error('Supabase saveBooking error:', error);
       }
     } catch (e) {
       console.error('Supabase saveBooking failed, falling back to local storage:', e);
@@ -297,7 +296,9 @@ export async function saveBooking(booking) {
     studentId: booking.studentId,
     phone: booking.phone,
     tickets: ticketsCount,
-    createdAt: new Date().toISOString()
+    createdAt: new Date().toISOString(),
+    paymentConfirmed: false,
+    smsSent: false
   };
 
   bookings.push(newBooking);
@@ -315,8 +316,6 @@ export async function deleteBooking(code) {
 
       if (!error) {
         return true;
-      } else {
-        console.error('Supabase deleteBooking error:', error);
       }
     } catch (e) {
       console.error('Supabase deleteBooking failed, falling back to local storage:', e);
@@ -329,5 +328,40 @@ export async function deleteBooking(code) {
   fs.writeFileSync(BOOKINGS_FILE, JSON.stringify(updatedBookings, null, 2), 'utf8');
   return bookings.length !== updatedBookings.length;
 }
+
+export async function updateBookingStatus(code, updates) {
+  const { paymentConfirmed, smsSent } = updates;
+  if (supabase) {
+    try {
+      const { data, error } = await supabase
+        .from('bookings')
+        .update({
+          payment_confirmed: paymentConfirmed,
+          sms_sent: smsSent
+        })
+        .eq('code', code)
+        .select();
+
+      if (!error && data && data.length > 0) {
+        return true;
+      }
+    } catch (e) {
+      console.error('Supabase updateBookingStatus failed, falling back to local storage:', e);
+    }
+  }
+
+  // Fallback to local JSON
+  const bookings = await getBookings();
+  const bookingIndex = bookings.findIndex(b => b.code === code);
+  if (bookingIndex !== -1) {
+    bookings[bookingIndex].paymentConfirmed = paymentConfirmed;
+    bookings[bookingIndex].smsSent = smsSent;
+    fs.writeFileSync(BOOKINGS_FILE, JSON.stringify(bookings, null, 2), 'utf8');
+    return true;
+  }
+  return false;
+}
+
+
 
 

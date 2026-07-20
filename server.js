@@ -285,6 +285,25 @@ app.get('/admin/export', requireAdminAuth, async (req, res) => {
   }
 });
 
+// Route: Update Booking Status (Admin Action)
+app.post('/admin/update-status', requireAdminAuth, async (req, res) => {
+  const { code, paymentConfirmed, smsSent } = req.body;
+  if (!code) {
+    return res.status(400).json({ error: '예매 코드가 필요합니다.' });
+  }
+  try {
+    const success = await db.updateBookingStatus(code, { paymentConfirmed, smsSent });
+    if (success) {
+      res.json({ success: true });
+    } else {
+      res.status(404).json({ error: '예매 내역을 찾을 수 없습니다.' });
+    }
+  } catch (error) {
+    console.error('Error in POST /admin/update-status:', error);
+    res.status(500).json({ error: '상태 업데이트 중 서버 오류가 발생했습니다.' });
+  }
+});
+
 // Route: DELETE Booking (Admin Action)
 app.post('/admin/delete', requireAdminAuth, async (req, res) => {
   const { code } = req.body;
@@ -303,9 +322,6 @@ app.post('/admin/delete', requireAdminAuth, async (req, res) => {
     res.status(500).json({ error: '취소 처리 중 서버 오류가 발생했습니다.' });
   }
 });
-
-
-
 
 // Export app for serverless environments (Vercel)
 export default app;
