@@ -1,4 +1,6 @@
 <%- include('partials/header') %>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/tracking.js/1.1.3/tracking-min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/tracking.js/1.1.3/data/face-min.js"></script>
 
 <style>
   /* Indifferent, raw typography styles for filter options */
@@ -57,8 +59,8 @@
     
     <!-- Webcam Video / Canvas Wrap -->
     <div class="video-wrap" style="position: relative; width: 100%; aspect-ratio: 4/3; background: #000; border: 1px solid var(--color-fg); margin-bottom: 1.5rem; overflow: hidden; display: flex; align-items: center; justify-content: center;">
-      <!-- Hidden Video Element (keeps stream active in background) -->
-      <video id="webcam" autoplay playsinline muted style="position: absolute; opacity: 0; pointer-events: none; width: 100%; height: 100%; object-fit: cover; transform: scaleX(-1);"></video>
+      <!-- Hidden Video Element with explicit dimensions for tracking.js -->
+      <video id="webcam" autoplay playsinline muted width="640" height="480" style="position: absolute; opacity: 0; pointer-events: none; width: 100%; height: 100%; object-fit: cover; transform: scaleX(-1);"></video>
       <!-- Visible Canvas Preview (displays everything unified) -->
       <canvas id="canvas-preview" style="width: 100%; height: 100%; object-fit: cover;"></canvas>
       
@@ -121,9 +123,13 @@
     let scanY = 0;
     let slitscanReset = true;
 
-    // Mouse/Touch coordinates for interactive tunnel filter
-    let mouseX = 320; // Default center (640/2)
-    let mouseY = 240; // Default center (480/2)
+    // Face Tracking Target Coordinates (Calculated via tracking.js)
+    let targetFaceX = 320;
+    let targetFaceY = 240;
+    
+    // Smoothly interpolated coordinate values for the visual effect
+    let mouseX = 320;
+    let mouseY = 240;
 
     // Initialize webcam
     async function initCamera() {
@@ -139,11 +145,44 @@
         });
         video.srcObject = stream;
         
+        // Initialize tracking.js Face Tracker
+        initFaceTracker();
+        
         // Start unified canvas animation loop
         startRenderLoop();
       } catch (err) {
         console.error('Camera access error:', err);
         warningOverlay.style.display = 'flex';
+      }
+    }
+
+    // Initialize tracking.js
+    function initFaceTracker() {
+      try {
+        const tracker = new tracking.ObjectTracker('face');
+        tracker.setInitialScale(4);
+        tracker.setStepSize(2);
+        tracker.setEdgesDensity(0.1);
+
+        tracker.on('track', function (event) {
+          if (event.data.length > 0) {
+            // Find largest face box
+            let maxFace = event.data[0];
+            for (let i = 1; i < event.data.length; i++) {
+              if (event.data[i].width * event.data[i].height > maxFace.width * maxFace.height) {
+                maxFace = event.data[i];
+              }
+            }
+            
+            // Calculate center of face in 640x480 space
+            targetFaceX = maxFace.x + maxFace.width / 2;
+            targetFaceY = maxFace.y + maxFace.height / 2;
+          }
+        });
+
+        tracking.track('#webcam', tracker);
+      } catch (e) {
+        console.warn('Face tracker init failed:', e);
       }
     }
 
@@ -162,27 +201,6 @@
           slitscanReset = true;
         }
       });
-    });
-
-    // Track mouse coordinates over the preview canvas
-    canvasPreview.addEventListener('mousemove', function (e) {
-      const rect = canvasPreview.getBoundingClientRect();
-      const relX = (e.clientX - rect.left) / rect.width;
-      const relY = (e.clientY - rect.top) / rect.height;
-      mouseX = relX * (video.videoWidth || 640);
-      mouseY = relY * (video.videoHeight || 480);
-    });
-
-    // Support touch devices for interactive warp
-    canvasPreview.addEventListener('touchmove', function (e) {
-      if (e.touches.length > 0) {
-        const touch = e.touches[0];
-        const rect = canvasPreview.getBoundingClientRect();
-        const relX = (touch.clientX - rect.left) / rect.width;
-        const relY = (touch.clientY - rect.top) / rect.height;
-        mouseX = relX * (video.videoWidth || 640);
-        mouseY = relY * (video.videoHeight || 480);
-      }
     });
 
     // Unified 60fps Canvas Render Loop
@@ -207,6 +225,10 @@
           canvasPreview.height = h;
         }
 
+        // Smoothly interpolate current coordinates towards target face coordinates (10% Lerp)
+        mouseX += (targetFaceX - mouseX) * 0.1;
+        mouseY += (targetFaceY - mouseY) * 0.1;
+
         ctx.save();
         
         // Clear background (except for slitscan which accumulates slices over time)
@@ -223,7 +245,7 @@
           ctx.drawImage(video, 0, 0, w, h);
         } 
         else if (currentFilter === 'tunnel') {
-          // Interactive Infinite Recursive Tunnel (Mirrored background + Offset nested recursion following mouse)
+          // Interactive Infinite Recursive Tunnel (Mirrored background + Offset nested recursion following face)
           ctx.translate(w, 0);
           ctx.scale(-1, 1);
           ctx.drawImage(video, 0, 0, w, h);
@@ -233,7 +255,7 @@
             const nw = w * scale;
             const nh = h * scale;
             
-            // Map mouse coordinates to mirrored coordinates space
+            // Map face coordinates to mirrored coordinates space
             const mirroredMouseX = w - mouseX;
             const bias = i / 6;
             const targetCenterX = w / 2 + (mirroredMouseX - w / 2) * bias;
