@@ -35,9 +35,7 @@
     <div class="projects">
       <% if (projects.length === 0) { %>
         <% if (activeStudent.description) { %>
-          <div class="description" style="line-height: 1.6; white-space: pre-line; font-size: 0.95rem; color: var(--color-fg);">
-            <%= activeStudent.description %>
-          </div>
+          <div class="description" style="line-height: 1.6; white-space: pre-line; font-size: 0.95rem; color: var(--color-fg);"><%= activeStudent.description %></div>
         <% } else { %>
           <p>No projects documented for this student yet.</p>
         <% } %>
