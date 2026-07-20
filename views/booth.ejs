@@ -218,9 +218,11 @@
             slitscanReset = false;
           }
 
-          // Render mirrored frame to offscreen canvas
-          offscreen.width = w;
-          offscreen.height = h;
+          // Render mirrored frame to offscreen canvas (only resize if dimensions changed)
+          if (offscreen.width !== w || offscreen.height !== h) {
+            offscreen.width = w;
+            offscreen.height = h;
+          }
           offscreenCtx.save();
           offscreenCtx.translate(w, 0);
           offscreenCtx.scale(-1, 1);
