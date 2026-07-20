@@ -2,11 +2,50 @@
 
 <style>
   .filter-opt-btn {
-    transition: all 0.2s ease;
+    transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+    border: 1px solid var(--color-low);
+    background: transparent;
+    color: var(--color-mid);
+    cursor: pointer;
+    font-family: inherit;
+    font-size: 0.8rem;
+    font-weight: 500;
+  }
+  .filter-opt-btn:hover {
+    border-color: var(--color-fg);
+    color: var(--color-fg);
   }
   .filter-opt-btn.active {
+    border-color: var(--color-fg);
     background: var(--color-fg) !important;
     color: var(--color-bg) !important;
+  }
+  
+  #capture-btn:hover {
+    background: transparent !important;
+    color: var(--color-fg) !important;
+  }
+  #capture-btn:active {
+    transform: scale(0.985);
+  }
+
+  /* Viewfinder blinking dot animation */
+  @keyframes blink {
+    0% { opacity: 1; }
+    50% { opacity: 0.25; }
+    100% { opacity: 1; }
+  }
+
+  /* Countdown scale/fade pulse */
+  @keyframes pulse-countdown {
+    0% { transform: scale(1.8); opacity: 0; }
+    20% { transform: scale(1); opacity: 1; }
+    80% { transform: scale(0.95); opacity: 1; }
+    100% { transform: scale(0.85); opacity: 0; }
+  }
+
+  .countdown-active {
+    animation: pulse-countdown 1s ease-out forwards;
   }
   
   /* Filter Preview CSS rules applied to video preview */
@@ -14,6 +53,7 @@
   .filter-mono { filter: contrast(180%) grayscale(100%); }
   .filter-invert { filter: invert(100%); }
   .filter-thermal { filter: hue-rotate(90deg) saturate(300%) contrast(150%); }
+  .filter-film { filter: sepia(35%) contrast(115%) brightness(95%) saturate(130%) hue-rotate(-5deg); }
   .filter-xray { filter: grayscale(100%) invert(100%) contrast(130%); }
 </style>
 
@@ -21,12 +61,23 @@
   <div class="column" style="max-width: 720px; margin: 0 auto; padding: 2rem 1rem 4rem 1rem;">
     
     <!-- Webcam Video / Canvas Wrap -->
-    <div class="video-wrap" style="position: relative; width: 100%; aspect-ratio: 4/3; background: #000; border: 1px solid var(--color-fg); margin-bottom: 1.5rem; overflow: hidden; display: flex; align-items: center; justify-content: center;">
+    <div class="video-wrap" style="position: relative; width: 100%; aspect-ratio: 4/3; background: #000; border: 1px solid var(--color-fg); margin-bottom: 1.5rem; overflow: hidden; display: flex; align-items: center; justify-content: center; user-select: none;">
       <video id="webcam" autoplay playsinline muted style="width: 100%; height: 100%; object-fit: cover; transform: scaleX(-1); transition: filter 0.1s ease;"></video>
       <canvas id="canvas-preview" style="display: none; width: 100%; height: 100%; object-fit: cover;"></canvas>
       
+      <!-- Viewfinder corner lines (UI Improvement) -->
+      <div style="position: absolute; top: 15px; left: 15px; width: 15px; height: 15px; border-top: 2px solid rgba(255,255,255,0.75); border-left: 2px solid rgba(255,255,255,0.75); pointer-events: none; z-index: 2;"></div>
+      <div style="position: absolute; top: 15px; right: 15px; width: 15px; height: 15px; border-top: 2px solid rgba(255,255,255,0.75); border-right: 2px solid rgba(255,255,255,0.75); pointer-events: none; z-index: 2;"></div>
+      <div style="position: absolute; bottom: 15px; left: 15px; width: 15px; height: 15px; border-bottom: 2px solid rgba(255,255,255,0.75); border-left: 2px solid rgba(255,255,255,0.75); pointer-events: none; z-index: 2;"></div>
+      <div style="position: absolute; bottom: 15px; right: 15px; width: 15px; height: 15px; border-bottom: 2px solid rgba(255,255,255,0.75); border-right: 2px solid rgba(255,255,255,0.75); pointer-events: none; z-index: 2;"></div>
+      
+      <!-- Live Indicator (UI Improvement) -->
+      <div style="position: absolute; top: 15px; left: 50%; transform: translateX(-50%); display: flex; align-items: center; gap: 0.35rem; font-size: 0.65rem; color: rgba(255,255,255,0.9); background: rgba(0,0,0,0.65); padding: 0.25rem 0.6rem; font-family: monospace; z-index: 2; pointer-events: none; letter-spacing: 0.12em; border: 1px solid rgba(255,255,255,0.15);">
+        <span style="display: inline-block; width: 6px; height: 6px; border-radius: 50%; background: #ff3b30; animation: blink 1.5s infinite;"></span> LIVE
+      </div>
+      
       <!-- Countdown overlay -->
-      <div id="countdown" style="display: none; position: absolute; font-size: 8rem; font-weight: 900; color: white; text-shadow: 0 0 25px rgba(0,0,0,0.85); z-index: 10; pointer-events: none; font-family: monospace;">3</div>
+      <div id="countdown" style="display: none; position: absolute; font-size: 8.5rem; font-weight: 900; color: white; text-shadow: 0 0 25px rgba(0,0,0,0.85); z-index: 10; pointer-events: none; font-family: monospace;">3</div>
       
       <!-- Flash overlay -->
       <div id="flash" style="display: none; position: absolute; top:0; left:0; width:100%; height:100%; background: white; z-index: 11; pointer-events: none;"></div>
@@ -38,23 +89,25 @@
       </div>
     </div>
     
-    <!-- Capture Controls -->
+    <!-- Capture Controls (UI Improvement) -->
     <div style="margin-bottom: 2rem;">
-      <button id="capture-btn" class="bold" style="width: 100%; padding: 0.9rem; border: 1px solid var(--color-fg); background: var(--color-fg); color: var(--color-bg); cursor: pointer; font-size: 0.95rem; text-transform: uppercase; transition: opacity 0.2s;">
-        TAKE PHOTO (3s COUNTDOWN)
+      <button id="capture-btn" class="bold" style="width: 100%; padding: 1.1rem; border: 2px solid var(--color-fg); background: var(--color-fg); color: var(--color-bg); cursor: pointer; font-size: 0.9rem; letter-spacing: 0.1em; text-transform: uppercase; transition: all 0.2s ease; display: flex; align-items: center; justify-content: center; gap: 0.6rem;">
+        <span style="display: inline-block; width: 10px; height: 10px; border-radius: 50%; background: #ff3b30; border: 2px solid white; box-shadow: 0 0 0 1px var(--color-fg);"></span>
+        TAKE PHOTO
       </button>
     </div>
 
-    <!-- Filters Selection -->
+    <!-- Filters Selection (UI Improvement) -->
     <div>
-      <p class="bold" style="font-size: 0.85rem; margin-bottom: 0.75rem; text-transform: uppercase; color: var(--color-mid);">Select Filter</p>
+      <p class="bold" style="font-size: 0.8rem; margin-bottom: 0.75rem; text-transform: uppercase; color: var(--color-mid); letter-spacing: 0.05em;">Select Filter</p>
       <div class="filter-options-grid" style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 0.5rem;">
-        <button class="filter-opt-btn active" data-filter="normal" style="padding: 0.6rem; border: 1px solid var(--color-fg); background: white; cursor: pointer; font-family: inherit; font-size: 0.8rem;">Normal</button>
-        <button class="filter-opt-btn" data-filter="mono" style="padding: 0.6rem; border: 1px solid var(--color-fg); background: white; cursor: pointer; font-family: inherit; font-size: 0.8rem;">Mono</button>
-        <button class="filter-opt-btn" data-filter="invert" style="padding: 0.6rem; border: 1px solid var(--color-fg); background: white; cursor: pointer; font-family: inherit; font-size: 0.8rem;">Invert</button>
-        <button class="filter-opt-btn" data-filter="thermal" style="padding: 0.6rem; border: 1px solid var(--color-fg); background: white; cursor: pointer; font-family: inherit; font-size: 0.8rem;">Thermal</button>
-        <button class="filter-opt-btn" data-filter="kinetic" style="padding: 0.6rem; border: 1px solid var(--color-fg); background: white; cursor: pointer; font-family: inherit; font-size: 0.8rem;">Kinetic</button>
-        <button class="filter-opt-btn" data-filter="xray" style="padding: 0.6rem; border: 1px solid var(--color-fg); background: white; cursor: pointer; font-family: inherit; font-size: 0.8rem;">X-Ray</button>
+        <button class="filter-opt-btn active" data-filter="normal" style="padding: 0.6rem;">Normal</button>
+        <button class="filter-opt-btn" data-filter="mono" style="padding: 0.6rem;">Mono</button>
+        <button class="filter-opt-btn" data-filter="film" style="padding: 0.6rem;">Retro Film</button>
+        <button class="filter-opt-btn" data-filter="kinetic" style="padding: 0.6rem;">Kinetic</button>
+        <button class="filter-opt-btn" data-filter="thermal" style="padding: 0.6rem;">Thermal</button>
+        <button class="filter-opt-btn" data-filter="invert" style="padding: 0.6rem;">Invert</button>
+        <button class="filter-opt-btn" data-filter="xray" style="padding: 0.6rem; grid-column: span 3;">X-Ray</button>
       </div>
     </div>
   </div>
@@ -85,6 +138,7 @@
       'mono': 'contrast(180%) grayscale(100%)',
       'invert': 'invert(100%)',
       'thermal': 'hue-rotate(90deg) saturate(300%) contrast(150%)',
+      'film': 'sepia(35%) contrast(115%) brightness(95%) saturate(130%) hue-rotate(-5deg)',
       'xray': 'grayscale(100%) invert(100%) contrast(130%)'
     };
 
@@ -102,7 +156,6 @@
         });
         video.srcObject = stream;
         
-        // If kinetic filter is already active when camera finishes starting, start loop
         if (currentFilter === 'kinetic') {
           startKineticLoop();
         }
@@ -124,7 +177,7 @@
         currentFilter = this.getAttribute('data-filter');
         
         if (currentFilter === 'kinetic') {
-          // Switch viewing to canvas (hide video via opacity/position so rendering stream does not freeze)
+          // Switch viewing to canvas
           video.style.opacity = '0';
           video.style.position = 'absolute';
           video.style.pointerEvents = 'none';
@@ -176,15 +229,13 @@
         if (offscreen.width !== cols || offscreen.height !== rows) {
           offscreen.width = cols;
           offscreen.height = rows;
-          // Re-initialize lerp float buffer
           lerpBuffer = new Float32Array(cols * rows * 3);
         }
 
-        // Draw downsampled video onto offscreen canvas (Fast GPU downsample)
         offscreenCtx.drawImage(video, 0, 0, cols, rows);
         const imgData = offscreenCtx.getImageData(0, 0, cols, rows).data;
 
-        ctx.fillStyle = '#dcdcdc'; // Background color equivalent to 220
+        ctx.fillStyle = '#dcdcdc'; 
         ctx.fillRect(0, 0, w, h);
 
         for (let y = 0; y < rows; y++) {
@@ -254,16 +305,25 @@
 
       captureBtn.disabled = true;
       let count = 3;
+      
+      // Initial trigger for countdown active class animation
       countdownOverlay.textContent = count;
       countdownOverlay.style.display = 'block';
+      countdownOverlay.classList.remove('countdown-active');
+      void countdownOverlay.offsetWidth;
+      countdownOverlay.classList.add('countdown-active');
 
       const interval = setInterval(() => {
         count--;
         if (count > 0) {
           countdownOverlay.textContent = count;
+          countdownOverlay.classList.remove('countdown-active');
+          void countdownOverlay.offsetWidth;
+          countdownOverlay.classList.add('countdown-active');
         } else {
           clearInterval(interval);
           countdownOverlay.style.display = 'none';
+          countdownOverlay.classList.remove('countdown-active');
           
           // Flash effect
           flashOverlay.style.display = 'block';
@@ -283,10 +343,8 @@
           let dataUrl;
 
           if (currentFilter === 'kinetic') {
-            // Draw current canvasPreview directly (since it is already drawn correctly)
             dataUrl = canvasPreview.toDataURL('image/jpeg', 0.9);
           } else {
-            // Render video stream frame to a temporary Canvas
             const canvas = document.createElement('canvas');
             canvas.width = video.videoWidth || 640;
             canvas.height = video.videoHeight || 480;
@@ -296,7 +354,7 @@
             ctx.translate(canvas.width, 0);
             ctx.scale(-1, 1);
 
-            // Apply selected CSS filter to canvas drawing context
+            // Apply selected filter
             ctx.filter = filterCanvasMappings[currentFilter] || 'none';
 
             // Draw
