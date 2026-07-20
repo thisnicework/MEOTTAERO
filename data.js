@@ -42,6 +42,66 @@ function loadStudents() {
 function loadSemesters() {
   const semestersRaw = JSON.parse(fs.readFileSync(path.resolve(__dirname, 'semesters.json'), 'utf8'));
   return semestersRaw.map(sem => {
+    if (sem.id === 'the-sia-vol-2') {
+      return {
+        ...sem,
+        description: `
+          <div class="project-text" style="max-width: 480px; margin-bottom: 2rem;">
+            <p class="bold" style="font-size: 1.25rem; margin-bottom: 0.5rem; color: var(--color-high);">THESIA vol.2</p>
+            <p style="margin-bottom: 1.5rem; font-size: 0.95rem;">⊛ OPENSTYLE LIVE BAND 1on1 BATTLE</p>
+            
+            <p class="bold" style="margin-top: 1rem; color: var(--color-high);">✪ DATE</p>
+            <p style="margin-bottom: 1rem;">🕟 2026.08.29 (SAT) 2PM</p>
+            
+            <p class="bold" style="color: var(--color-high);">✪ LOCATION</p>
+            <p style="margin-bottom: 1rem;">📍 서울예술대학교 (경기도 안산시 단원구 예술대학로 171)</p>
+            
+            <p class="bold" style="color: var(--color-high);">✪ JUDGE</p>
+            <p style="margin-bottom: 1rem; line-height: 1.6;">
+              MARIO <a href="https://instagram.com/supa_soul_m" target="_blank" rel="noopener noreferrer">@supa_soul_m</a><br>
+              LOCKER HWA <a href="https://instagram.com/lockerhwa" target="_blank" rel="noopener noreferrer">@lockerhwa</a><br>
+              JEEM <a href="https://instagram.com/masterpiece_jeem" target="_blank" rel="noopener noreferrer">@masterpiece_jeem</a>
+            </p>
+            
+            <p class="bold" style="color: var(--color-high);">✪ BATTLE GUEST</p>
+            <p style="margin-bottom: 1rem;">REXKANG <a href="https://instagram.com/rexkang_" target="_blank" rel="noopener noreferrer">@rexkang_</a></p>
+            
+            <p class="bold" style="color: var(--color-high);">✪ DJ</p>
+            <p style="margin-bottom: 1rem;">DAEUN <a href="https://instagram.com/t0r1nsight" target="_blank" rel="noopener noreferrer">@t0r1nsight</a></p>
+            
+            <p class="bold" style="color: var(--color-high);">✪ MC</p>
+            <p style="margin-bottom: 1rem;">JINYOUNG <a href="https://instagram.com/yddeenn" target="_blank" rel="noopener noreferrer">@yddeenn</a></p>
+            
+            <p class="bold" style="color: var(--color-high);">✪ BAND</p>
+            <p style="margin-bottom: 1rem; line-height: 1.6;">
+              WOO YECHAN <a href="https://instagram.com/723wixx" target="_blank" rel="noopener noreferrer">@723wixx</a><br>
+              NAM JEONGHYO <a href="https://instagram.com/namechloeee" target="_blank" rel="noopener noreferrer">@namechloeee</a><br>
+              AN BOEUN <a href="https://instagram.com/bonninnop" target="_blank" rel="noopener noreferrer">@bonninnop</a><br>
+              YU JIHOON <a href="https://instagram.com/uzhhuzh" target="_blank" rel="noopener noreferrer">@uzhhuzh</a>
+            </p>
+            
+            <p class="bold" style="color: var(--color-high);">✪ VOCAL</p>
+            <p style="margin-bottom: 1.5rem; line-height: 1.6;">
+              WZN <a href="https://instagram.com/wznszn" target="_blank" rel="noopener noreferrer">@wznszn</a><br>
+              SOYOUNG <a href="https://instagram.com/ssoyoungkwak" target="_blank" rel="noopener noreferrer">@ssoyoungkwak</a><br>
+              AHN HYUNGJIN <a href="https://instagram.com/98.0811" target="_blank" rel="noopener noreferrer">@98.0811</a>
+            </p>
+            
+            <p class="bold" style="color: var(--color-high);">⚑ ENTRY FEE</p>
+            <p style="margin-bottom: 1rem; line-height: 1.5;">
+              • 얼리버드예매 (07.19 ~ 07.28)<br>
+              &nbsp;&nbsp;참가비 30,000₩ / 관람비 25,000₩<br>
+              • 일반예매 (07.28 ~ 08.26)<br>
+              &nbsp;&nbsp;참가비 35,000₩ / 관람비 30,000₩
+            </p>
+            <p class="small" style="font-size: 0.85em; opacity: 0.85; line-height: 1.4; margin-bottom: 1.5rem;">
+              ⋆ 비수도권에서 오시는 참가자 및 관람자 분들께는 5,000원 할인이 진행됩니다.<br>
+              ⋆ 환불 및 양도는 행사 7일 전까지만 가능합니다.
+            </p>
+          </div>
+        `
+      };
+    }
     if (sem.id === '춤출자유vol-2') {
       return {
         ...sem,

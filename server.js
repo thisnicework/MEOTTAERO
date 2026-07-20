@@ -173,6 +173,22 @@ app.get('/about', (req, res) => {
 
 // Route: POST Booking Form
 app.post('/projects/:semesterId/book', async (req, res) => {
+  const { semesterId } = req.params;
+  if (semesterId === 'the-sia-vol-2') {
+    const { name, phone, type, genre } = req.body;
+    if (!name || !phone || !type || !genre) {
+      return res.status(400).json({ error: '모든 필드를 올바르게 입력해 주세요.' });
+    }
+    const studentId = `${type} / ${genre}`;
+    try {
+      const newBooking = await db.saveBooking({ name, studentId, phone, tickets: 1 });
+      res.json({ success: true, booking: newBooking });
+    } catch (error) {
+      console.error('Error in POST /projects/the-sia-vol-2/book:', error);
+      res.status(500).json({ error: '예매 처리 중 서버 오류가 발생했습니다.' });
+    }
+    return;
+  }
   return res.status(400).json({ error: '예매가 마감되었습니다.' });
 });
 

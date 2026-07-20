@@ -17,7 +17,7 @@
       </div>
     </section>
     <section id="two" class="right" aria-expanded="true">
-      <div class="semester">
+      <div class="semester" style="align-items: center; justify-content: space-between; max-width: 480px;">
         <div class="info">
           <h2 class="bold">
             <%= activeSemester.title %>
@@ -26,194 +26,402 @@
             <%= activeSemester.term %>
           </h3>
         </div>
+        <% if (activeSemester.id==='the-sia-vol-2' ) { %>
+          <img src="/thesia_vol.2.png?v=2" alt="THE SIA Logo"
+            style="height: 57px; width: auto; min-width: unset; min-height: unset; object-fit: contain; margin-right: 0; margin-left: var(--margin); align-self: flex-start; margin-top: 0;">
+          <% } %>
       </div>
       <hr>
 
-            <% if (activeSemester.id==='춤출자유vol-2' && false) { %>
-              <div id="booking-container" class="booking-section">
-                <h2 class="bold"
-                  style="color: var(--color-high); margin-bottom: 1.5rem;">
-                  TICKET RESERVATION</h2>
-                <form id="booking-form" class="booking-form" novalidate>
-                  <div class="form-group">
-                    <label for="name" class="bold">이름</label>
-                    <input type="text" id="name" name="name" required placeholder="이름을 입력해 주세요">
-                  </div>
-                  <div class="form-group">
-                    <label for="studentId" class="bold">학번 & 학과</label>
-                    <input type="text" id="studentId" name="studentId" required placeholder="예: 2632000 / 실음전공">
-                  </div>
-                  <div class="form-group">
-                    <label for="phone" class="bold">연락처</label>
-                    <input type="tel" id="phone" name="phone" required placeholder="예: 010-1234-5678">
-                  </div>
-                  <div class="form-group privacy-group" style="margin-bottom: 1.5rem;">
-                    <label class="privacy-label" style="display: flex; align-items: flex-start; cursor: pointer; font-size: 0.95em; line-height: 1.4; color: var(--color-fg);">
-                      <input type="checkbox" id="privacy-consent" name="privacyConsent" required style="margin-right: 0.5rem; margin-top: 0.2rem; cursor: pointer;">
-                      <span class="bold">개인정보 수집 및 이용 동의 (필수)</span>
-                    </label>
-                    <div class="privacy-box" style="font-size: 0.85em; line-height: 1.5; color: var(--color-fg); opacity: 0.85; margin-top: 0.5rem; padding: 0.8rem; border: 1px solid var(--color-fg); background: rgba(255, 255, 255, 0.02); backdrop-filter: blur(10px);">
-                      <p>동의를 거부하실 수 있으나 파티 참여가 불가능 합니다.</p>
-                      <p><strong>수집하는 개인정보 항목:</strong> 초상권 (사진•영상포함)</p>
-                      <p><strong>수집 및 이용 목적:</strong> 멋대로 프로젝트 관련 아카이브 제작 및 홍보 자료 활용</p>
-                      <p><strong>보유 및 이용기간:</strong> 아카이브 목적 달성 시까지 (필요 시 내부 기록 보관용으로 일부 보존)</p>
-                    </div>
-                  </div>
-                  <div id="form-error" class="form-error-msg" style="display: none;"></div>
-                  <button type="submit" class="submit-btn bold" disabled>예매하기 (RESERVE)</button>
-                </form>
+      <% if (activeSemester.id==='the-sia-vol-2' ) { %>
+        <div id="booking-container" class="booking-section">
+          <h2 class="bold"
+            style="color: var(--color-high); margin-bottom: 1.5rem; border-bottom: 1px solid var(--color-fg); padding-bottom: 0.5rem;">
+            REGISTRATION / 예매 신청</h2>
+          <form id="booking-form" class="booking-form" novalidate>
+            <div class="form-group">
+              <label for="name" class="bold">이름 / 댄서네임</label>
+              <input type="text" id="name" name="name" required placeholder="예: 김다은 / TORI">
+            </div>
+            <div class="form-group">
+              <label for="phone" class="bold">연락처</label>
+              <input type="tel" id="phone" name="phone" required placeholder="예: 010-1234-5678">
+            </div>
+            <div class="form-group">
+              <label for="type" class="bold">참가 or 관람</label>
+              <select id="type" name="type" required>
+                <option value="" disabled selected>선택해 주세요</option>
+                <option value="참가">참가</option>
+                <option value="관람">관람</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label for="genre" class="bold">장르 (선택)</label>
+              <select id="genre" name="genre" required>
+                <option value="" disabled selected>선택해 주세요</option>
+                <option value="HIPHOP">HIPHOP</option>
+                <option value="WAACKING">WAACKING</option>
+                <option value="LOCKING">LOCKING</option>
+                <option value="HOUSE">HOUSE</option>
+                <option value="POPPING">POPPING</option>
+                <option value="BREAKING">BREAKING</option>
+                <option value="KRUMP">KRUMP</option>
+                <option value="VOGUING">VOGUING</option>
+                <option value="OPENSTYLE">OPENSTYLE</option>
+                <option value="관람">관람</option>
+              </select>
+            </div>
 
-                <!-- Glassmorphic Success State (initially hidden) -->
-                <div id="booking-success" class="booking-success" style="display: none;">
-                  <div class="success-card">
-                    <div class="success-icon">✓</div>
-                    <h2 class="bold">예매 완료 (Reservation Confirmed)</h2>
-                    <p class="success-desc">파티 입장을 위한 예매가 정상적으로 처리되었습니다.</p>
-                    <hr>
-                    <div class="success-details">
-                      <p><strong>이름:</strong> <span id="res-name" class="bold"></span></p>
-                    </div>
+            <div class="deposit-info"
+              style="margin-top: 1.5rem; margin-bottom: 1rem; border: 1px solid var(--color-high); padding: 1.25rem; background: rgba(0, 0, 255, 0.02); backdrop-filter: blur(10px);">
+              <h3 class="bold" style="color: var(--color-high); margin-bottom: 0.5rem; text-transform: uppercase;">참가비
+                입금 계좌</h3>
+              <p class="bold"
+                style="font-size: 1.2rem; color: var(--color-fg); margin-bottom: 0.5rem; word-break: keep-all;">토스뱅크
+                1001-4431-9159 장선휘</p>
+              <p style="font-size: 0.9em; line-height: 1.4; color: var(--color-fg); opacity: 0.85; margin: 0;">신청서 작성 +
+                입금 후 최종 신청 완료가 됩니다.</p>
+            </div>
+
+            <div class="form-group privacy-group" style="margin-bottom: 1.5rem;">
+              <label class="privacy-label"
+                style="display: flex; align-items: flex-start; cursor: pointer; font-size: 0.95em; line-height: 1.4; color: var(--color-fg);">
+                <input type="checkbox" id="privacy-consent" name="privacyConsent" required
+                  style="margin-right: 0.5rem; margin-top: 0.2rem; cursor: pointer;">
+                <span class="bold">개인정보 수집 및 이용 동의 (필수)</span>
+              </label>
+              <div class="privacy-box"
+                style="font-size: 0.85em; line-height: 1.5; color: var(--color-fg); opacity: 0.85; margin-top: 0.5rem; padding: 0.8rem; border: 1px solid var(--color-fg); background: rgba(255, 255, 255, 0.02); backdrop-filter: blur(10px);">
+                <p>동의를 거부하실 수 있으나 파티 참여가 불가능 합니다.</p>
+                <p><strong>수집하는 개인정보 항목:</strong> 이름/댄서네임, 연락처, 초상권 (사진•영상포함)</p>
+                <p><strong>수집 및 이용 목적:</strong> 멋대로 프로젝트 관련 아카이브 제작 및 홍보 자료 활용, 참가자 확인 및 공지사항 안내</p>
+                <p><strong>보유 및 이용기간:</strong> 아카이브 목적 달성 시까지 (필요 시 내부 기록 보관용으로 일부 보존)</p>
+              </div>
+            </div>
+            <div id="form-error" class="form-error-msg" style="display: none;"></div>
+            <button type="submit" class="submit-btn bold" disabled>예매하기 (REGISTER)</button>
+          </form>
+
+          <!-- Glassmorphic Success State (initially hidden) -->
+          <div id="booking-success" class="booking-success" style="display: none;">
+            <div class="success-card">
+              <div class="success-icon"
+                style="color: var(--color-high); font-size: 2.5rem; margin-bottom: 1rem; text-align: center;">✓</div>
+              <h2 class="bold" style="text-align: center; margin-bottom: 1rem;">신청 완료 (Registration Received)</h2>
+              <p class="success-desc"
+                style="line-height: 1.5; opacity: 0.9; margin-bottom: 1.5rem; text-align: center;">
+                신청서가 정상적으로 접수되었습니다.<br>
+                <strong>입금이 확인되면</strong> 최종적으로 예매가 완료됩니다.
+              </p>
+              <hr style="margin-bottom: 1.5rem;">
+              <div class="success-details" style="font-size: 0.95em; line-height: 1.6;">
+                <p><strong>예매 번호:</strong> <span id="res-code" class="bold"></span></p>
+                <p><strong>이름 / 댄서네임:</strong> <span id="res-name" class="bold"></span></p>
+                <p><strong>참가 구분:</strong> <span id="res-type" class="bold"></span></p>
+                <p><strong>신청 장르:</strong> <span id="res-genre" class="bold"></span></p>
+                <br>
+                <div
+                  style="border: 1px solid var(--color-fg); padding: 1rem; text-align: center; background: rgba(255, 255, 255, 0.02);">
+                  <p class="bold" style="margin-bottom: 0.25rem;">입금 계좌</p>
+                  <p class="bold" style="font-size: 1.15rem; color: var(--color-high);">토스뱅크 1001-4431-9159 장선휘</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <hr>
+        <% } %>
+
+          <% if (activeSemester.id==='춤출자유vol-2' && false) { %>
+            <div id="booking-container" class="booking-section">
+              <h2 class="bold" style="color: var(--color-high); margin-bottom: 1.5rem;">
+                TICKET RESERVATION</h2>
+              <form id="booking-form" class="booking-form" novalidate>
+                <div class="form-group">
+                  <label for="name" class="bold">이름</label>
+                  <input type="text" id="name" name="name" required placeholder="이름을 입력해 주세요">
+                </div>
+                <div class="form-group">
+                  <label for="studentId" class="bold">학번 & 학과</label>
+                  <input type="text" id="studentId" name="studentId" required placeholder="예: 2632000 / 실음전공">
+                </div>
+                <div class="form-group">
+                  <label for="phone" class="bold">연락처</label>
+                  <input type="tel" id="phone" name="phone" required placeholder="예: 010-1234-5678">
+                </div>
+                <div class="form-group privacy-group" style="margin-bottom: 1.5rem;">
+                  <label class="privacy-label"
+                    style="display: flex; align-items: flex-start; cursor: pointer; font-size: 0.95em; line-height: 1.4; color: var(--color-fg);">
+                    <input type="checkbox" id="privacy-consent" name="privacyConsent" required
+                      style="margin-right: 0.5rem; margin-top: 0.2rem; cursor: pointer;">
+                    <span class="bold">개인정보 수집 및 이용 동의 (필수)</span>
+                  </label>
+                  <div class="privacy-box"
+                    style="font-size: 0.85em; line-height: 1.5; color: var(--color-fg); opacity: 0.85; margin-top: 0.5rem; padding: 0.8rem; border: 1px solid var(--color-fg); background: rgba(255, 255, 255, 0.02); backdrop-filter: blur(10px);">
+                    <p>동의를 거부하실 수 있으나 파티 참여가 불가능 합니다.</p>
+                    <p><strong>수집하는 개인정보 항목:</strong> 초상권 (사진•영상포함)</p>
+                    <p><strong>수집 및 이용 목적:</strong> 멋대로 프로젝트 관련 아카이브 제작 및 홍보 자료 활용</p>
+                    <p><strong>보유 및 이용기간:</strong> 아카이브 목적 달성 시까지 (필요 시 내부 기록 보관용으로 일부 보존)</p>
+                  </div>
+                </div>
+                <div id="form-error" class="form-error-msg" style="display: none;"></div>
+                <button type="submit" class="submit-btn bold" disabled>예매하기 (RESERVE)</button>
+              </form>
+
+              <!-- Glassmorphic Success State (initially hidden) -->
+              <div id="booking-success" class="booking-success" style="display: none;">
+                <div class="success-card">
+                  <div class="success-icon">✓</div>
+                  <h2 class="bold">예매 완료 (Reservation Confirmed)</h2>
+                  <p class="success-desc">파티 입장을 위한 예매가 정상적으로 처리되었습니다.</p>
+                  <hr>
+                  <div class="success-details">
+                    <p><strong>이름:</strong> <span id="res-name" class="bold"></span></p>
                   </div>
                 </div>
               </div>
-              <hr>
-              <% } %>
+            </div>
+            <hr>
+            <% } %>
 
               <% if (activeSemester.description) { %>
                 <%- activeSemester.description %>
-              <% } %>
+                  <% } %>
 
-              <% if (activeSemester.id==='춤출자유vol-2') { %>
-                <hr>
-                <p>Archiving coming soon.</p>
-              <% } %>
-
-              <% if (activeSemester.id==='춤출자유vol-1') { %>
-                <hr>
-                <video autoplay loop muted playsinline preload="auto" style="width: 100%; border: none;">
-                  <source src="https://pysxtikwokpcyfjstdyv.supabase.co/storage/v1/object/public/videos/meottearo.mp4#t=30" type="video/mp4">
-                </video>
-              <% } %>
-
-              <% if (activeSemester.id==='춤출자유vol-2' && false) { %>
-
-              <script>
-                document.addEventListener('DOMContentLoaded', function () {
-                  const form = document.getElementById('booking-form');
-                  const errorDiv = document.getElementById('form-error');
-                  const successDiv = document.getElementById('booking-success');
-                  const resName = document.getElementById('res-name');
-                  const resetBtn = document.getElementById('reset-booking-btn');
-
-                  if (!form) return;
-
-                  const privacyConsent = document.getElementById('privacy-consent');
-                  const submitBtn = form.querySelector('.submit-btn');
-
-                  if (privacyConsent && submitBtn) {
-                    submitBtn.disabled = !privacyConsent.checked;
-
-                    privacyConsent.addEventListener('change', function () {
-                      submitBtn.disabled = !this.checked;
-                    });
-
-                    form.addEventListener('reset', function () {
-                      submitBtn.disabled = true;
-                    });
-                  }
-
-                  form.addEventListener('submit', function (e) {
-                    e.preventDefault();
-                    errorDiv.style.display = 'none';
-
-                    const name = document.getElementById('name').value.trim();
-                    const studentId = document.getElementById('studentId').value.trim();
-                    const phone = document.getElementById('phone').value.trim();
-                    const privacyConsent = document.getElementById('privacy-consent');
-                    const tickets = 1; // Always 1 ticket
-
-                    if (!name || !studentId || !phone) {
-                      errorDiv.textContent = '모든 필드를 올바르게 입력해 주세요.';
-                      errorDiv.style.display = 'block';
-                      return;
-                    }
-
-                    if (privacyConsent && !privacyConsent.checked) {
-                      errorDiv.textContent = '개인정보 수집 및 이용 동의는 필수입니다.';
-                      errorDiv.style.display = 'block';
-                      return;
-                    }
-
-                    const submitBtn = form.querySelector('.submit-btn');
-                    const originalText = submitBtn.textContent;
-                    submitBtn.disabled = true;
-                    submitBtn.textContent = '처리 중 (PROCESSING...)';
-
-                    fetch('/projects/춤출자유vol-2/book', {
-                      method: 'POST',
-                      headers: {
-                        'Content-Type': 'application/json',
-                      },
-                      body: JSON.stringify({ name, studentId, phone, tickets })
-                    })
-                      .then(res => res.json())
-                      .then(data => {
-                        submitBtn.disabled = false;
-                        submitBtn.textContent = originalText;
-
-                        if (data.error) {
-                          errorDiv.textContent = data.error;
-                          errorDiv.style.display = 'block';
-                        } else if (data.success) {
-                          // Populate success state details
-                          resName.textContent = data.booking.name;
-
-                          // Hide form, show success state
-                          form.style.display = 'none';
-                          successDiv.style.display = 'block';
-                        }
-                      })
-                      .catch(err => {
-                        submitBtn.disabled = false;
-                        submitBtn.textContent = originalText;
-                        errorDiv.textContent = '서버 통신 오류가 발생했습니다. 다시 시도해 주세요.';
-                        errorDiv.style.display = 'block';
-                      });
-                  });
-
-                  if (resetBtn) {
-                    resetBtn.addEventListener('click', function () {
-                      form.reset();
-                      form.style.display = 'block';
-                      successDiv.style.display = 'none';
-                    });
-                  }
-                });
-              </script>
-              <% } %>
-
-                <div class="projects">
-                  <% if (projects.length===0) { %>
-                    <% if (!activeSemester.description) { %>
-                      <p>No projects documented for this semester yet.</p>
+                    <% if (activeSemester.id==='the-sia-vol-2' ) { %>
+                      <hr>
+                      <img src="/thesia_vol.2_a3.png" alt="THE SIA Vol.2 Poster"
+                        style="max-width: 480px; width: 100%; height: auto; display: block; margin-top: 1.5rem; margin-bottom: 1.5rem;">
                       <% } %>
-                        <% } else { %>
-                          <% projects.forEach(function(p) { %>
-                            <% const student=db.getStudent(p.studentId); %>
-                              <a class="project block" href="/projects/<%= activeSemester.id %>/<%= p.slug %>">
-                                <img class="thumb" src="<%= p.thumbUrl %>" alt="preview image of <%= p.title %>">
-                                <div>
-                                  <h2>
-                                    <%= student ? student.name : 'Student' %>
-                                  </h2>
-                                  <h3 class="bold">
-                                    <%= p.title %>
-                                  </h3>
-                                </div>
-                              </a>
-                              <% }); %>
-                                <% } %>
-                </div>
+
+                        <% if (activeSemester.id==='춤출자유vol-2' ) { %>
+                          <hr>
+                          <p>Archiving coming soon.</p>
+                          <% } %>
+
+                            <% if (activeSemester.id==='춤출자유vol-1' ) { %>
+                              <hr>
+                              <video autoplay loop muted playsinline preload="auto" style="width: 100%; border: none;">
+                                <source
+                                  src="https://pysxtikwokpcyfjstdyv.supabase.co/storage/v1/object/public/videos/meottearo.mp4#t=30"
+                                  type="video/mp4">
+                              </video>
+                              <% } %>
+
+                                <% if (activeSemester.id==='the-sia-vol-2' ) { %>
+                                  <script>
+                                    document.addEventListener('DOMContentLoaded', function () {
+                                      const form = document.getElementById('booking-form');
+                                      const errorDiv = document.getElementById('form-error');
+                                      const successDiv = document.getElementById('booking-success');
+                                      const resCode = document.getElementById('res-code');
+                                      const resName = document.getElementById('res-name');
+                                      const resType = document.getElementById('res-type');
+                                      const resGenre = document.getElementById('res-genre');
+
+                                      if (!form) return;
+
+                                      const privacyConsent = document.getElementById('privacy-consent');
+                                      const submitBtn = form.querySelector('.submit-btn');
+                                      const typeSelect = document.getElementById('type');
+                                      const genreSelect = document.getElementById('genre');
+
+                                      if (privacyConsent && submitBtn) {
+                                        submitBtn.disabled = !privacyConsent.checked;
+
+                                        privacyConsent.addEventListener('change', function () {
+                                          submitBtn.disabled = !this.checked;
+                                        });
+                                      }
+
+                                      if (typeSelect && genreSelect) {
+                                        typeSelect.addEventListener('change', function () {
+                                          if (this.value === '관람') {
+                                            genreSelect.value = '관람';
+                                          } else if (genreSelect.value === '관람') {
+                                            genreSelect.value = '';
+                                          }
+                                        });
+                                      }
+
+                                      form.addEventListener('submit', function (e) {
+                                        e.preventDefault();
+                                        errorDiv.style.display = 'none';
+
+                                        const name = document.getElementById('name').value.trim();
+                                        const phone = document.getElementById('phone').value.trim();
+                                        const type = document.getElementById('type').value;
+                                        const genre = document.getElementById('genre').value;
+
+                                        if (!name || !phone || !type || !genre) {
+                                          errorDiv.textContent = '모든 필드를 올바르게 입력해 주세요.';
+                                          errorDiv.style.display = 'block';
+                                          return;
+                                        }
+
+                                        const originalText = submitBtn.textContent;
+                                        submitBtn.disabled = true;
+                                        submitBtn.textContent = '처리 중 (PROCESSING...)';
+
+                                        fetch('/projects/the-sia-vol-2/book', {
+                                          method: 'POST',
+                                          headers: {
+                                            'Content-Type': 'application/json',
+                                          },
+                                          body: JSON.stringify({ name, phone, type, genre })
+                                        })
+                                          .then(res => res.json())
+                                          .then(data => {
+                                            submitBtn.disabled = false;
+                                            submitBtn.textContent = originalText;
+
+                                            if (data.error) {
+                                              errorDiv.textContent = data.error;
+                                              errorDiv.style.display = 'block';
+                                            } else if (data.success) {
+                                              resCode.textContent = data.booking.code;
+                                              resName.textContent = data.booking.name;
+
+                                              const parts = data.booking.studentId.split(' / ');
+                                              resType.textContent = parts[0] || '';
+                                              resGenre.textContent = parts[1] || '';
+
+                                              form.style.display = 'none';
+                                              successDiv.style.display = 'block';
+                                            }
+                                          })
+                                          .catch(err => {
+                                            submitBtn.disabled = false;
+                                            submitBtn.textContent = originalText;
+                                            errorDiv.textContent = '서버 통신 오류가 발생했습니다. 다시 시도해 주세요.';
+                                            errorDiv.style.display = 'block';
+                                          });
+                                      });
+                                    });
+                                  </script>
+                                  <% } %>
+
+                                    <% if (activeSemester.id==='춤출자유vol-2' && false) { %>
+
+                                      <script>
+                                        document.addEventListener('DOMContentLoaded', function () {
+                                          const form = document.getElementById('booking-form');
+                                          const errorDiv = document.getElementById('form-error');
+                                          const successDiv = document.getElementById('booking-success');
+                                          const resName = document.getElementById('res-name');
+                                          const resetBtn = document.getElementById('reset-booking-btn');
+
+                                          if (!form) return;
+
+                                          const privacyConsent = document.getElementById('privacy-consent');
+                                          const submitBtn = form.querySelector('.submit-btn');
+
+                                          if (privacyConsent && submitBtn) {
+                                            submitBtn.disabled = !privacyConsent.checked;
+
+                                            privacyConsent.addEventListener('change', function () {
+                                              submitBtn.disabled = !this.checked;
+                                            });
+
+                                            form.addEventListener('reset', function () {
+                                              submitBtn.disabled = true;
+                                            });
+                                          }
+
+                                          form.addEventListener('submit', function (e) {
+                                            e.preventDefault();
+                                            errorDiv.style.display = 'none';
+
+                                            const name = document.getElementById('name').value.trim();
+                                            const studentId = document.getElementById('studentId').value.trim();
+                                            const phone = document.getElementById('phone').value.trim();
+                                            const privacyConsent = document.getElementById('privacy-consent');
+                                            const tickets = 1; // Always 1 ticket
+
+                                            if (!name || !studentId || !phone) {
+                                              errorDiv.textContent = '모든 필드를 올바르게 입력해 주세요.';
+                                              errorDiv.style.display = 'block';
+                                              return;
+                                            }
+
+                                            if (privacyConsent && !privacyConsent.checked) {
+                                              errorDiv.textContent = '개인정보 수집 및 이용 동의는 필수입니다.';
+                                              errorDiv.style.display = 'block';
+                                              return;
+                                            }
+
+                                            const submitBtn = form.querySelector('.submit-btn');
+                                            const originalText = submitBtn.textContent;
+                                            submitBtn.disabled = true;
+                                            submitBtn.textContent = '처리 중 (PROCESSING...)';
+
+                                            fetch('/projects/춤출자유vol-2/book', {
+                                              method: 'POST',
+                                              headers: {
+                                                'Content-Type': 'application/json',
+                                              },
+                                              body: JSON.stringify({ name, studentId, phone, tickets })
+                                            })
+                                              .then(res => res.json())
+                                              .then(data => {
+                                                submitBtn.disabled = false;
+                                                submitBtn.textContent = originalText;
+
+                                                if (data.error) {
+                                                  errorDiv.textContent = data.error;
+                                                  errorDiv.style.display = 'block';
+                                                } else if (data.success) {
+                                                  // Populate success state details
+                                                  resName.textContent = data.booking.name;
+
+                                                  // Hide form, show success state
+                                                  form.style.display = 'none';
+                                                  successDiv.style.display = 'block';
+                                                }
+                                              })
+                                              .catch(err => {
+                                                submitBtn.disabled = false;
+                                                submitBtn.textContent = originalText;
+                                                errorDiv.textContent = '서버 통신 오류가 발생했습니다. 다시 시도해 주세요.';
+                                                errorDiv.style.display = 'block';
+                                              });
+                                          });
+
+                                          if (resetBtn) {
+                                            resetBtn.addEventListener('click', function () {
+                                              form.reset();
+                                              form.style.display = 'block';
+                                              successDiv.style.display = 'none';
+                                            });
+                                          }
+                                        });
+                                      </script>
+                                      <% } %>
+
+                                        <div class="projects">
+                                          <% if (projects.length===0) { %>
+                                            <% if (!activeSemester.description) { %>
+                                              <p>No projects documented for this semester yet.</p>
+                                              <% } %>
+                                                <% } else { %>
+                                                  <% projects.forEach(function(p) { %>
+                                                    <% const student=db.getStudent(p.studentId); %>
+                                                      <a class="project block"
+                                                        href="/projects/<%= activeSemester.id %>/<%= p.slug %>">
+                                                        <img class="thumb" src="<%= p.thumbUrl %>"
+                                                          alt="preview image of <%= p.title %>">
+                                                        <div>
+                                                          <h2>
+                                                            <%= student ? student.name : 'Student' %>
+                                                          </h2>
+                                                          <h3 class="bold">
+                                                            <%= p.title %>
+                                                          </h3>
+                                                        </div>
+                                                      </a>
+                                                      <% }); %>
+                                                        <% } %>
+                                        </div>
     </section>
   </main>
 
