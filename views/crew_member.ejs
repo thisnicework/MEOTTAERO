@@ -14,11 +14,6 @@
     <div class="student">
       <div class="info">
         <h2 class="bold"><%= activeStudent.name %></h2>
-        <% if (activeStudent.description) { %>
-          <div class="description" style="margin-top: 1rem; line-height: 1.6; white-space: pre-line; font-size: 0.95rem; color: var(--color-fg);">
-            <%= activeStudent.description %>
-          </div>
-        <% } %>
         <% if (false) { %>
         <ul class="links">
           <% if (activeStudent.links) { %>
@@ -39,7 +34,13 @@
     <hr>
     <div class="projects">
       <% if (projects.length === 0) { %>
-        <p>No projects documented for this student yet.</p>
+        <% if (activeStudent.description) { %>
+          <div class="description" style="line-height: 1.6; white-space: pre-line; font-size: 0.95rem; color: var(--color-fg);">
+            <%= activeStudent.description %>
+          </div>
+        <% } else { %>
+          <p>No projects documented for this student yet.</p>
+        <% } %>
       <% } else { %>
         <% projects.forEach(function(p) { %>
           <% const semester = db.getSemester(p.semesterId); %>
