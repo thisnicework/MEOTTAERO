@@ -7,7 +7,7 @@
         <!-- <h2 class="bold" style="color: var(--color-high); margin-bottom: 1.5rem;">ADMIN PANEL</h2> -->
 
         <div class="stats-panel" style="margin-bottom: 2rem; display: flex; flex-direction: column; gap: 0.75rem;">
-          <div class="stat-card"
+          <div class="stat-card" id="card-total"
             style="background: var(--color-low); padding: 1rem; border-left: 4px solid var(--color-high);">
             <h3 class="bold" style="font-size: 0.8rem; margin-bottom: 0.25rem; color: #555;">전체 예매</h3>
             <p class="bold" style="font-size: 1.5rem; color: var(--color-high); margin: 0;" id="total-bookings">
@@ -17,21 +17,21 @@
           <% const siaCount = bookings.filter(b => b.eventId === 'the-sia-vol-2').length; %>
           <% const danongCount = bookings.filter(b => b.eventId === '다놀다농').length; %>
           <% const freedomCount = bookings.filter(b => b.eventId === '춤출자유vol-2').length; %>
-          <div class="stat-card"
+          <div class="stat-card" id="card-sia"
             style="background: var(--color-low); padding: 1rem; border-left: 4px solid #4caf50;">
             <h3 class="bold" style="font-size: 0.8rem; margin-bottom: 0.25rem; color: #555;">THE SIA Vol.2</h3>
             <p class="bold" style="font-size: 1.5rem; color: #4caf50; margin: 0;" id="sia-bookings">
               <%= siaCount %> 명
             </p>
           </div>
-          <div class="stat-card"
+          <div class="stat-card" id="card-danong"
             style="background: var(--color-low); padding: 1rem; border-left: 4px solid #ff9800;">
             <h3 class="bold" style="font-size: 0.8rem; margin-bottom: 0.25rem; color: #555;">다놀다농</h3>
             <p class="bold" style="font-size: 1.5rem; color: #ff9800; margin: 0;" id="danong-bookings">
               <%= danongCount %> 명
             </p>
           </div>
-          <div class="stat-card"
+          <div class="stat-card" id="card-freedom"
             style="background: var(--color-low); padding: 1rem; border-left: 4px solid #2196f3;">
             <h3 class="bold" style="font-size: 0.8rem; margin-bottom: 0.25rem; color: #555;">춤 출 자유 Vol.2</h3>
             <p class="bold" style="font-size: 1.5rem; color: #2196f3; margin: 0;" id="freedom-bookings">
@@ -63,14 +63,14 @@
 
         <hr style="margin: 1.5rem 0; border: 0; border-top: 1px solid var(--color-low);">
 
-        <div class="capacity-panel" style="margin-bottom: 1.5rem;">
+        <div class="capacity-panel" id="panel-capacity" style="margin-bottom: 1.5rem;">
           <label class="bold" style="display: block; font-size: 0.85rem; margin-bottom: 0.75rem; text-transform: uppercase;">예매 인원 제한 설정</label>
           <div style="display: flex; flex-direction: column; gap: 0.75rem;">
-            <div>
+            <div id="wrapper-cap-sia">
               <label for="cap-sia" style="display: block; font-size: 0.75rem; margin-bottom: 0.25rem; color: #555;">THE SIA Vol.2 (최대 인원)</label>
               <input type="number" id="cap-sia" value="<%= capacities['the-sia-vol-2'] !== undefined ? capacities['the-sia-vol-2'] : 150 %>" style="width: 100%; padding: 0.6rem; border: 1px solid var(--color-fg); outline: none; font-family: inherit;">
             </div>
-            <div>
+            <div id="wrapper-cap-danong">
               <label for="cap-danong" style="display: block; font-size: 0.75rem; margin-bottom: 0.25rem; color: #555;">다놀다농 (최대 인원)</label>
               <input type="number" id="cap-danong" value="<%= capacities['다놀다농'] !== undefined ? capacities['다놀다농'] : 50 %>" style="width: 100%; padding: 0.6rem; border: 1px solid var(--color-fg); outline: none; font-family: inherit;">
             </div>
@@ -197,9 +197,56 @@
 
         if (searchInput) searchInput.addEventListener('input', filterBookings);
         
+        function updateUIVisibility() {
+          const selectedEvent = eventFilter ? eventFilter.value : 'all';
+          const cardTotal = document.getElementById('card-total');
+          const cardSia = document.getElementById('card-sia');
+          const cardDanong = document.getElementById('card-danong');
+          const cardFreedom = document.getElementById('card-freedom');
+          const panelCapacity = document.getElementById('panel-capacity');
+          const wrapperSia = document.getElementById('wrapper-cap-sia');
+          const wrapperDanong = document.getElementById('wrapper-cap-danong');
+          
+          if (selectedEvent === 'all') {
+            if (cardTotal) cardTotal.style.display = '';
+            if (cardSia) cardSia.style.display = '';
+            if (cardDanong) cardDanong.style.display = '';
+            if (cardFreedom) cardFreedom.style.display = '';
+            if (panelCapacity) panelCapacity.style.display = '';
+            if (wrapperSia) wrapperSia.style.display = '';
+            if (wrapperDanong) wrapperDanong.style.display = '';
+          } else if (selectedEvent === 'the-sia-vol-2') {
+            if (cardTotal) cardTotal.style.display = '';
+            if (cardSia) cardSia.style.display = '';
+            if (cardDanong) cardDanong.style.display = 'none';
+            if (cardFreedom) cardFreedom.style.display = 'none';
+            if (panelCapacity) panelCapacity.style.display = '';
+            if (wrapperSia) wrapperSia.style.display = '';
+            if (wrapperDanong) wrapperDanong.style.display = 'none';
+          } else if (selectedEvent === '다놀다농') {
+            if (cardTotal) cardTotal.style.display = '';
+            if (cardSia) cardSia.style.display = 'none';
+            if (cardDanong) cardDanong.style.display = '';
+            if (cardFreedom) cardFreedom.style.display = 'none';
+            if (panelCapacity) panelCapacity.style.display = '';
+            if (wrapperSia) wrapperSia.style.display = 'none';
+            if (wrapperDanong) wrapperDanong.style.display = '';
+          } else if (selectedEvent === '춤출자유vol-2') {
+            if (cardTotal) cardTotal.style.display = '';
+            if (cardSia) cardSia.style.display = 'none';
+            if (cardDanong) cardDanong.style.display = 'none';
+            if (cardFreedom) cardFreedom.style.display = '';
+            if (panelCapacity) panelCapacity.style.display = 'none';
+          }
+        }
+
+        // Initialize visibility
+        updateUIVisibility();
+
         if (eventFilter) {
           eventFilter.addEventListener('change', function () {
             filterBookings();
+            updateUIVisibility();
             // Update CSV export link with the current filter parameter
             if (exportLink) {
               exportLink.href = `/admin/export?event=${this.value}`;
