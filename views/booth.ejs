@@ -60,8 +60,8 @@
     
     <!-- Webcam Video / Canvas Wrap -->
     <div class="video-wrap" style="position: relative; width: 100%; aspect-ratio: 4/3; background: #000; border: 1px solid var(--color-fg); margin-bottom: 1.5rem; overflow: hidden; display: flex; align-items: center; justify-content: center;">
-      <!-- Hidden Video Element (keeps stream active in background) -->
-      <video id="webcam" autoplay playsinline muted style="position: absolute; opacity: 0; pointer-events: none; width: 100%; height: 100%; object-fit: cover; transform: scaleX(-1);"></video>
+      <!-- Hidden Video Element (keeps stream active in background, explicit width/height required by clmtrackr) -->
+      <video id="webcam" autoplay playsinline muted width="640" height="480" style="position: absolute; opacity: 0; pointer-events: none; width: 100%; height: 100%; object-fit: cover; transform: scaleX(-1);"></video>
       <!-- Visible Canvas Preview (displays everything unified) -->
       <canvas id="canvas-preview" style="width: 100%; height: 100%; object-fit: cover;"></canvas>
       
