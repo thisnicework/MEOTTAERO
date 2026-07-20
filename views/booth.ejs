@@ -86,9 +86,7 @@
 
     <!-- Filters Selection (Indifferent Text Links) -->
     <div style="display: flex; gap: 0.75rem; align-items: center; justify-content: center; font-size: 0.95rem; user-select: none;">
-      <button class="filter-opt-btn active" data-filter="normal">normal</button>
-      <span style="color: var(--color-mid); font-size: 0.85rem; opacity: 0.5;">/</span>
-      <button class="filter-opt-btn" data-filter="kinetic">kinetic</button>
+      <button class="filter-opt-btn active" data-filter="kinetic">kinetic</button>
       <span style="color: var(--color-mid); font-size: 0.85rem; opacity: 0.5;">/</span>
       <button class="filter-opt-btn" data-filter="tunnel">tunnel</button>
       <span style="color: var(--color-mid); font-size: 0.85rem; opacity: 0.5;">/</span>
@@ -112,7 +110,7 @@
     const retryBtn = document.getElementById('retry-permission-btn');
 
     let stream = null;
-    let currentFilter = 'normal';
+    let currentFilter = 'kinetic';
     
     // Kinetic filter variables
     let loopId = null;
@@ -317,13 +315,7 @@
         }
         ctx.filter = 'none';
 
-        if (currentFilter === 'normal') {
-          // Standard Mirrored Draw
-          ctx.translate(w, 0);
-          ctx.scale(-1, 1);
-          ctx.drawImage(video, 0, 0, w, h);
-        } 
-        else if (currentFilter === 'tunnel') {
+        if (currentFilter === 'tunnel') {
           // Interactive Infinite Recursive Tunnel (Mirrored background + Offset nested recursion following face)
           ctx.translate(w, 0);
           ctx.scale(-1, 1);
