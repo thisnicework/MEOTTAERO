@@ -15,7 +15,7 @@
             </p>
           </div>
           <% const siaCount = bookings.filter(b => b.eventId === 'the-sia-vol-2').length; %>
-          <% const danongCount = bookings.filter(b => b.eventId === 'da-nol-da-nong').length; %>
+          <% const danongCount = bookings.filter(b => b.eventId === '다놀다농').length; %>
           <% const freedomCount = bookings.filter(b => b.eventId === '춤출자유vol-2').length; %>
           <div class="stat-card"
             style="background: var(--color-low); padding: 1rem; border-left: 4px solid #4caf50;">
@@ -51,7 +51,7 @@
           <select id="event-filter" style="width: 100%; padding: 0.75rem; border: 1px solid var(--color-fg); outline: none; background: white; font-family: inherit;">
             <option value="all">전체 보기 (All Shows)</option>
             <option value="the-sia-vol-2">THE SIA Vol.2</option>
-            <option value="da-nol-da-nong">다놀다농</option>
+            <option value="다놀다농">다놀다농</option>
             <option value="춤출자유vol-2">춤 출 자유 Vol.2</option>
           </select>
         </div>
@@ -59,6 +59,24 @@
         <div style="margin-top: 1.5rem;">
           <a href="/admin/export?event=all" class="bold" id="export-link"
             style="display: inline-block; padding: 0.75rem 1.25rem; border: 1px solid var(--color-fg); text-decoration: none; font-size: 0.85rem;">CSV 내보내기 (Excel)</a>
+        </div>
+
+        <hr style="margin: 1.5rem 0; border: 0; border-top: 1px solid var(--color-low);">
+
+        <div class="capacity-panel" style="margin-bottom: 1.5rem;">
+          <label class="bold" style="display: block; font-size: 0.85rem; margin-bottom: 0.75rem; text-transform: uppercase;">예매 인원 제한 설정</label>
+          <div style="display: flex; flex-direction: column; gap: 0.75rem;">
+            <div>
+              <label for="cap-sia" style="display: block; font-size: 0.75rem; margin-bottom: 0.25rem; color: #555;">THE SIA Vol.2 (최대 인원)</label>
+              <input type="number" id="cap-sia" value="<%= capacities['the-sia-vol-2'] !== undefined ? capacities['the-sia-vol-2'] : 150 %>" style="width: 100%; padding: 0.6rem; border: 1px solid var(--color-fg); outline: none; font-family: inherit;">
+            </div>
+            <div>
+              <label for="cap-danong" style="display: block; font-size: 0.75rem; margin-bottom: 0.25rem; color: #555;">다놀다농 (최대 인원)</label>
+              <input type="number" id="cap-danong" value="<%= capacities['다놀다농'] !== undefined ? capacities['다놀다농'] : 50 %>" style="width: 100%; padding: 0.6rem; border: 1px solid var(--color-fg); outline: none; font-family: inherit;">
+            </div>
+            <button type="button" id="save-capacities-btn" class="bold" style="width: 100%; padding: 0.75rem; border: 1px solid var(--color-fg); background: var(--color-fg); color: var(--color-bg); cursor: pointer; font-size: 0.8rem; text-transform: uppercase; transition: opacity 0.2s;">설정 저장 (SAVE)</button>
+            <div id="capacity-msg" style="font-size: 0.75rem; color: #4caf50; display: none; text-align: center; margin-top: 0.25rem;"></div>
+          </div>
         </div>
       </div>
     </section>
@@ -94,7 +112,7 @@
                     <tr class="booking-row" data-code="<%= b.code %>" data-name="<%= b.name %>"
                       data-phone="<%= b.phone %>" data-event-id="<%= b.eventId %>" style="border-bottom: 1px solid var(--color-low);">
                       <td class="bold" style="padding: 0.75rem 0.5rem; font-size: 0.85rem; color: var(--color-mid);">
-                        <%= b.eventId === 'the-sia-vol-2' ? 'THE SIA Vol.2' : (b.eventId === 'da-nol-da-nong' ? '다놀다농' : '춤 출 자유 Vol.2') %>
+                        <%= b.eventId === 'the-sia-vol-2' ? 'THE SIA Vol.2' : (b.eventId === '다놀다농' ? '다놀다농' : '춤 출 자유 Vol.2') %>
                       </td>
                       <td class="bold" style="padding: 0.75rem 0.5rem;">
                         <%= b.name %>
@@ -231,7 +249,7 @@
                         const currentSia = parseInt(siaBookingsEl.textContent, 10) || 0;
                         siaBookingsEl.textContent = Math.max(0, currentSia - 1) + ' 명';
                       }
-                    } else if (eventId === 'da-nol-da-nong') {
+                    } else if (eventId === '다놀다농') {
                       if (danongBookingsEl) {
                         const currentDanong = parseInt(danongBookingsEl.textContent, 10) || 0;
                         danongBookingsEl.textContent = Math.max(0, currentDanong - 1) + ' 명';
@@ -309,5 +327,58 @@
               });
           }
         });
+
+        // 4. Save capacity settings
+        const saveCapacitiesBtn = document.getElementById('save-capacities-btn');
+        const capSiaInput = document.getElementById('cap-sia');
+        const capDanongInput = document.getElementById('cap-danong');
+        const capMsg = document.getElementById('capacity-msg');
+        
+        if (saveCapacitiesBtn) {
+          saveCapacitiesBtn.addEventListener('click', function () {
+            const siaVal = parseInt(capSiaInput.value, 10);
+            const danongVal = parseInt(capDanongInput.value, 10);
+            
+            if (isNaN(siaVal) || isNaN(danongVal) || siaVal < 0 || danongVal < 0) {
+              alert('올바른 숫자 값을 입력해 주세요.');
+              return;
+            }
+            
+            saveCapacitiesBtn.disabled = true;
+            saveCapacitiesBtn.textContent = '저장 중...';
+            
+            fetch('/admin/update-capacity', {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json'
+              },
+              body: JSON.stringify({
+                capacities: {
+                  'the-sia-vol-2': siaVal,
+                  '다놀다농': danongVal
+                }
+              })
+            })
+              .then(res => res.json())
+              .then(data => {
+                saveCapacitiesBtn.disabled = false;
+                saveCapacitiesBtn.textContent = '설정 저장 (SAVE)';
+                if (data.success) {
+                  capMsg.textContent = '설정이 성공적으로 저장되었습니다.';
+                  capMsg.style.display = 'block';
+                  setTimeout(() => {
+                    capMsg.style.display = 'none';
+                  }, 2500);
+                } else {
+                  alert(data.error || '설정 저장 중 오류가 발생했습니다.');
+                }
+              })
+              .catch(err => {
+                saveCapacitiesBtn.disabled = false;
+                saveCapacitiesBtn.textContent = '설정 저장 (SAVE)';
+                alert('서버 통신 오류가 발생했습니다.');
+              });
+          });
+        }
       });
     </script>

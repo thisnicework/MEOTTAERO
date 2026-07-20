@@ -42,7 +42,7 @@ function loadStudents() {
 function loadSemesters() {
   const semestersRaw = JSON.parse(fs.readFileSync(path.resolve(__dirname, 'semesters.json'), 'utf8'));
   return semestersRaw.map(sem => {
-    if (sem.id === 'da-nol-da-nong') {
+    if (sem.id === '다놀다농') {
       return {
         ...sem,
         description: `
@@ -395,6 +395,33 @@ export async function updateBookingStatus(code, updates) {
     return true;
   }
   return false;
+}
+
+export function getCapacities() {
+  const filePath = path.resolve(__dirname, 'capacity_config.json');
+  if (!fs.existsSync(filePath)) {
+    const defaults = {
+      "the-sia-vol-2": 150,
+      "다놀다농": 50
+    };
+    fs.writeFileSync(filePath, JSON.stringify(defaults, null, 2), 'utf8');
+    return defaults;
+  }
+  try {
+    return JSON.parse(fs.readFileSync(filePath, 'utf8'));
+  } catch (e) {
+    console.error('Error reading capacity_config.json:', e);
+    return {
+      "the-sia-vol-2": 150,
+      "다놀다농": 50
+    };
+  }
+}
+
+export function saveCapacities(capacities) {
+  const filePath = path.resolve(__dirname, 'capacity_config.json');
+  fs.writeFileSync(filePath, JSON.stringify(capacities, null, 2), 'utf8');
+  return true;
 }
 
 

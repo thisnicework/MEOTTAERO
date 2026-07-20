@@ -224,17 +224,19 @@ app.get('/admin', requireAdminAuth, async (req, res) => {
       let eventId = '춤출자유vol-2';
       if (b.studentId) {
         if (b.studentId.includes('10대') || b.studentId.includes('20대') || b.studentId.includes('30대') || b.studentId.includes('40대') || b.studentId.includes('50대') || b.studentId.includes('60대')) {
-          eventId = 'da-nol-da-nong';
+          eventId = '다놀다농';
         } else if (b.studentId.includes('참가') || b.studentId.includes('관람')) {
           eventId = 'the-sia-vol-2';
         }
       }
       return { ...b, eventId };
     });
+    const capacities = db.getCapacities();
     res.render('bookings', {
       title: '// MOTTAERO — Admin Dashboard',
       activeMenu: 'admin',
-      bookings
+      bookings,
+      capacities
     });
   } catch (error) {
     console.error('Error in GET /admin:', error);
@@ -309,6 +311,21 @@ app.post('/admin/update-status', requireAdminAuth, async (req, res) => {
   } catch (error) {
     console.error('Error in POST /admin/update-status:', error);
     res.status(500).json({ error: '상태 업데이트 중 서버 오류가 발생했습니다.' });
+  }
+});
+
+// Route: Update Booking Capacity Settings (Admin Action)
+app.post('/admin/update-capacity', requireAdminAuth, (req, res) => {
+  const { capacities } = req.body;
+  if (!capacities || typeof capacities !== 'object') {
+    return res.status(400).json({ error: '올바른 설정 데이터가 필요합니다.' });
+  }
+  try {
+    db.saveCapacities(capacities);
+    res.json({ success: true });
+  } catch (error) {
+    console.error('Error in POST /admin/update-capacity:', error);
+    res.status(500).json({ error: '인원 제한 설정 저장 중 서버 오류가 발생했습니다.' });
   }
 });
 
