@@ -47,7 +47,7 @@ function loadSemesters() {
         ...sem,
         description: `
           <div class="project-text" style="max-width: 480px; margin-bottom: 2rem;">
-            <p class="bold" style="font-size: 1.25rem; margin-bottom: 0.5rem; color: var(--color-high);">THESIA vol.2</p>
+            <p class="bold" style="font-size: 1.25rem; margin-bottom: 0.5rem; color: var(--color-high);">THE SIA Vol.2</p>
             <p style="margin-bottom: 1.5rem; font-size: 0.95rem;">⊛ OPENSTYLE LIVE BAND 1on1 BATTLE</p>
             
             <p class="bold" style="margin-top: 1rem; color: var(--color-high);">✪ DATE</p>
