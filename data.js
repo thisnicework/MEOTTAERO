@@ -259,16 +259,33 @@ export async function getBookings() {
         .order('created_at', { ascending: false });
 
       if (!error && data) {
-        return data.map(b => ({
-          code: b.code,
-          name: b.name,
-          studentId: b.student_id,
-          phone: b.phone,
-          tickets: b.tickets,
-          createdAt: b.created_at,
-          paymentConfirmed: b.payment_confirmed || false,
-          smsSent: b.sms_sent || false
-        }));
+        return data.map(b => {
+          let paymentConfirmed = b.payment_confirmed || false;
+          let smsSent = b.sms_sent || false;
+          let studentId = b.student_id || '';
+          
+          // Parse metadata appended to student_id if present
+          if (studentId.includes(' || [PAID:')) {
+            const parts = studentId.split(' || [PAID:');
+            studentId = parts[0];
+            const metaStr = parts[1]; // e.g. "true,SMS:false]" or "false,SMS:true]"
+            const paidMatch = metaStr.match(/^([^,]+)/);
+            const smsMatch = metaStr.match(/SMS:([^\]]+)/);
+            paymentConfirmed = paidMatch ? paidMatch[1] === 'true' : false;
+            smsSent = smsMatch ? smsMatch[1] === 'true' : false;
+          }
+          
+          return {
+            code: b.code,
+            name: b.name,
+            studentId: studentId,
+            phone: b.phone,
+            tickets: b.tickets,
+            createdAt: b.created_at,
+            paymentConfirmed: paymentConfirmed,
+            smsSent: smsSent
+          };
+        });
       }
     } catch (e) {
       console.error('Supabase getBookings failed, falling back to local storage:', e);
@@ -366,27 +383,41 @@ export async function deleteBooking(code) {
 
 export async function updateBookingStatus(code, updates) {
   const { paymentConfirmed, smsSent } = updates;
+  
+  // Find current booking first to get its current clean studentId
+  const bookings = await getBookings();
+  const booking = bookings.find(b => b.code === code);
+  if (!booking) return false;
+  
+  const cleanStudentId = booking.studentId;
+  const newStudentIdWithMeta = `${cleanStudentId} || [PAID:${paymentConfirmed},SMS:${smsSent}]`;
+  
   if (supabase) {
     try {
       const { data, error } = await supabase
         .from('bookings')
         .update({
-          payment_confirmed: paymentConfirmed,
-          sms_sent: smsSent
+          student_id: newStudentIdWithMeta
         })
         .eq('code', code)
         .select();
 
       if (!error && data && data.length > 0) {
+        // Also update local JSON cache
+        const bookingIndex = bookings.findIndex(b => b.code === code);
+        if (bookingIndex !== -1) {
+          bookings[bookingIndex].paymentConfirmed = paymentConfirmed;
+          bookings[bookingIndex].smsSent = smsSent;
+          fs.writeFileSync(BOOKINGS_FILE, JSON.stringify(bookings, null, 2), 'utf8');
+        }
         return true;
       }
     } catch (e) {
-      console.error('Supabase updateBookingStatus failed, falling back to local storage:', e);
+      console.error('Supabase updateBookingStatus failed:', e);
     }
   }
 
   // Fallback to local JSON
-  const bookings = await getBookings();
   const bookingIndex = bookings.findIndex(b => b.code === code);
   if (bookingIndex !== -1) {
     bookings[bookingIndex].paymentConfirmed = paymentConfirmed;
