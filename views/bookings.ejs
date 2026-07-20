@@ -124,7 +124,11 @@
                         <%= b.phone %>
                       </td>
                       <td style="padding: 0.75rem 0.5rem; text-align: center;">
-                        <input type="checkbox" class="status-checkbox payment-checkbox" data-code="<%= b.code %>" style="transform: scale(1.2); cursor: pointer;" <%= b.paymentConfirmed ? 'checked' : '' %>>
+                        <% if (b.eventId === 'the-sia-vol-2') { %>
+                          <input type="checkbox" class="status-checkbox payment-checkbox" data-code="<%= b.code %>" style="transform: scale(1.2); cursor: pointer;" <%= b.paymentConfirmed ? 'checked' : '' %>>
+                        <% } else { %>
+                          <span style="opacity: 0.35;">-</span>
+                        <% } %>
                       </td>
                       <td style="padding: 0.75rem 0.5rem; text-align: center;">
                         <input type="checkbox" class="status-checkbox sms-checkbox" data-code="<%= b.code %>" style="transform: scale(1.2); cursor: pointer;" <%= b.smsSent ? 'checked' : '' %>>
@@ -295,12 +299,12 @@
             const paymentCheckbox = row.querySelector('.payment-checkbox');
             const smsCheckbox = row.querySelector('.sms-checkbox');
             
-            const paymentConfirmed = paymentCheckbox.checked;
-            const smsSent = smsCheckbox.checked;
+            const paymentConfirmed = paymentCheckbox ? paymentCheckbox.checked : false;
+            const smsSent = smsCheckbox ? smsCheckbox.checked : false;
             
             // Disable interactions while saving without changing opacity
-            paymentCheckbox.style.pointerEvents = 'none';
-            smsCheckbox.style.pointerEvents = 'none';
+            if (paymentCheckbox) paymentCheckbox.style.pointerEvents = 'none';
+            if (smsCheckbox) smsCheckbox.style.pointerEvents = 'none';
             
             fetch('/admin/update-status', {
               method: 'POST',
@@ -311,8 +315,8 @@
             })
               .then(res => res.json())
               .then(data => {
-                paymentCheckbox.style.pointerEvents = 'auto';
-                smsCheckbox.style.pointerEvents = 'auto';
+                if (paymentCheckbox) paymentCheckbox.style.pointerEvents = 'auto';
+                if (smsCheckbox) smsCheckbox.style.pointerEvents = 'auto';
                 if (!data.success) {
                   alert(data.error || '상태 업데이트 중 오류가 발생했습니다.');
                   // Revert state
@@ -320,8 +324,8 @@
                 }
               })
               .catch(err => {
-                paymentCheckbox.style.pointerEvents = 'auto';
-                smsCheckbox.style.pointerEvents = 'auto';
+                if (paymentCheckbox) paymentCheckbox.style.pointerEvents = 'auto';
+                if (smsCheckbox) smsCheckbox.style.pointerEvents = 'auto';
                 alert('서버 통신 오류가 발생했습니다.');
                 checkbox.checked = !checkbox.checked;
               });
