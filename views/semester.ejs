@@ -417,6 +417,55 @@
                                   <% if (activeSemester.id==='da-nol-da-nong' ) { %>
                                     <script>
                                       document.addEventListener('DOMContentLoaded', function () {
+                                        // Poster stack interaction
+                                        const stackContainer = document.querySelector('.poster-stack-container');
+                                        if (stackContainer) {
+                                          const posters = Array.from(stackContainer.querySelectorAll('.stack-poster'));
+                                          let order = [0, 1, 2]; // index 0 is top, 1 is middle, 2 is bottom
+                                          const rotations = [-2, 1.5, -1];
+                                          const offsets = [
+                                            { x: 0, y: 0 },
+                                            { x: 4, y: 5 },
+                                            { x: -4, y: 8 }
+                                          ];
+                                          let isAnimating = false;
+
+                                          stackContainer.addEventListener('click', function () {
+                                            if (isAnimating) return;
+                                            isAnimating = true;
+
+                                            const topIdx = order[0];
+                                            const topPoster = posters[topIdx];
+
+                                            // Fly away to the right and rotate
+                                            topPoster.style.transform = 'translate(120%, -10%) rotate(15deg)';
+                                            topPoster.style.opacity = '0';
+                                            topPoster.style.zIndex = '4';
+
+                                            // Shift order
+                                            order.push(order.shift());
+
+                                            // Reorder z-index and transformations of the remaining
+                                            posters[order[0]].style.zIndex = '3';
+                                            posters[order[0]].style.transform = `rotate(${rotations[0]}deg) translate(${offsets[0].x}px, ${offsets[0].y}px)`;
+                                            posters[order[0]].style.opacity = '1';
+
+                                            posters[order[1]].style.zIndex = '2';
+                                            posters[order[1]].style.transform = `rotate(${rotations[1]}deg) translate(${offsets[1].x}px, ${offsets[1].y}px)`;
+                                            posters[order[1]].style.opacity = '1';
+
+                                            setTimeout(() => {
+                                              posters[order[2]].style.zIndex = '1';
+                                              posters[order[2]].style.transform = `rotate(${rotations[2]}deg) translate(${offsets[2].x}px, ${offsets[2].y}px)`;
+                                              posters[order[2]].style.opacity = '1';
+
+                                              setTimeout(() => {
+                                                isAnimating = false;
+                                              }, 300);
+                                            }, 300);
+                                          });
+                                        }
+
                                         const form = document.getElementById('booking-form');
                                         const errorDiv = document.getElementById('form-error');
                                         const successDiv = document.getElementById('booking-success');
