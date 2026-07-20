@@ -272,10 +272,9 @@
             const nw = w * scale;
             const nh = h * scale;
             
-            // Map face coordinates to mirrored coordinates space
-            const mirroredMouseX = w - mouseX;
+            // Use mouseX directly since the canvas context is already horizontally flipped (mirrored) via translate/scale
             const bias = i / 6;
-            const targetCenterX = w / 2 + (mirroredMouseX - w / 2) * bias;
+            const targetCenterX = w / 2 + (mouseX - w / 2) * bias;
             const targetCenterY = h / 2 + (mouseY - h / 2) * bias;
             
             const nx = targetCenterX - nw / 2;
