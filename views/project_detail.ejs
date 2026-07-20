@@ -29,7 +29,7 @@
       <div class="projects">
         <% siblingProjects.forEach(function(p) { %>
           <% const sem = db.getSemester(p.semesterId); %>
-          <a class="project block <%= p.slug === project.slug ? 'active' : '' %>" href="/students/<%= student.id %>/<%= p.slug %>">
+          <a class="project block <%= p.slug === project.slug ? 'active' : '' %>" href="/crew/<%= student.id %>/<%= p.slug %>">
             <img class="thumb" src="<%= p.thumbUrl %>" alt="preview image for <%= p.title %>">
             <div>
               <h2 class="bold"><%= p.title %></h2>
@@ -66,7 +66,7 @@
   <section id="two" class="right" aria-expanded="true">
     <div class="project">
       <div class="headline">
-        <h2><a href="/students/<%= student.id %>"><%= student.name %></a>&thinsp;&mdash;&thinsp;<span class="bold"><%= project.title %></span></h2>
+        <h2><a href="/crew/<%= student.id %>"><%= student.name %></a>&thinsp;&mdash;&thinsp;<span class="bold"><%= project.title %></span></h2>
         <h3 class="italic"><a href="/projects/<%= semester.id %>"><%= semester.title %></a>&thinsp;&mdash;&thinsp;<%= semester.term %></h3>
       </div>
       <div class="project-text">

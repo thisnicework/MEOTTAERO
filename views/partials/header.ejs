@@ -9,7 +9,7 @@
     <link rel="license" href="//creativecommons.org/licenses/by-nc-nd/4.0">
     <link rel="stylesheet" type="text/css" href="/assets/css/index.css">
     
-    <% if (activeMenu === 'projects' || activeMenu === 'students') { %>
+    <% if (activeMenu === 'projects' || activeMenu === 'crew') { %>
       <script src="/assets/js/scroll.js"></script>
     <% } %>
     <title><%= title %></title>
@@ -20,7 +20,7 @@
       <% if (activeMenu !== 'admin') { %>
       <nav id="menu">
         <a <%= activeMenu === 'projects' ? 'aria-current="page"' : '' %> href="/projects">projects</a>
-        <a <%= activeMenu === 'students' ? 'aria-current="page"' : '' %> href="/students">students</a>
+        <a <%= activeMenu === 'crew' ? 'aria-current="page"' : '' %> href="/crew">crew</a>
         <a <%= activeMenu === 'about' ? 'aria-current="page"' : '' %> href="/about">about</a>
       </nav>
       <% } %>

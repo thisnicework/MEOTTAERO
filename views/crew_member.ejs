@@ -4,7 +4,7 @@
   <section id="one" class="left" aria-expanded="false">
     <div class="students">
       <% students.forEach(function(student) { %>
-        <a class="student block <%= student.id === activeStudent.id ? 'active' : '' %>" href="/students/<%= student.id %>">
+        <a class="student block <%= student.id === activeStudent.id ? 'active' : '' %>" href="/crew/<%= student.id %>">
           <h2 class="bold"><%= student.name %></h2>
         </a>
       <% }); %>
@@ -38,7 +38,7 @@
       <% } else { %>
         <% projects.forEach(function(p) { %>
           <% const semester = db.getSemester(p.semesterId); %>
-          <a class="project block" href="/students/<%= activeStudent.id %>/<%= p.slug %>">
+          <a class="project block" href="/crew/<%= activeStudent.id %>/<%= p.slug %>">
             <img class="thumb" src="<%= p.thumbUrl %>" alt="preview image for <%= p.title %>">
             <div>
               <h2 class="bold"><%= p.title %></h2>

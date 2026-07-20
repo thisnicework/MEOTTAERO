@@ -127,40 +127,40 @@ app.get('/projects/:semester_id', async (req, res) => {
   });
 });
 
-// Route: Students Page
-app.get('/students', (req, res) => {
+// Route: Crew Page
+app.get('/crew', (req, res) => {
   const initialProject = db.getRandomProject();
   const initialStudent = initialProject ? db.getStudent(initialProject.studentId) : null;
   const students = db.getStudents();
-  res.render('students', {
+  res.render('crew', {
     title: '// MOTTAERO',
-    activeMenu: 'students',
+    activeMenu: 'crew',
     students,
     initialProject,
     initialStudent
   });
 });
 
-// Route: Specific Student Page (Student details and their projects list)
-app.get('/students/:student_id', (req, res) => {
+// Route: Specific Crew Member Page (Crew member details and their projects list)
+app.get('/crew/:student_id', (req, res) => {
   const studentId = req.params.student_id;
   const student = db.getStudent(studentId);
   if (!student) {
-    return res.status(404).send('Student not found');
+    return res.status(404).send('Crew member not found');
   }
   const students = db.getStudents();
   const projects = db.getProjectsByStudent(studentId);
-  res.render('student', {
+  res.render('crew_member', {
     title: `// MOTTAERO — ${student.name}`,
-    activeMenu: 'students',
+    activeMenu: 'crew',
     students,
     activeStudent: student,
     projects
   });
 });
 
-// Route: Project Details from Student Context
-app.get('/students/:student_id/:project_slug', (req, res) => {
+// Route: Project Details from Crew Context
+app.get('/crew/:student_id/:project_slug', (req, res) => {
   const { student_id, project_slug } = req.params;
   const student = db.getStudent(student_id);
   const project = db.getProjectBySlug(student_id, project_slug);
@@ -171,7 +171,7 @@ app.get('/students/:student_id/:project_slug', (req, res) => {
   const siblingProjects = db.getProjectsByStudent(student_id);
   res.render('project_detail', {
     title: `// MOTTAERO — ${student.name} — ${project.title}`,
-    activeMenu: 'students',
+    activeMenu: 'crew',
     context: 'student',
     student,
     project,
