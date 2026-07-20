@@ -147,7 +147,11 @@
         }
 
         stream = await navigator.mediaDevices.getUserMedia({
-          video: { width: 640, height: 480, facingMode: 'user' },
+          video: { 
+            width: { ideal: 1920 }, 
+            height: { ideal: 1080 }, 
+            facingMode: 'user' 
+          },
           audio: false
         });
         video.srcObject = stream;
@@ -245,25 +249,33 @@
           canvasPreview.height = h;
         }
 
-        // Get coordinates from clmtrackr
+        // Get coordinates from clmtrackr and map them to high-resolution canvas space
+        let canvasFaceX = w / 2;
+        let canvasFaceY = h / 2;
+        let canvasFaceSize = 150 * (w / (video.width || 640));
+
         if (tracker) {
           const position = tracker.getCurrentPosition();
           if (position) {
+            // Scale factors from 640x480 tracker coordinates to actual high-resolution canvas coordinates
+            const scaleX = w / (video.width || 640);
+            const scaleY = h / (video.height || 480);
+
             // Position point 62 is the nose tip (face center)
-            targetFaceX = position[62][0];
-            targetFaceY = position[62][1];
+            canvasFaceX = position[62][0] * scaleX;
+            canvasFaceY = position[62][1] * scaleY;
             
             // Calculate distance between left cheek (14) and right cheek (0) for dynamic face depth size
             const dx = position[14][0] - position[0][0];
             const dy = position[14][1] - position[0][1];
-            targetFaceSize = Math.sqrt(dx * dx + dy * dy) * 1.5; // scale factor to align with video width ratio
+            canvasFaceSize = Math.sqrt(dx * dx + dy * dy) * 1.5 * scaleX;
           }
         }
 
-        // Smoothly interpolate current coordinates towards target face coordinates (10% Lerp)
-        mouseX += (targetFaceX - mouseX) * 0.1;
-        mouseY += (targetFaceY - mouseY) * 0.1;
-        faceSize += (targetFaceSize - faceSize) * 0.1;
+        // Smoothly interpolate current coordinates towards scaled target face coordinates (10% Lerp)
+        mouseX += (canvasFaceX - mouseX) * 0.1;
+        mouseY += (canvasFaceY - mouseY) * 0.1;
+        faceSize += (canvasFaceSize - faceSize) * 0.1;
 
         ctx.save();
         
