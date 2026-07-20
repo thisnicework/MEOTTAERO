@@ -14,7 +14,6 @@
   .filter-mono { filter: contrast(180%) grayscale(100%); }
   .filter-invert { filter: invert(100%); }
   .filter-thermal { filter: hue-rotate(90deg) saturate(300%) contrast(150%); }
-  .filter-vintage { filter: sepia(70%) contrast(140%) saturate(140%); }
   .filter-xray { filter: grayscale(100%) invert(100%) contrast(130%); }
 </style>
 
@@ -23,9 +22,10 @@
     <p class="bold" style="font-size: 1.25rem; margin-bottom: 0.5rem; color: var(--color-high);">PHOTO BOOTH</p>
     <p style="margin-bottom: 1.5rem; font-size: 0.95rem;">멋대로 움직임을 기록해보세요. 📸🪩</p>
     
-    <!-- Webcam Video Wrap -->
+    <!-- Webcam Video / Canvas Wrap -->
     <div class="video-wrap" style="position: relative; width: 100%; aspect-ratio: 4/3; background: #000; border: 1px solid var(--color-fg); margin-bottom: 1.5rem; overflow: hidden; display: flex; align-items: center; justify-content: center;">
       <video id="webcam" autoplay playsinline style="width: 100%; height: 100%; object-fit: cover; transform: scaleX(-1); transition: filter 0.1s ease;"></video>
+      <canvas id="canvas-preview" style="display: none; width: 100%; height: 100%; object-fit: cover;"></canvas>
       
       <!-- Countdown overlay -->
       <div id="countdown" style="display: none; position: absolute; font-size: 8rem; font-weight: 900; color: white; text-shadow: 0 0 25px rgba(0,0,0,0.85); z-index: 10; pointer-events: none; font-family: monospace;">3</div>
@@ -55,7 +55,7 @@
         <button class="filter-opt-btn" data-filter="mono" style="padding: 0.6rem; border: 1px solid var(--color-fg); background: white; cursor: pointer; font-family: inherit; font-size: 0.8rem;">Mono</button>
         <button class="filter-opt-btn" data-filter="invert" style="padding: 0.6rem; border: 1px solid var(--color-fg); background: white; cursor: pointer; font-family: inherit; font-size: 0.8rem;">Invert</button>
         <button class="filter-opt-btn" data-filter="thermal" style="padding: 0.6rem; border: 1px solid var(--color-fg); background: white; cursor: pointer; font-family: inherit; font-size: 0.8rem;">Thermal</button>
-        <button class="filter-opt-btn" data-filter="vintage" style="padding: 0.6rem; border: 1px solid var(--color-fg); background: white; cursor: pointer; font-family: inherit; font-size: 0.8rem;">Vintage</button>
+        <button class="filter-opt-btn" data-filter="kinetic" style="padding: 0.6rem; border: 1px solid var(--color-fg); background: white; cursor: pointer; font-family: inherit; font-size: 0.8rem;">Kinetic</button>
         <button class="filter-opt-btn" data-filter="xray" style="padding: 0.6rem; border: 1px solid var(--color-fg); background: white; cursor: pointer; font-family: inherit; font-size: 0.8rem;">X-Ray</button>
       </div>
     </div>
@@ -65,6 +65,7 @@
 <script>
   document.addEventListener('DOMContentLoaded', function () {
     const video = document.getElementById('webcam');
+    const canvasPreview = document.getElementById('canvas-preview');
     const captureBtn = document.getElementById('capture-btn');
     const filterBtns = document.querySelectorAll('.filter-opt-btn');
     const countdownOverlay = document.getElementById('countdown');
@@ -74,6 +75,11 @@
 
     let stream = null;
     let currentFilter = 'normal';
+    
+    // Kinetic filter variables
+    let kineticLoopId = null;
+    let lerpBuffer = null;
+    const pixelSize = 8;
 
     // Filter Canvas values mapping to match CSS
     const filterCanvasMappings = {
@@ -81,7 +87,6 @@
       'mono': 'contrast(180%) grayscale(100%)',
       'invert': 'invert(100%)',
       'thermal': 'hue-rotate(90deg) saturate(300%) contrast(150%)',
-      'vintage': 'sepia(70%) contrast(140%) saturate(140%)',
       'xray': 'grayscale(100%) invert(100%) contrast(130%)'
     };
 
@@ -98,6 +103,11 @@
           audio: false
         });
         video.srcObject = stream;
+        
+        // If kinetic filter is already active when camera finishes starting, start loop
+        if (currentFilter === 'kinetic') {
+          startKineticLoop();
+        }
       } catch (err) {
         console.error('Camera access error:', err);
         warningOverlay.style.display = 'flex';
@@ -114,12 +124,100 @@
         this.classList.add('active');
 
         currentFilter = this.getAttribute('data-filter');
-        // Clear old classes
-        video.className = '';
-        // Add selected filter class
-        video.classList.add('filter-' + currentFilter);
+        
+        if (currentFilter === 'kinetic') {
+          // Switch viewing to canvas
+          video.style.display = 'none';
+          canvasPreview.style.display = 'block';
+          startKineticLoop();
+        } else {
+          // Switch viewing back to video
+          stopKineticLoop();
+          canvasPreview.style.display = 'none';
+          video.style.display = 'block';
+          
+          video.className = '';
+          video.classList.add('filter-' + currentFilter);
+        }
       });
     });
+
+    // Kinetic (Dreamy Pixel Trail) filter loop implementation (Optimized Canvas implementation)
+    function startKineticLoop() {
+      if (kineticLoopId) return;
+      
+      const ctx = canvasPreview.getContext('2d');
+      const offscreen = document.createElement('canvas');
+      const offscreenCtx = offscreen.getContext('2d');
+      
+      const lerpWeight = 0.03; // Smooth delay weight matching user's config
+
+      function drawFrame() {
+        if (currentFilter !== 'kinetic') {
+          kineticLoopId = null;
+          return;
+        }
+
+        const w = video.videoWidth || 640;
+        const h = video.videoHeight || 480;
+
+        if (canvasPreview.width !== w || canvasPreview.height !== h) {
+          canvasPreview.width = w;
+          canvasPreview.height = h;
+        }
+
+        const cols = Math.floor(w / pixelSize);
+        const rows = Math.floor(h / pixelSize);
+
+        if (offscreen.width !== cols || offscreen.height !== rows) {
+          offscreen.width = cols;
+          offscreen.height = rows;
+          // Re-initialize lerp float buffer
+          lerpBuffer = new Float32Array(cols * rows * 3);
+        }
+
+        // Draw downsampled video onto offscreen canvas (Fast GPU downsample)
+        offscreenCtx.drawImage(video, 0, 0, cols, rows);
+        const imgData = offscreenCtx.getImageData(0, 0, cols, rows).data;
+
+        ctx.fillStyle = '#dcdcdc'; // Background color equivalent to 220
+        ctx.fillRect(0, 0, w, h);
+
+        for (let y = 0; y < rows; y++) {
+          for (let x = 0; x < cols; x++) {
+            const pixelIdx = (y * cols + x);
+            const imgDataIdx = pixelIdx * 4;
+            const bufIdx = pixelIdx * 3;
+
+            const targetR = imgData[imgDataIdx];
+            const targetG = imgData[imgDataIdx + 1];
+            const targetB = imgData[imgDataIdx + 2];
+
+            // Linear Interpolation (Lerp) over time
+            lerpBuffer[bufIdx] += (targetR - lerpBuffer[bufIdx]) * lerpWeight;
+            lerpBuffer[bufIdx + 1] += (targetG - lerpBuffer[bufIdx + 1]) * lerpWeight;
+            lerpBuffer[bufIdx + 2] += (targetB - lerpBuffer[bufIdx + 2]) * lerpWeight;
+
+            ctx.fillStyle = `rgb(${Math.round(lerpBuffer[bufIdx])}, ${Math.round(lerpBuffer[bufIdx + 1])}, ${Math.round(lerpBuffer[bufIdx + 2])})`;
+            
+            // Mirror horizontally
+            const mirroredX = cols - 1 - x;
+            ctx.fillRect(mirroredX * pixelSize, y * pixelSize, pixelSize, pixelSize);
+          }
+        }
+
+        kineticLoopId = requestAnimationFrame(drawFrame);
+      }
+
+      kineticLoopId = requestAnimationFrame(drawFrame);
+    }
+
+    function stopKineticLoop() {
+      if (kineticLoopId) {
+        cancelAnimationFrame(kineticLoopId);
+        kineticLoopId = null;
+      }
+    }
 
     // Web Audio dynamic camera shutter sound synthesizer
     function playShutterSound() {
@@ -178,24 +276,31 @@
             }, 250);
           }, 50);
 
-          // Render video stream frame to Canvas
-          const canvas = document.createElement('canvas');
-          canvas.width = video.videoWidth || 640;
-          canvas.height = video.videoHeight || 480;
-          const ctx = canvas.getContext('2d');
+          let dataUrl;
 
-          // Mirror frame
-          ctx.translate(canvas.width, 0);
-          ctx.scale(-1, 1);
+          if (currentFilter === 'kinetic') {
+            // Draw current canvasPreview directly (since it is already drawn correctly)
+            dataUrl = canvasPreview.toDataURL('image/jpeg', 0.9);
+          } else {
+            // Render video stream frame to a temporary Canvas
+            const canvas = document.createElement('canvas');
+            canvas.width = video.videoWidth || 640;
+            canvas.height = video.videoHeight || 480;
+            const ctx = canvas.getContext('2d');
 
-          // Apply selected filter to canvas
-          ctx.filter = filterCanvasMappings[currentFilter] || 'none';
+            // Mirror frame
+            ctx.translate(canvas.width, 0);
+            ctx.scale(-1, 1);
 
-          // Draw
-          ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+            // Apply selected CSS filter to canvas drawing context
+            ctx.filter = filterCanvasMappings[currentFilter] || 'none';
 
-          // Convert to JPEG base64 & trigger direct download
-          const dataUrl = canvas.toDataURL('image/jpeg', 0.9);
+            // Draw
+            ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+            dataUrl = canvas.toDataURL('image/jpeg', 0.9);
+          }
+
+          // Trigger direct file download
           const link = document.createElement('a');
           link.download = `meottaero_capture_${Date.now()}.jpg`;
           link.href = dataUrl;
