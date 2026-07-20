@@ -244,7 +244,12 @@
             const btn = e.target;
             const code = btn.getAttribute('data-code');
 
-            if (!confirm('정말로 이 예매를 취소하시겠습니까?')) {
+            const password = prompt('예매를 취소하려면 관리자 비밀번호를 입력해 주세요:');
+            if (password === null) {
+              return; // User clicked Cancel
+            }
+            if (!password.trim()) {
+              alert('비밀번호를 입력해야 합니다.');
               return;
             }
 
@@ -256,7 +261,7 @@
               headers: {
                 'Content-Type': 'application/json'
               },
-              body: JSON.stringify({ code })
+              body: JSON.stringify({ code, password })
             })
               .then(res => res.json())
               .then(data => {

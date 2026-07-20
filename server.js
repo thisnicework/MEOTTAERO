@@ -318,6 +318,10 @@ app.get('/admin', requireAdminAuth, async (req, res) => {
       }
       return { ...b, eventId };
     });
+
+    // Filter out bookings that belong to inactive/ended events
+    bookings = bookings.filter(b => b.eventId === 'the-sia-vol-2' || b.eventId === '다놀다농');
+
     const capacities = db.getCapacities();
     res.render('bookings', {
       title: '// MOTTAERO — Admin Dashboard',
@@ -355,9 +359,11 @@ app.get('/admin/export', requireAdminAuth, async (req, res) => {
       return { ...b, eventId };
     });
 
-    // Filter if requested
+    // Filter if requested, otherwise exclude inactive events by default
     if (event && event !== 'all') {
       bookings = bookings.filter(b => b.eventId === event);
+    } else {
+      bookings = bookings.filter(b => b.eventId === 'the-sia-vol-2' || b.eventId === '다놀다농');
     }
 
     const headers = ['공연', '이름', '구분 (학번/참가)', '연락처', '예매일시'];
@@ -418,10 +424,17 @@ app.post('/admin/update-capacity', requireAdminAuth, (req, res) => {
 
 // Route: DELETE Booking (Admin Action)
 app.post('/admin/delete', requireAdminAuth, async (req, res) => {
-  const { code } = req.body;
+  const { code, password } = req.body;
   if (!code) {
     return res.status(400).json({ error: '예매 코드가 필요합니다.' });
   }
+
+  // Verify the admin password
+  const adminPassword = process.env.ADMIN_PASSWORD || 'admin';
+  if (password !== adminPassword) {
+    return res.status(403).json({ error: '비밀번호가 올바르지 않습니다.' });
+  }
+
   try {
     const success = await db.deleteBooking(code);
     if (success) {
