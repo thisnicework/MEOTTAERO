@@ -116,7 +116,7 @@
                         <%= b.phone %>
                       </td>
                       <td style="padding: 0.75rem 0.5rem; text-align: center;">
-                        <% if (b.eventId === 'the-sia-vol-2') { %>
+                        <% if (b.eventId === 'the-sia-vol-2' || b.eventId === '다놀다농') { %>
                           <input type="checkbox" class="status-checkbox payment-checkbox" data-code="<%= b.code %>" style="transform: scale(1.2); cursor: pointer;" <%= b.paymentConfirmed ? 'checked' : '' %>>
                         <% } else { %>
                           <span style="opacity: 0.35;">-</span>
