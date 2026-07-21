@@ -53,13 +53,13 @@ function loadSemesters() {
               춤과 음악을 중심으로 자유롭게 감각을 경험하고 머물 수 있는 로컬 기반 문화 프로젝트 &lt;다놀다농&gt;에서 음악·움직임·휴식·파티 문화를 보다 가볍고 열린 방식으로 즐길 분들을 모집합니다!
             </p>
             
-            <p class="bold" style="color: var(--color-high);">➔ 모집 대상</p>
+            <p class="bold" style="color: var(--color-high);">✪ 모집 대상</p>
             <p style="margin-bottom: 1rem;">10대 - 60대 지역주민</p>
             
-            <p class="bold" style="color: var(--color-high);">➔ 모집 기간</p>
+            <p class="bold" style="color: var(--color-high);">✪ 모집 기간</p>
             <p style="margin-bottom: 1rem;">2026. 07. 20 ~ 08. 06</p>
             
-            <p class="bold" style="color: var(--color-high);">➔ 프로그램</p>
+            <p class="bold" style="color: var(--color-high);">✪ 프로그램</p>
             <p style="margin-bottom: 1rem; line-height: 1.6;">
               <strong>1. 하우스댄스 워크숍</strong> (7.24 ~ 7.25 / 19시~21시)<br>
               &nbsp;&nbsp;- 하우스 댄스 기본기 익히기, 간단한 안무 배우기, 영상 촬영<br>
@@ -69,12 +69,12 @@ function loadSemesters() {
               &nbsp;&nbsp;- DJ의 음악을 들으며 다함께 즐기기, 쇼케이스 공연
             </p>
             
-            <p class="bold" style="color: var(--color-high);">➔ ENTRY FEE</p>
+            <p class="bold" style="color: var(--color-high);">⚑ ENTRY FEE</p>
             <p style="margin-bottom: 1rem; line-height: 1.5;">
               • 참가비 4,000₩ (음료 1잔 포함)
             </p>
             
-            <p class="bold" style="color: var(--color-high);">➔ BANK ACCOUNT</p>
+            <p class="bold" style="color: var(--color-high);">✪ BANK ACCOUNT</p>
             <p style="margin-bottom: 1rem;">토스뱅크 1000-5185-4119 (장평화)</p>
 
             <p class="small" style="font-size: 0.85em; opacity: 0.85; line-height: 1.4; margin-bottom: 1.5rem;">
@@ -82,8 +82,8 @@ function loadSemesters() {
               ⋆ 입금 확인 후 순차적으로 참가 확정 문자를 보내드립니다.
             </p>
             
-            <p class="bold" style="color: var(--color-high);">➔ 문의</p>
-            <p style="margin-bottom: 1.5rem;">📞 010-2692-8501</p>
+            <p class="bold" style="color: var(--color-high);">✪ 문의</p>
+            <p style="margin-bottom: 1.5rem;">📞 <a href="tel:010-2692-8501">010-2692-8501</a></p>
           </div>
         `
       };
@@ -96,29 +96,29 @@ function loadSemesters() {
             <p class="bold" style="font-size: 1.25rem; margin-bottom: 0.5rem; color: var(--color-high);">THE SIA Vol.2</p>
             <p style="margin-bottom: 1.5rem; font-size: 0.95rem;">⊛ OPENSTYLE LIVE BAND 1on1 BATTLE</p>
             
-            <p class="bold" style="margin-top: 1rem; color: var(--color-high);">➔ DATE</p>
+            <p class="bold" style="margin-top: 1rem; color: var(--color-high);">✪ DATE</p>
             <p style="margin-bottom: 1rem;">🕟 2026.08.29 (SAT) 2PM</p>
             
-            <p class="bold" style="color: var(--color-high);">➔ LOCATION</p>
+            <p class="bold" style="color: var(--color-high);">✪ LOCATION</p>
             <p style="margin-bottom: 1rem;">📍 서울예술대학교 (경기도 안산시 단원구 예술대학로 171)</p>
             
-            <p class="bold" style="color: var(--color-high);">➔ JUDGE</p>
+            <p class="bold" style="color: var(--color-high);">✪ JUDGE</p>
             <p style="margin-bottom: 1rem; line-height: 1.6;">
               MARIO <a href="https://instagram.com/supa_soul_m" target="_blank" rel="noopener noreferrer">@supa_soul_m</a><br>
               LOCKER HWA <a href="https://instagram.com/lockerhwa" target="_blank" rel="noopener noreferrer">@lockerhwa</a><br>
               JEEM <a href="https://instagram.com/masterpiece_jeem" target="_blank" rel="noopener noreferrer">@masterpiece_jeem</a>
             </p>
             
-            <p class="bold" style="color: var(--color-high);">➔ BATTLE GUEST</p>
+            <p class="bold" style="color: var(--color-high);">✪ BATTLE GUEST</p>
             <p style="margin-bottom: 1rem;">REXKANG <a href="https://instagram.com/rexkang_" target="_blank" rel="noopener noreferrer">@rexkang_</a></p>
             
-            <p class="bold" style="color: var(--color-high);">➔ DJ</p>
+            <p class="bold" style="color: var(--color-high);">✪ DJ</p>
             <p style="margin-bottom: 1rem;">DAEUN <a href="https://instagram.com/t0r1nsight" target="_blank" rel="noopener noreferrer">@t0r1nsight</a></p>
             
-            <p class="bold" style="color: var(--color-high);">➔ MC</p>
+            <p class="bold" style="color: var(--color-high);">✪ MC</p>
             <p style="margin-bottom: 1rem;">JINYOUNG <a href="https://instagram.com/yddeenn" target="_blank" rel="noopener noreferrer">@yddeenn</a></p>
             
-            <p class="bold" style="color: var(--color-high);">➔ BAND</p>
+            <p class="bold" style="color: var(--color-high);">✪ BAND</p>
             <p style="margin-bottom: 1rem; line-height: 1.6;">
               WOO YECHAN <a href="https://instagram.com/723wixx" target="_blank" rel="noopener noreferrer">@723wixx</a><br>
               NAM JEONGHYO <a href="https://instagram.com/namechloeee" target="_blank" rel="noopener noreferrer">@namechloeee</a><br>
@@ -126,14 +126,14 @@ function loadSemesters() {
               YU JIHOON <a href="https://instagram.com/uzhhuzh" target="_blank" rel="noopener noreferrer">@uzhhuzh</a>
             </p>
             
-            <p class="bold" style="color: var(--color-high);">➔ VOCAL</p>
+            <p class="bold" style="color: var(--color-high);">✪ VOCAL</p>
             <p style="margin-bottom: 1.5rem; line-height: 1.6;">
               WZN <a href="https://instagram.com/wznszn" target="_blank" rel="noopener noreferrer">@wznszn</a><br>
               SOYOUNG <a href="https://instagram.com/ssoyoungkwak" target="_blank" rel="noopener noreferrer">@ssoyoungkwak</a><br>
               AHN HYUNGJIN <a href="https://instagram.com/98.0811" target="_blank" rel="noopener noreferrer">@98.0811</a>
             </p>
             
-            <p class="bold" style="color: var(--color-high);">➔ ENTRY FEE</p>
+            <p class="bold" style="color: var(--color-high);">⚑ ENTRY FEE</p>
             <p style="margin-bottom: 1rem; line-height: 1.5;">
               • 얼리버드예매 (07.19 ~ 07.28)<br>
               &nbsp;&nbsp;참가비 30,000₩ / 관람비 25,000₩<br>
@@ -141,7 +141,7 @@ function loadSemesters() {
               &nbsp;&nbsp;참가비 35,000₩ / 관람비 30,000₩
             </p>
 
-            <p class="bold" style="color: var(--color-high);">➔ BANK ACCOUNT</p>
+            <p class="bold" style="color: var(--color-high);">✪ BANK ACCOUNT</p>
             <p style="margin-bottom: 1rem;">토스뱅크 1001-4431-9159 (장선휘)</p>
 
             <p class="small" style="font-size: 0.85em; opacity: 0.85; line-height: 1.4; margin-bottom: 1.5rem;">
