@@ -69,13 +69,14 @@ function loadSemesters() {
               &nbsp;&nbsp;- DJ의 음악을 들으며 다함께 즐기기, 쇼케이스 공연
             </p>
             
-            <p class="bold" style="color: var(--color-high);">✪ 참가비 안내</p>
-            <p style="margin-bottom: 1rem; line-height: 1.5;">본 워크숍은 음료 1잔이 포함된 4,000원의 참가비로 운영됩니다.</p>
+            <p class="bold" style="color: var(--color-high);">⚑ ENTRY FEE</p>
+            <p style="margin-bottom: 1rem; line-height: 1.5;">
+              • 참가비 4,000₩ (음료 1잔 포함)
+            </p>
             
-            <p class="bold" style="color: var(--color-high);">✪ 참가비 입금 계좌</p>
+            <p class="bold" style="color: var(--color-high);">✪ BANK ACCOUNT</p>
             <p style="margin-bottom: 1rem;">토스뱅크 1000-5185-4119 (장평화)</p>
 
-            <p class="bold" style="color: var(--color-high);">✪ 안내사항</p>
             <p class="small" style="font-size: 0.85em; opacity: 0.85; line-height: 1.4; margin-bottom: 1.5rem;">
               ⋆ 신청서 작성 및 참가비 입금이 모두 완료되어야 최종 확정됩니다.<br>
               ⋆ 입금 확인 후 순차적으로 참가 확정 문자를 보내드립니다.
@@ -139,6 +140,10 @@ function loadSemesters() {
               • 일반예매 (07.28 ~ 08.26)<br>
               &nbsp;&nbsp;참가비 35,000₩ / 관람비 30,000₩
             </p>
+
+            <p class="bold" style="color: var(--color-high);">✪ BANK ACCOUNT</p>
+            <p style="margin-bottom: 1rem;">토스뱅크 1001-4431-9159 (장선휘)</p>
+
             <p class="small" style="font-size: 0.85em; opacity: 0.85; line-height: 1.4; margin-bottom: 1.5rem;">
               ⋆ 비수도권에서 오시는 참가자 및 관람자 분들께는 5,000원 할인이 진행됩니다.<br>
               ⋆ 환불 및 양도는 행사 7일 전까지만 가능합니다.
