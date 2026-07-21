@@ -255,6 +255,23 @@ app.post('/api/booth/upload', async (req, res) => {
 });
 
 
+function formatPhone(phoneStr) {
+  if (!phoneStr) return '';
+  const nums = phoneStr.replace(/[^0-9]/g, '');
+  if (nums.length <= 3) return nums;
+  if (nums.length <= 7) return `${nums.slice(0, 3)}-${nums.slice(3)}`;
+  if (nums.length <= 11) return `${nums.slice(0, 3)}-${nums.slice(3, nums.length - 4)}-${nums.slice(nums.length - 4)}`;
+  return `${nums.slice(0, 3)}-${nums.slice(3, 7)}-${nums.slice(7, 11)}`;
+}
+
+function isValidPhone(phoneStr) {
+  if (!phoneStr) return false;
+  const nums = phoneStr.replace(/[^0-9]/g, '');
+  const mobileRegex = /^01[016789]\d{7,8}$/;
+  const landlineRegex = /^0(2|[3-6][1-5])\d{7,8}$/;
+  return mobileRegex.test(nums) || landlineRegex.test(nums);
+}
+
 // Route: POST Booking Form
 app.post('/projects/:semesterId/book', async (req, res) => {
   const { semesterId } = req.params;
@@ -284,8 +301,12 @@ app.post('/projects/:semesterId/book', async (req, res) => {
       if (!name || !phone || !type || !genre) {
         return res.status(400).json({ error: '모든 필드를 올바르게 입력해 주세요.' });
       }
+      if (!isValidPhone(phone)) {
+        return res.status(400).json({ error: '올바른 전화번호 형식(예: 010-1234-5678)으로 입력해 주세요.' });
+      }
+      const formattedPhone = formatPhone(phone);
       const studentId = `${type} / ${genre}`;
-      const newBooking = await db.saveBooking({ name, studentId, phone, tickets: 1 });
+      const newBooking = await db.saveBooking({ name, studentId, phone: formattedPhone, tickets: 1 });
       return res.json({ success: true, booking: newBooking });
     }
 
@@ -310,9 +331,12 @@ app.post('/projects/:semesterId/book', async (req, res) => {
       if (!name || !phone || !ageGroup || !residence || !referral || !sessions || !Array.isArray(sessions) || sessions.length === 0) {
         return res.status(400).json({ error: '모든 필드를 올바르게 입력하고 신청 회차를 최소 하나 이상 선택해 주세요.' });
       }
-      
+      if (!isValidPhone(phone)) {
+        return res.status(400).json({ error: '올바른 전화번호 형식(예: 010-1234-5678)으로 입력해 주세요.' });
+      }
+      const formattedPhone = formatPhone(phone);
       const studentId = `${ageGroup} / ${residence} / ${referral} / ${sessions.join(', ')}`;
-      const newBooking = await db.saveBooking({ name, studentId, phone, tickets: 1 });
+      const newBooking = await db.saveBooking({ name, studentId, phone: formattedPhone, tickets: 1 });
       return res.json({ success: true, booking: newBooking });
     }
   } catch (error) {

@@ -380,7 +380,6 @@
                                           type="video/mp4">
                                       </video>
                                       <% } %>
-
                                         <% if (activeSemester.id==='the-sia-vol-2' ) { %>
                                           <script>
                                             document.addEventListener('DOMContentLoaded', function () {
@@ -398,6 +397,29 @@
                                               const submitBtn = form.querySelector('.submit-btn');
                                               const typeSelect = document.getElementById('type');
                                               const genreSelect = document.getElementById('genre');
+
+                                              function formatPhoneNumber(val) {
+                                                const nums = val.replace(/[^0-9]/g, '');
+                                                if (nums.length <= 3) return nums;
+                                                if (nums.length <= 7) return `${nums.slice(0, 3)}-${nums.slice(3)}`;
+                                                if (nums.length <= 11) return `${nums.slice(0, 3)}-${nums.slice(3, nums.length - 4)}-${nums.slice(nums.length - 4)}`;
+                                                return `${nums.slice(0, 3)}-${nums.slice(3, 7)}-${nums.slice(7, 11)}`;
+                                              }
+
+                                              function isValidKoreanPhone(val) {
+                                                const nums = val.replace(/[^0-9]/g, '');
+                                                const mobileRegex = /^01[016789]\d{7,8}$/;
+                                                const landlineRegex = /^0(2|[3-6][1-5])\d{7,8}$/;
+                                                return mobileRegex.test(nums) || landlineRegex.test(nums);
+                                              }
+
+                                              const phoneInput = document.getElementById('phone');
+                                              if (phoneInput) {
+                                                phoneInput.setAttribute('maxlength', '13');
+                                                phoneInput.addEventListener('input', function () {
+                                                  this.value = formatPhoneNumber(this.value);
+                                                });
+                                              }
 
                                               if (privacyConsent && submitBtn) {
                                                 submitBtn.disabled = !privacyConsent.checked;
@@ -428,6 +450,12 @@
 
                                                 if (!name || !phone || !type || !genre) {
                                                   errorDiv.textContent = '모든 필드를 올바르게 입력해 주세요.';
+                                                  errorDiv.style.display = 'block';
+                                                  return;
+                                                }
+
+                                                if (!isValidKoreanPhone(phone)) {
+                                                  errorDiv.textContent = '올바른 전화번호 형식(예: 010-1234-5678)으로 입력해 주세요.';
                                                   errorDiv.style.display = 'block';
                                                   return;
                                                 }
@@ -521,6 +549,29 @@
 
                                                   const privacyConsent = document.getElementById('privacy-consent');
                                                   const submitBtn = form.querySelector('.submit-btn');
+
+                                                  function formatPhoneNumber(val) {
+                                                    const nums = val.replace(/[^0-9]/g, '');
+                                                    if (nums.length <= 3) return nums;
+                                                    if (nums.length <= 7) return `${nums.slice(0, 3)}-${nums.slice(3)}`;
+                                                    if (nums.length <= 11) return `${nums.slice(0, 3)}-${nums.slice(3, nums.length - 4)}-${nums.slice(nums.length - 4)}`;
+                                                    return `${nums.slice(0, 3)}-${nums.slice(3, 7)}-${nums.slice(7, 11)}`;
+                                                  }
+
+                                                  function isValidKoreanPhone(val) {
+                                                    const nums = val.replace(/[^0-9]/g, '');
+                                                    const mobileRegex = /^01[016789]\d{7,8}$/;
+                                                    const landlineRegex = /^0(2|[3-6][1-5])\d{7,8}$/;
+                                                    return mobileRegex.test(nums) || landlineRegex.test(nums);
+                                                  }
+
+                                                  const phoneInput = document.getElementById('phone');
+                                                  if (phoneInput) {
+                                                    phoneInput.setAttribute('maxlength', '13');
+                                                    phoneInput.addEventListener('input', function () {
+                                                      this.value = formatPhoneNumber(this.value);
+                                                    });
+                                                  }
 
                                                   if (privacyConsent && submitBtn) {
                                                     submitBtn.disabled = !privacyConsent.checked;
