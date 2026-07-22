@@ -70,16 +70,8 @@ function loadSemesters() {
             </p>
             
             <p class="bold" style="color: var(--color-high);">⚑ ENTRY FEE</p>
-            <p style="margin-bottom: 1rem; line-height: 1.5;">
-              • 참가비 4,000₩ (음료 1잔 포함)
-            </p>
-            
-            <p class="bold" style="color: var(--color-high);">✪ BANK ACCOUNT</p>
-            <p style="margin-bottom: 1rem;">토스뱅크 1000-5185-4119 (장평화)</p>
-
-            <p class="small" style="font-size: 0.85em; opacity: 0.85; line-height: 1.4; margin-bottom: 1.5rem;">
-              ⋆ 신청서 작성 및 참가비 입금이 모두 완료되어야 최종 확정됩니다.<br>
-              ⋆ 입금 확인 후 순차적으로 참가 확정 문자를 보내드립니다.
+            <p style="margin-bottom: 1.5rem; line-height: 1.5;">
+              • 참가비는 당일 현장에서 음료 1잔을 구매해주시면 됩니다.
             </p>
             
             <p class="bold" style="color: var(--color-high);">✪ 문의</p>
