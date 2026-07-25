@@ -521,11 +521,12 @@ export async function getHeterotopiaCards() {
         .order('created_at', { ascending: true });
 
       if (!error && Array.isArray(data)) {
-        return data.map(c => ({
+        return data.filter(c => c.id !== 'live_stream_frame').map(c => ({
           id: c.id,
           author: c.author,
           text: c.text,
           photo: c.photo,
+          photoTakenAt: c.photo_taken_at || c.photoTakenAt,
           x: c.x,
           y: c.y,
           rotation: c.rotation,
@@ -669,33 +670,68 @@ export async function saveLiveStreamFrame(image) {
     try {
       const base64Data = image.replace(/^data:image\/\w+;base64,/, '');
       const buffer = Buffer.from(base64Data, 'base64');
-      await supabase.storage
+      
+      const uploadRes = await supabase.storage
         .from('booth')
         .upload('live_stream.jpg', buffer, {
           contentType: 'image/jpeg',
           upsert: true
         });
+
+      let publicUrl = '';
+      if (!uploadRes.error) {
+        publicUrl = `${supabaseUrl}/storage/v1/object/public/booth/live_stream.jpg`;
+      }
+
+      await supabase.from('heterotopia_cards').upsert([{
+        id: 'live_stream_frame',
+        author: 'STREAM',
+        text: 'LIVE_STREAM',
+        photo: publicUrl || image,
+        x: 0,
+        y: 0,
+        created_at: new Date().toISOString()
+      }]);
     } catch (err) {
-      console.warn('Live stream Supabase storage upload error:', err);
+      console.warn('Live stream Supabase sync error:', err.message);
     }
   }
 }
 
 export async function getLiveStreamFrame() {
   const now = Date.now();
-  const isActive = memoryLiveTime > 0 && (now - memoryLiveTime < 10000);
 
-  if (isActive) {
-    return {
-      active: true,
-      frame: memoryLiveFrame,
-      updatedAt: memoryLiveTime
-    };
+  if (supabase) {
+    try {
+      const { data, error } = await supabase
+        .from('heterotopia_cards')
+        .select('*')
+        .eq('id', 'live_stream_frame')
+        .single();
+
+      if (!error && data && data.created_at) {
+        const updatedAt = new Date(data.created_at).getTime();
+        if (now - updatedAt < 12000) {
+          const frameSrc = data.photo.startsWith('http') 
+            ? `${data.photo}?t=${updatedAt}` 
+            : data.photo;
+
+          return {
+            active: true,
+            frame: frameSrc,
+            updatedAt
+          };
+        }
+      }
+    } catch (e) {
+      console.warn('Supabase getLiveStreamFrame error:', e.message);
+    }
   }
 
+  const isActive = memoryLiveTime > 0 && (now - memoryLiveTime < 12000);
   return {
-    active: false,
-    frame: null,
+    active: isActive,
+    frame: isActive ? memoryLiveFrame : null,
     updatedAt: memoryLiveTime
   };
 }

@@ -91,7 +91,11 @@
         const data = await res.json();
 
         if (data.success && data.active && data.frame) {
-          frameImg.src = data.frame;
+          let frameSrc = data.frame;
+          if (frameSrc.startsWith('http')) {
+            frameSrc = frameSrc.split('?')[0] + '?t=' + Date.now();
+          }
+          frameImg.src = frameSrc;
           frameImg.style.display = 'block';
           standbyScreen.style.display = 'none';
 
