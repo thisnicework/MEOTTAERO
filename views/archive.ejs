@@ -6,61 +6,6 @@
     margin: 0 auto;
     padding: 2rem 1rem 4rem 1rem;
   }
-  .archive-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: flex-end;
-    border-bottom: 2px solid var(--color-fg);
-    padding-bottom: 1rem;
-    margin-bottom: 1.5rem;
-    flex-wrap: wrap;
-    gap: 1rem;
-  }
-  .archive-title {
-    font-size: 1.5rem;
-    font-weight: 900;
-    letter-spacing: 0.05em;
-    margin: 0;
-    text-transform: uppercase;
-    color: var(--color-high);
-  }
-  .archive-subtitle {
-    font-size: 0.85rem;
-    opacity: 0.7;
-    margin-top: 0.25rem;
-    font-family: monospace;
-  }
-  .archive-nav-link {
-    font-family: monospace;
-    font-size: 0.85rem;
-    font-weight: bold;
-    color: var(--color-high);
-    text-decoration: underline;
-  }
-  
-  .archive-controls {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 2rem;
-    gap: 1rem;
-    flex-wrap: wrap;
-  }
-  .archive-search-input {
-    flex: 1;
-    min-width: 240px;
-    padding: 0.6rem 0.8rem;
-    border: 1px solid var(--color-fg);
-    background: var(--color-bg);
-    color: var(--color-fg);
-    font-family: monospace;
-    font-size: 0.85rem;
-  }
-  .archive-search-input:focus {
-    outline: none;
-    border-color: var(--color-high);
-  }
-
   .archive-grid {
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
@@ -147,26 +92,7 @@
 </style>
 
 <div class="archive-container">
-  <!-- Header -->
-  <div class="archive-header">
-    <div>
-      <h1 class="archive-title">⟪방주: HETEROTOPIA⟫ ARCHIVE</h1>
-      <p class="archive-subtitle">// Chronological Guestbook Feed (#1 ~ #<span id="archive-count-sub">0</span>)</p>
-    </div>
-    <div>
-      <a href="/heterotopia" class="archive-nav-link">&larr; ⟪방주: HETEROTOPIA⟫ 공간 방명록으로 이동</a>
-    </div>
-  </div>
-
-  <!-- Controls -->
-  <div class="archive-controls">
-    <input type="text" id="archive-search" class="archive-search-input" placeholder="🔍 작성자 이름 또는 메시지 검색...">
-    <div style="font-family: monospace; font-size: 0.85rem; font-weight: bold;">
-      TOTAL ARCHIVED: <span id="archive-count" style="color: var(--color-high);">0</span>
-    </div>
-  </div>
-
-  <!-- Cards Grid -->
+  <!-- Cards Grid Feed -->
   <div id="archive-grid" class="archive-grid">
     <div style="grid-column: 1 / -1; text-align: center; padding: 3rem; font-family: monospace; opacity: 0.5;">
       LOADING ARCHIVED CARDS...
@@ -227,7 +153,7 @@
     }
 
     function renderArchive() {
-      const query = searchInput.value.trim().toLowerCase();
+      const query = searchInput ? searchInput.value.trim().toLowerCase() : '';
       const filtered = allCards.filter(c => {
         if (!query) return true;
         const authorMatch = (c.author || '').toLowerCase().includes(query);
@@ -235,17 +161,16 @@
         return authorMatch || textMatch;
       });
 
-      archiveCount.textContent = filtered.length;
-      archiveCountSub.textContent = allCards.length;
+      if (archiveCount) archiveCount.textContent = filtered.length;
+      if (archiveCountSub) archiveCountSub.textContent = allCards.length;
 
       if (filtered.length === 0) {
-        grid.innerHTML = '<div style="grid-column: 1 / -1; text-align: center; padding: 3rem; font-family: monospace; opacity: 0.5;">검색 결과와 일치하는 방명록 카드가 없습니다.</div>';
+        grid.innerHTML = '<div style="grid-column: 1 / -1; text-align: center; padding: 3rem; font-family: monospace; opacity: 0.5;">등록된 방명록 카드가 없습니다.</div>';
         return;
       }
 
       grid.innerHTML = '';
       filtered.forEach((card, index) => {
-        // Absolute order number in full list
         const orderNum = allCards.indexOf(card) + 1;
         const timeStr = formatKST(card.photoTakenAt || card.createdAt);
 
@@ -277,7 +202,9 @@
       });
     }
 
-    searchInput.addEventListener('input', renderArchive);
+    if (searchInput) {
+      searchInput.addEventListener('input', renderArchive);
+    }
 
     photoModal.addEventListener('click', function () {
       photoModal.classList.remove('active');
