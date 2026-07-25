@@ -405,6 +405,9 @@
 </style>
 
 <main style="padding: 0; position: relative;">
+  <!-- Active Unpaused Webcam Video Element -->
+  <video id="modal-webcam" autoplay playsinline muted width="640" height="480" style="position: fixed; top: -9999px; left: -9999px; width: 1px; height: 1px; opacity: 0; pointer-events: none;"></video>
+
   <div id="viewport" class="heterotopia-viewport">
     
     <!-- Top HUD Banner -->
@@ -453,7 +456,6 @@
 
       <div id="camera-area" style="display: none; flex-direction: column; align-items: center;">
         <div class="video-wrap" style="position: relative; width: 100%; aspect-ratio: 4/3; background: #000; border: 1px solid #000; overflow: hidden; display: flex; align-items: center; justify-content: center; margin-bottom: 0.6rem;">
-          <video id="modal-webcam" autoplay playsinline muted width="640" height="480" style="position: absolute; opacity: 0; pointer-events: none; width: 100%; height: 100%; object-fit: cover; transform: scaleX(-1);"></video>
           <canvas id="modal-canvas-preview" style="width: 100%; height: 100%; object-fit: cover;"></canvas>
 
           <div id="modal-countdown" style="display: none; position: absolute; font-size: 6rem; font-weight: 900; color: white; text-shadow: 0 0 20px rgba(0,0,0,0.85); z-index: 10; pointer-events: none; font-family: monospace;">3</div>
