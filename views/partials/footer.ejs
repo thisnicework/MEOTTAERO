@@ -9,43 +9,21 @@
 <% } %>
 
 <style>
-  .footer {
-    padding: 1.5rem 1rem;
-    text-align: center;
-    font-size: 0.85rem;
+  footer, .footer, .heterotopia-footer {
+    position: relative !important;
+    bottom: auto !important;
+    left: auto !important;
+    transform: none !important;
+    z-index: 10 !important;
+    text-align: center !important;
+    font-size: 0.8rem !important;
+    padding: 2rem 1rem !important;
+    margin-top: 2rem !important;
+    white-space: normal !important;
+    pointer-events: auto !important;
+    opacity: 0.9 !important;
+    clear: both !important;
     color: var(--color-fg, #000);
-  }
-
-  .heterotopia-footer {
-    position: fixed;
-    bottom: 12px;
-    left: 50%;
-    transform: translateX(-50%);
-    z-index: 1000;
-    text-align: center;
-    font-size: 0.75rem;
-    pointer-events: none;
-    opacity: 0.85;
-    white-space: nowrap;
-    color: var(--color-fg, #000);
-  }
-
-  @media (max-width: 768px) {
-    footer, .footer, .heterotopia-footer {
-      position: relative !important;
-      bottom: auto !important;
-      left: auto !important;
-      transform: none !important;
-      z-index: 10 !important;
-      text-align: center !important;
-      font-size: 0.75rem !important;
-      padding: 1.5rem 1rem 2rem 1rem !important;
-      margin-top: 2rem !important;
-      white-space: normal !important;
-      pointer-events: auto !important;
-      opacity: 0.9 !important;
-      clear: both !important;
-    }
   }
 </style>
 </body>
