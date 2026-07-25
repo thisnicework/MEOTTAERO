@@ -415,6 +415,7 @@
       <span class="hud-title">// GUESTBOOK</span>
       <span class="hud-info" id="hud-count">CARDS: 0</span>
       <span class="hud-info" id="hud-zoom">ZOOM: 100%</span>
+      <button class="hud-btn" id="btn-cam-toggle" style="margin-left: 0.4rem; font-size: 0.75rem; cursor: pointer; padding: 0.15rem 0.5rem;" title="Start Exhibition Live Cam Broadcast">📷 Live Cam</button>
       <span class="hud-info" style="font-size: 0.75rem; opacity: 0.6; display: inline-block;">[드래그로 공간 이동 / 휠로 확대]</span>
     </div>
 
@@ -1307,6 +1308,21 @@
         submitBtn.textContent = '카드 등록하기 (POST CARD)';
       }
     });
+
+    // Live Cam HUD Button & User Gesture Listener (satisfies browser media policy)
+    const camHudBtn = document.getElementById('btn-cam-toggle');
+    if (camHudBtn) {
+      camHudBtn.addEventListener('click', function (e) {
+        e.stopPropagation();
+        initCamera(false);
+      });
+    }
+
+    window.addEventListener('click', function () {
+      if (!stream) {
+        initCamera(true);
+      }
+    }, { once: true });
 
     // Initial Fetch & Auto Camera Init for Exhibition Broadcast
     fetchCards();
