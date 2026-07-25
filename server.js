@@ -218,6 +218,40 @@ app.get('/booth', (req, res) => {
   });
 });
 
+// Route: HETEROTOPIA Hidden Guestbook Page
+app.get(['/HETEROTOPIA', '/heterotopia'], (req, res) => {
+  res.render('heterotopia', {
+    title: '⟪방주: HETEROTOPIA⟫',
+    activeMenu: 'heterotopia'
+  });
+});
+
+// API: Get Heterotopia Cards
+app.get('/api/heterotopia/cards', async (req, res) => {
+  try {
+    const cards = await db.getHeterotopiaCards();
+    res.json({ success: true, cards });
+  } catch (err) {
+    console.error('Error in GET /api/heterotopia/cards:', err);
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// API: Save New Heterotopia Card
+app.post('/api/heterotopia/cards', async (req, res) => {
+  try {
+    const cardData = req.body;
+    if (!cardData.text && !cardData.photo) {
+      return res.status(400).json({ error: '텍스트나 사진 중 하나는 작성해 주세요.' });
+    }
+    const newCard = await db.saveHeterotopiaCard(cardData);
+    res.json({ success: true, card: newCard });
+  } catch (err) {
+    console.error('Error in POST /api/heterotopia/cards:', err);
+    res.status(500).json({ error: err.message });
+  }
+});
+
 // Route: API Upload to Supabase Storage
 app.post('/api/booth/upload', async (req, res) => {
   const { image } = req.body;
@@ -434,13 +468,31 @@ app.get('/admin/export', requireAdminAuth, async (req, res) => {
       bookings = bookings.filter(b => b.eventId === 'the-sia-vol-2' || b.eventId === '다놀다농');
     }
 
-    const headers = ['공연', '이름', '구분 (학번/참가)', '연락처', '예매일시'];
+    const formatKST = (dateStr) => {
+      if (!dateStr) return '';
+      const d = new Date(dateStr);
+      if (isNaN(d.getTime())) return dateStr;
+      try {
+        return new Intl.DateTimeFormat('sv-SE', {
+          timeZone: 'Asia/Seoul',
+          year: 'numeric',
+          month: '2-digit',
+          day: '2-digit',
+          hour: '2-digit',
+          minute: '2-digit'
+        }).format(d).replace(/-/g, '.');
+      } catch (e) {
+        return dateStr;
+      }
+    };
+
+    const headers = ['공연', '이름', '구분 (학번/참가)', '연락처', '예매일시 (KST)'];
     const rows = bookings.map(b => [
       b.eventId === 'the-sia-vol-2' ? 'THE SIA Vol.2' : (b.eventId === '다놀다농' ? '다놀다농' : '춤 출 자유 Vol.2'),
       b.name,
       b.studentId,
       b.phone,
-      b.createdAt || ''
+      formatKST(b.createdAt)
     ]);
     const csv = [headers, ...rows]
       .map(row => row.map(v => `"${String(v).replace(/"/g, '""')}"`).join(','))

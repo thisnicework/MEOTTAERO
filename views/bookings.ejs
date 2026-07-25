@@ -79,6 +79,26 @@
         <h2 class="bold" style="margin-bottom: 1.5rem;">RESERVATION LIST</h2>
         <hr>
 
+<%
+function formatKST(dateStr) {
+  if (!dateStr) return '-';
+  const d = new Date(dateStr);
+  if (isNaN(d.getTime())) return dateStr;
+  try {
+    return new Intl.DateTimeFormat('sv-SE', {
+      timeZone: 'Asia/Seoul',
+      year: 'numeric',
+      month: '2-digit',
+      day: '2-digit',
+      hour: '2-digit',
+      minute: '2-digit'
+    }).format(d).replace(/-/g, '.');
+  } catch (e) {
+    return dateStr;
+  }
+}
+%>
+
         <div style="overflow-x: auto;">
           <table class="admin-table"
             style="width: 100%; border-collapse: collapse; text-align: left; min-width: 700px;">
@@ -88,6 +108,7 @@
                 <th class="bold" style="padding: 0.75rem 0.5rem;">이름</th>
                 <th class="bold" style="padding: 0.75rem 0.5rem;">구분 (학번/참가)</th>
                 <th class="bold" style="padding: 0.75rem 0.5rem;">연락처</th>
+                <th class="bold" style="padding: 0.75rem 0.5rem;">예매일시 (KST)</th>
                 <th class="bold" style="padding: 0.75rem 0.5rem; text-align: center; width: 100px;">입금 확인</th>
                 <th class="bold" style="padding: 0.75rem 0.5rem; text-align: center; width: 100px;">문자 전송</th>
                 <th class="bold" style="padding: 0.75rem 0.5rem; text-align: right;">관리</th>
@@ -96,7 +117,7 @@
             <tbody id="bookings-table-body">
               <% if (bookings.length===0) { %>
                 <tr class="no-bookings-row">
-                  <td colspan="7" style="padding: 2rem; text-align: center; color: var(--color-mid);">등록된 예매 내역이 없습니다.
+                  <td colspan="8" style="padding: 2rem; text-align: center; color: var(--color-mid);">등록된 예매 내역이 없습니다.
                   </td>
                 </tr>
                 <% } else { %>
@@ -114,6 +135,9 @@
                       </td>
                       <td style="padding: 0.75rem 0.5rem;">
                         <%= b.phone %>
+                      </td>
+                      <td style="padding: 0.75rem 0.5rem; font-size: 0.85rem; color: var(--color-mid); white-space: nowrap;">
+                        <%= formatKST(b.createdAt) %>
                       </td>
                       <td style="padding: 0.75rem 0.5rem; text-align: center;">
                         <% if (b.eventId === 'the-sia-vol-2') { %>
@@ -179,7 +203,7 @@
             if (!noResultsRow) {
               noResultsRow = document.createElement('tr');
               noResultsRow.id = 'no-results-row';
-              noResultsRow.innerHTML = '<td colspan="7" style="padding: 2rem; text-align: center; color: var(--color-mid);">검색 결과가 없습니다.</td>';
+              noResultsRow.innerHTML = '<td colspan="8" style="padding: 2rem; text-align: center; color: var(--color-mid);">검색 결과가 없습니다.</td>';
               tableBody.appendChild(noResultsRow);
             }
           } else {

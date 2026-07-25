@@ -509,3 +509,130 @@ export async function uploadBoothPhoto(fileName, buffer) {
   }
 }
 
+// Heterotopia guestbook storage helpers
+const HETEROTOPIA_FILE = path.resolve(__dirname, 'heterotopia_cards.json');
+
+export async function getHeterotopiaCards() {
+  if (supabase) {
+    try {
+      const { data, error } = await supabase
+        .from('heterotopia_cards')
+        .select('*')
+        .order('created_at', { ascending: true });
+
+      if (!error && data && data.length > 0) {
+        return data.map(c => ({
+          id: c.id,
+          author: c.author,
+          text: c.text,
+          photo: c.photo,
+          x: c.x,
+          y: c.y,
+          rotation: c.rotation,
+          createdAt: c.created_at || c.createdAt
+        }));
+      }
+    } catch (e) {
+      console.warn('Supabase getHeterotopiaCards fallback to local file:', e.message);
+    }
+  }
+
+  if (!fs.existsSync(HETEROTOPIA_FILE)) {
+    // Initial default demo cards so space isn't empty
+    const initialCards = [
+      {
+        id: 'card_init_1',
+        author: 'HETEROTOPIA',
+        text: 'HETEROTOPIA에 오신 것을 환영합니다. 공간 곳곳에 당신의 시선과 자유로운 메시지를 남겨보세요.',
+        photo: '',
+        x: 0,
+        y: 0,
+        rotation: -2,
+        createdAt: new Date().toISOString()
+      },
+      {
+        id: 'card_init_2',
+        author: 'ANON',
+        text: '여기 너무 힙하다... 웹캠으로 바로 사진 찍어서 포스트잇 붙이기 📸',
+        photo: '',
+        x: 320,
+        y: -150,
+        rotation: 3,
+        createdAt: new Date().toISOString()
+      }
+    ];
+    try {
+      fs.writeFileSync(HETEROTOPIA_FILE, JSON.stringify(initialCards, null, 2), 'utf8');
+      return initialCards;
+    } catch (e) {
+      return initialCards;
+    }
+  }
+  try {
+    const data = fs.readFileSync(HETEROTOPIA_FILE, 'utf8');
+    return JSON.parse(data);
+  } catch (e) {
+    console.error('Error reading heterotopia_cards.json:', e);
+    return [];
+  }
+}
+
+export async function saveHeterotopiaCard(cardInput) {
+  let photoUrl = cardInput.photo || '';
+
+  // 1. If Supabase is available and photo is base64, upload photo to Supabase storage
+  if (supabase && photoUrl.startsWith('data:image/')) {
+    try {
+      const base64Data = photoUrl.replace(/^data:image\/\w+;base64,/, '');
+      const buffer = Buffer.from(base64Data, 'base64');
+      const fileName = `heterotopia_${Date.now()}_${Math.floor(Math.random() * 1000)}.jpg`;
+      const uploadRes = await uploadBoothPhoto(fileName, buffer);
+      if (uploadRes.success && uploadRes.path) {
+        photoUrl = `${supabaseUrl}/storage/v1/object/public/booth/${uploadRes.path}`;
+      }
+    } catch (err) {
+      console.warn('Failed uploading heterotopia photo to Supabase Storage:', err);
+    }
+  }
+
+  const newCard = {
+    id: `card_${Date.now()}_${Math.floor(Math.random() * 10000)}`,
+    author: cardInput.author || '익명',
+    text: cardInput.text || '',
+    photo: photoUrl,
+    x: typeof cardInput.x === 'number' ? cardInput.x : (Math.random() * 400 - 200),
+    y: typeof cardInput.y === 'number' ? cardInput.y : (Math.random() * 400 - 200),
+    rotation: typeof cardInput.rotation === 'number' ? cardInput.rotation : (Math.floor(Math.random() * 12) - 6),
+    createdAt: new Date().toISOString()
+  };
+
+  // 2. Save to Supabase DB table if available
+  if (supabase) {
+    try {
+      await supabase.from('heterotopia_cards').insert([{
+        id: newCard.id,
+        author: newCard.author,
+        text: newCard.text,
+        photo: newCard.photo,
+        x: newCard.x,
+        y: newCard.y,
+        rotation: newCard.rotation,
+        created_at: newCard.createdAt
+      }]);
+    } catch (e) {
+      console.warn('Supabase saveHeterotopiaCard DB insert fallback to local file:', e.message);
+    }
+  }
+
+  // 3. Local JSON fallback sync
+  const cards = await getHeterotopiaCards();
+  cards.push(newCard);
+  try {
+    fs.writeFileSync(HETEROTOPIA_FILE, JSON.stringify(cards, null, 2), 'utf8');
+  } catch (e) {
+    console.warn('Failed to write heterotopia_cards.json local file:', e);
+  }
+  return newCard;
+}
+
+
