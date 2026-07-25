@@ -3,10 +3,51 @@
   <p>&copy; 2026 뉴폼아트(젊은창작) 콘텐츠 제작 선정작 <span class="bold">⟪방주: HETEROTOPIA⟫</span></p>
 </footer>
 <% } else if (activeMenu === 'heterotopia') { %>
-<footer class="heterotopia-footer" style="position: fixed; bottom: 12px; left: 50%; transform: translateX(-50%); z-index: 1000; text-align: center; font-size: 0.75rem; pointer-events: none; opacity: 0.85; white-space: nowrap; color: var(--color-fg, #000);">
+<footer class="heterotopia-footer">
   <p style="margin: 0;">&copy; 2026 뉴폼아트(젊은창작) 콘텐츠 제작 선정작 <span class="bold" style="font-weight: 700;">⟪방주: HETEROTOPIA⟫</span></p>
 </footer>
 <% } %>
+
+<style>
+  .footer {
+    padding: 1.5rem 1rem;
+    text-align: center;
+    font-size: 0.85rem;
+    color: var(--color-fg, #000);
+  }
+
+  .heterotopia-footer {
+    position: fixed;
+    bottom: 12px;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 1000;
+    text-align: center;
+    font-size: 0.75rem;
+    pointer-events: none;
+    opacity: 0.85;
+    white-space: nowrap;
+    color: var(--color-fg, #000);
+  }
+
+  @media (max-width: 768px) {
+    footer, .footer, .heterotopia-footer {
+      position: relative !important;
+      bottom: auto !important;
+      left: auto !important;
+      transform: none !important;
+      z-index: 10 !important;
+      text-align: center !important;
+      font-size: 0.75rem !important;
+      padding: 1.5rem 1rem 2rem 1rem !important;
+      margin-top: 2rem !important;
+      white-space: normal !important;
+      pointer-events: auto !important;
+      opacity: 0.9 !important;
+      clear: both !important;
+    }
+  }
+</style>
 </body>
 
 </html>
