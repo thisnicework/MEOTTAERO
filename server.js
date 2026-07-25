@@ -249,6 +249,9 @@ app.post('/api/heterotopia/cards', async (req, res) => {
   } catch (err) {
     console.error('Error in POST /api/heterotopia/cards:', err);
     res.status(500).json({ error: err.message });
+  }
+});
+
 // API: Update Card Position after drag
 app.patch('/api/heterotopia/cards/:id/position', async (req, res) => {
   try {
