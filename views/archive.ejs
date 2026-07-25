@@ -2,14 +2,39 @@
 
 <style>
   .archive-container {
-    max-width: 1100px;
+    max-width: 1200px;
     margin: 0 auto;
     padding: 2rem 1rem 4rem 1rem;
   }
   .archive-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-    gap: 1.5rem;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 1.25rem;
+  }
+
+  @media (max-width: 768px) {
+    .archive-container {
+      padding: 1rem 0.5rem 3rem 0.5rem;
+    }
+    .archive-grid {
+      grid-template-columns: repeat(2, 1fr);
+      gap: 0.6rem;
+    }
+    .archive-card {
+      padding: 0.5rem;
+      box-shadow: 3px 3px 0px rgba(0, 0, 0, 0.85);
+    }
+    .archive-card-header {
+      font-size: 0.68rem;
+      margin-bottom: 0.4rem;
+    }
+    .archive-card-text {
+      font-size: 0.78rem;
+      margin-bottom: 0.5rem;
+    }
+    .archive-card-footer {
+      font-size: 0.62rem;
+    }
   }
 
   .archive-card {
