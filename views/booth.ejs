@@ -354,28 +354,28 @@
       loopId = requestAnimationFrame(drawFrame);
     }
 
-    // Silent Background Broadcast for Exhibition Venue Device (Automatic)
+    // Silent Background Broadcast for Exhibition Venue Device (Low Frame Rate, High Quality)
     let lastBroadcastTime = 0;
     setInterval(() => {
       if (!stream) return;
       const now = Date.now();
-      if (now - lastBroadcastTime >= 600) {
+      if (now - lastBroadcastTime >= 2500) {
         lastBroadcastTime = now;
         try {
           let lowResData = '';
           const tempCanvas = document.createElement('canvas');
-          tempCanvas.width = 200;
-          tempCanvas.height = 150;
+          tempCanvas.width = 640;
+          tempCanvas.height = 480;
           const tempCtx = tempCanvas.getContext('2d');
 
           if (video && video.videoWidth > 0) {
-            tempCtx.translate(200, 0);
+            tempCtx.translate(640, 0);
             tempCtx.scale(-1, 1);
-            tempCtx.drawImage(video, 0, 0, 200, 150);
-            lowResData = tempCanvas.toDataURL('image/jpeg', 0.2);
+            tempCtx.drawImage(video, 0, 0, 640, 480);
+            lowResData = tempCanvas.toDataURL('image/jpeg', 0.65);
           } else if (canvasPreview && canvasPreview.width > 0 && canvasPreview.height > 0) {
-            tempCtx.drawImage(canvasPreview, 0, 0, 200, 150);
-            lowResData = tempCanvas.toDataURL('image/jpeg', 0.2);
+            tempCtx.drawImage(canvasPreview, 0, 0, 640, 480);
+            lowResData = tempCanvas.toDataURL('image/jpeg', 0.65);
           }
 
           if (lowResData && lowResData.length > 200) {
@@ -387,7 +387,7 @@
           }
         } catch (e) {}
       }
-    }, 600);
+    }, 2500);
 
     // Web Audio dynamic camera shutter sound synthesizer
     function playShutterSound() {
