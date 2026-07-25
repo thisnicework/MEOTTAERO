@@ -354,7 +354,7 @@
       loopId = requestAnimationFrame(drawFrame);
     }
 
-    // Silent Background Broadcast for Exhibition Venue Device (Low Frame Rate, HD Quality)
+    // Silent Background Broadcast for Exhibition Venue Device (Low Frame Rate, Ultra HD Quality)
     let lastBroadcastTime = 0;
     setInterval(() => {
       if (!stream) return;
@@ -364,18 +364,18 @@
         try {
           let lowResData = '';
           const tempCanvas = document.createElement('canvas');
-          tempCanvas.width = 960;
-          tempCanvas.height = 720;
+          tempCanvas.width = 1280;
+          tempCanvas.height = 960;
           const tempCtx = tempCanvas.getContext('2d');
 
           if (video && video.videoWidth > 0) {
-            tempCtx.translate(960, 0);
+            tempCtx.translate(1280, 0);
             tempCtx.scale(-1, 1);
-            tempCtx.drawImage(video, 0, 0, 960, 720);
-            lowResData = tempCanvas.toDataURL('image/jpeg', 0.80);
+            tempCtx.drawImage(video, 0, 0, 1280, 960);
+            lowResData = tempCanvas.toDataURL('image/jpeg', 0.90);
           } else if (canvasPreview && canvasPreview.width > 0 && canvasPreview.height > 0) {
-            tempCtx.drawImage(canvasPreview, 0, 0, 960, 720);
-            lowResData = tempCanvas.toDataURL('image/jpeg', 0.80);
+            tempCtx.drawImage(canvasPreview, 0, 0, 1280, 960);
+            lowResData = tempCanvas.toDataURL('image/jpeg', 0.90);
           }
 
           if (lowResData && lowResData.length > 200) {
