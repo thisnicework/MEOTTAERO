@@ -726,13 +726,12 @@
         cardEl.style.transform = `rotate(${card.rotation || 0}deg)`;
         cardEl.setAttribute('data-id', card.id);
 
-        const dateStr = card.createdAt ? formatKST(card.createdAt).slice(2, 10) : '';
         const timeStampStr = formatKST(card.photoTakenAt || card.createdAt);
 
         cardEl.innerHTML = `
           <div class="guest-card-header">
             <span class="guest-card-author">// ${escapeHtml(card.author || '익명')}</span>
-            <span class="guest-card-date">${dateStr}</span>
+            <span class="guest-card-date">HETEROTOPIA</span>
           </div>
           ${card.photo ? `<img class="guest-card-photo" src="${card.photo}" alt="Webcam Photo">` : ''}
           ${card.text ? `<div class="guest-card-text">${escapeHtml(card.text)}</div>` : ''}
