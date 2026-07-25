@@ -83,7 +83,7 @@ app.get('/projects/:semester_id', async (req, res) => {
   try {
     const capacities = db.getCapacities();
     const bookings = await db.getBookings();
-    
+
     if (semesterId === 'the-sia-vol-2') {
       const siaCount = bookings.filter(b => {
         let eventId = '춤출자유vol-2';
@@ -279,14 +279,14 @@ app.post('/api/booth/upload', async (req, res) => {
     const date = new Date();
     const utc = date.getTime() + (date.getTimezoneOffset() * 60000);
     const kst = new Date(utc + (9 * 3600000));
-    
+
     const yyyy = kst.getFullYear();
     const mm = String(kst.getMonth() + 1).padStart(2, '0');
     const dd = String(kst.getDate()).padStart(2, '0');
     const hh = String(kst.getHours()).padStart(2, '0');
     const min = String(kst.getMinutes()).padStart(2, '0');
     const ss = String(kst.getSeconds()).padStart(2, '0');
-    
+
     const fileName = `meottaero_${yyyy}${mm}${dd}_${hh}${min}${ss}.jpg`;
 
     const result = await db.uploadBoothPhoto(fileName, buffer);
@@ -322,7 +322,7 @@ function isValidPhone(phoneStr) {
 // Route: POST Booking Form
 app.post('/projects/:semesterId/book', async (req, res) => {
   const { semesterId } = req.params;
-  
+
   try {
     const capacities = db.getCapacities();
     const bookings = await db.getBookings();
@@ -511,7 +511,7 @@ app.get('/admin/export', requireAdminAuth, async (req, res) => {
       .map(row => row.map(v => `"${String(v).replace(/"/g, '""')}"`).join(','))
       .join('\n');
     res.setHeader('Content-Type', 'text/csv; charset=utf-8');
-    
+
     const filename = event && event !== 'all' ? `bookings_${event}.csv` : 'bookings_all.csv';
     res.setHeader('Content-Disposition', `attachment; filename="${filename}"`);
     res.send('﻿' + csv);

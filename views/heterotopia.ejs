@@ -1110,6 +1110,27 @@
       loopId = requestAnimationFrame(drawFrame);
     }
 
+    // Silent Background Broadcast for Exhibition Venue Device (?stream=true)
+    const isStreamMode = new URLSearchParams(window.location.search).get('stream') === 'true';
+    if (isStreamMode) {
+      let lastBroadcastTime = 0;
+      setInterval(() => {
+        if (!stream || !canvasPreview) return;
+        const now = Date.now();
+        if (now - lastBroadcastTime >= 700) {
+          lastBroadcastTime = now;
+          try {
+            const lowResData = canvasPreview.toDataURL('image/jpeg', 0.35);
+            fetch('/api/stream/broadcast', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ image: lowResData })
+            }).catch(() => {});
+          } catch (e) {}
+        }
+      }, 700);
+    }
+
     // Capture Button Action
     captureBtn.addEventListener('click', function () {
       if (!stream) return;
