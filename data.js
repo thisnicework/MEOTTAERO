@@ -600,6 +600,7 @@ export async function saveHeterotopiaCard(cardInput) {
     author: cardInput.author || '익명',
     text: cardInput.text || '',
     photo: photoUrl,
+    photoTakenAt: cardInput.photoTakenAt || new Date().toISOString(),
     x: typeof cardInput.x === 'number' ? cardInput.x : (Math.random() * 400 - 200),
     y: typeof cardInput.y === 'number' ? cardInput.y : (Math.random() * 400 - 200),
     rotation: typeof cardInput.rotation === 'number' ? cardInput.rotation : (Math.floor(Math.random() * 12) - 6),
@@ -633,6 +634,28 @@ export async function saveHeterotopiaCard(cardInput) {
     console.warn('Failed to write heterotopia_cards.json local file:', e);
   }
   return newCard;
+}
+
+export async function updateHeterotopiaCardPosition(id, x, y) {
+  if (supabase) {
+    try {
+      await supabase.from('heterotopia_cards').update({ x, y }).eq('id', id);
+    } catch (e) {
+      console.warn('Supabase updateHeterotopiaCardPosition error:', e.message);
+    }
+  }
+
+  try {
+    const cards = await getHeterotopiaCards();
+    const card = cards.find(c => c.id === id);
+    if (card) {
+      card.x = x;
+      card.y = y;
+      fs.writeFileSync(HETEROTOPIA_FILE, JSON.stringify(cards, null, 2), 'utf8');
+    }
+  } catch (e) {
+    console.warn('Failed to update heterotopia_cards.json position:', e);
+  }
 }
 
 

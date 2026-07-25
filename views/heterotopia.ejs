@@ -671,6 +671,23 @@
       }
     }
 
+    function formatKST(dateInput) {
+      if (!dateInput) return '';
+      const d = new Date(dateInput);
+      if (isNaN(d.getTime())) return '';
+      const formatter = new Intl.DateTimeFormat('sv-SE', {
+        timeZone: 'Asia/Seoul',
+        year: 'numeric',
+        month: '2-digit',
+        day: '2-digit',
+        hour: '2-digit',
+        minute: '2-digit',
+        second: '2-digit',
+        hour12: false
+      });
+      return formatter.format(d).replace(/-/g, '.');
+    }
+
     function renderCards() {
       cardsContainer.innerHTML = '';
       hudCount.textContent = `CARDS: ${cardsData.length}`;
@@ -687,9 +704,8 @@
         cardEl.style.transform = `rotate(${card.rotation || 0}deg)`;
         cardEl.setAttribute('data-id', card.id);
 
-        const dateStr = card.createdAt ? new Date(card.createdAt).toLocaleDateString('ko-KR', {
-          year: '2-digit', month: '2-digit', day: '2-digit'
-        }) : '';
+        const dateStr = card.createdAt ? formatKST(card.createdAt).slice(2, 10) : '';
+        const timeStampStr = formatKST(card.photoTakenAt || card.createdAt);
 
         cardEl.innerHTML = `
           <div class="guest-card-header">
@@ -699,7 +715,7 @@
           ${card.photo ? `<img class="guest-card-photo" src="${card.photo}" alt="Webcam Photo">` : ''}
           ${card.text ? `<div class="guest-card-text">${escapeHtml(card.text)}</div>` : ''}
           <div class="guest-card-footer">
-            <span>POS: (${Math.round(card.x)}, ${Math.round(card.y)})</span>
+            <span>${timeStampStr}</span>
             <span>#${orderNum}</span>
           </div>
         `;
@@ -720,10 +736,12 @@
       let isDraggingCard = false;
       let cardStartX = 0;
       let cardStartY = 0;
+      let hasMoved = false;
 
       cardEl.addEventListener('mousedown', function (e) {
         e.stopPropagation();
         isDraggingCard = true;
+        hasMoved = false;
         cardEl.classList.add('dragging');
         cardStartX = e.clientX;
         cardStartY = e.clientY;
@@ -733,6 +751,7 @@
         if (!isDraggingCard) return;
         const dx = (e.clientX - cardStartX) / scale;
         const dy = (e.clientY - cardStartY) / scale;
+        if (Math.abs(dx) > 0.1 || Math.abs(dy) > 0.1) hasMoved = true;
         
         cardObj.x += dx;
         cardObj.y += dy;
@@ -747,6 +766,13 @@
         if (isDraggingCard) {
           isDraggingCard = false;
           cardEl.classList.remove('dragging');
+          if (hasMoved && cardObj.id) {
+            fetch(`/api/heterotopia/cards/${cardObj.id}/position`, {
+              method: 'PATCH',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ x: Math.round(cardObj.x), y: Math.round(cardObj.y) })
+            }).catch(err => console.error('Failed to save card position:', err));
+          }
         }
       });
     }
@@ -769,7 +795,7 @@
     function openDetailModal(card) {
       detailAuthor.textContent = `// ${card.author || '익명'}`;
       detailText.textContent = card.text || '';
-      detailDate.textContent = card.createdAt ? new Date(card.createdAt).toLocaleString('ko-KR') : '';
+      detailDate.textContent = formatKST(card.photoTakenAt || card.createdAt);
 
       if (card.photo) {
         detailPhoto.src = card.photo;
@@ -822,6 +848,7 @@
     let loopId = null;
     let currentFilter = 'kinetic';
     let capturedPhotoData = '';
+    let capturedPhotoTime = null;
 
     // Kinetic filter buffer
     let lerpBuffer = null;
@@ -1088,8 +1115,9 @@
             }, 250);
           }, 50);
 
-          // Get snapshot data URI
+          // Get snapshot data URI & timestamp
           capturedPhotoData = canvasPreview.toDataURL('image/jpeg', 0.85);
+          capturedPhotoTime = new Date().toISOString();
           previewImg.src = capturedPhotoData;
 
           // Hide webcam camera view, show preview
@@ -1103,6 +1131,7 @@
 
     retakeBtn.addEventListener('click', function () {
       capturedPhotoData = '';
+      capturedPhotoTime = null;
       previewImg.src = '';
       previewContainer.style.display = 'none';
       cameraArea.style.display = 'flex';
@@ -1186,6 +1215,7 @@
             author,
             text,
             photo: capturedPhotoData,
+            photoTakenAt: capturedPhotoTime,
             x: Math.round(spawnX),
             y: Math.round(spawnY),
             rotation
@@ -1201,6 +1231,7 @@
           authorInput.value = '';
           textInput.value = '';
           capturedPhotoData = '';
+          capturedPhotoTime = null;
           previewImg.src = '';
           previewContainer.style.display = 'none';
           toggleCameraBtn.textContent = '카메라 켜기';
