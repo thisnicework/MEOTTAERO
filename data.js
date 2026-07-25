@@ -661,45 +661,60 @@ export async function updateHeterotopiaCardPosition(id, x, y) {
 
 let memoryLiveFrame = null;
 let memoryLiveTime = 0;
+let lastSupabaseSyncTime = 0;
+let isSyncingToSupabase = false;
 
 export async function saveLiveStreamFrame(image) {
   memoryLiveFrame = image;
   memoryLiveTime = Date.now();
 
-  if (supabase && image && image.startsWith('data:image/')) {
-    try {
-      const base64Data = image.replace(/^data:image\/\w+;base64,/, '');
-      const buffer = Buffer.from(base64Data, 'base64');
-      
-      const uploadRes = await supabase.storage
-        .from('booth')
-        .upload('live_stream.jpg', buffer, {
-          contentType: 'image/jpeg',
-          upsert: true
-        });
+  const now = Date.now();
+  if (supabase && image && image.startsWith('data:image/') && !isSyncingToSupabase && (now - lastSupabaseSyncTime >= 2000)) {
+    isSyncingToSupabase = true;
+    lastSupabaseSyncTime = now;
 
-      let publicUrl = '';
-      if (!uploadRes.error) {
-        publicUrl = `${supabaseUrl}/storage/v1/object/public/booth/live_stream.jpg`;
+    (async () => {
+      try {
+        const base64Data = image.replace(/^data:image\/\w+;base64,/, '');
+        const buffer = Buffer.from(base64Data, 'base64');
+
+        await supabase.storage
+          .from('booth')
+          .upload('live_stream.jpg', buffer, {
+            contentType: 'image/jpeg',
+            upsert: true
+          });
+
+        const publicUrl = `${supabaseUrl}/storage/v1/object/public/booth/live_stream.jpg`;
+
+        await supabase.from('heterotopia_cards').upsert([{
+          id: 'live_stream_frame',
+          author: 'STREAM',
+          text: 'LIVE_STREAM',
+          photo: publicUrl,
+          x: 0,
+          y: 0,
+          created_at: new Date().toISOString()
+        }]);
+      } catch (err) {
+        console.warn('Live stream Supabase sync error:', err.message);
+      } finally {
+        isSyncingToSupabase = false;
       }
-
-      await supabase.from('heterotopia_cards').upsert([{
-        id: 'live_stream_frame',
-        author: 'STREAM',
-        text: 'LIVE_STREAM',
-        photo: publicUrl || image,
-        x: 0,
-        y: 0,
-        created_at: new Date().toISOString()
-      }]);
-    } catch (err) {
-      console.warn('Live stream Supabase sync error:', err.message);
-    }
+    })();
   }
 }
 
 export async function getLiveStreamFrame() {
   const now = Date.now();
+
+  if (memoryLiveTime > 0 && (now - memoryLiveTime < 20000)) {
+    return {
+      active: true,
+      frame: memoryLiveFrame,
+      updatedAt: memoryLiveTime
+    };
+  }
 
   if (supabase) {
     try {
@@ -711,7 +726,7 @@ export async function getLiveStreamFrame() {
 
       if (!error && data && data.created_at) {
         const updatedAt = new Date(data.created_at).getTime();
-        if (now - updatedAt < 12000) {
+        if (now - updatedAt < 20000) {
           const frameSrc = data.photo.startsWith('http') 
             ? `${data.photo}?t=${updatedAt}` 
             : data.photo;
@@ -728,10 +743,9 @@ export async function getLiveStreamFrame() {
     }
   }
 
-  const isActive = memoryLiveTime > 0 && (now - memoryLiveTime < 12000);
   return {
-    active: isActive,
-    frame: isActive ? memoryLiveFrame : null,
+    active: false,
+    frame: null,
     updatedAt: memoryLiveTime
   };
 }
