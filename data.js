@@ -520,7 +520,7 @@ export async function getHeterotopiaCards() {
         .select('*')
         .order('created_at', { ascending: true });
 
-      if (!error && data && data.length > 0) {
+      if (!error && Array.isArray(data)) {
         return data.map(c => ({
           id: c.id,
           author: c.author,
