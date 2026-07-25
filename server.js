@@ -273,6 +273,25 @@ app.patch('/api/heterotopia/cards/:id/position', async (req, res) => {
   }
 });
 
+// API: Exhibition Venue Broadcast Frame Upload
+app.post('/api/stream/broadcast', async (req, res) => {
+  const { image } = req.body || {};
+  if (image) {
+    await db.saveLiveStreamFrame(image);
+    return res.json({ success: true });
+  }
+  res.status(400).json({ error: 'No image frame provided' });
+});
+
+// API: Visitor Fetch Live Exhibition Video Stream
+app.get('/api/stream/live', async (req, res) => {
+  const info = await db.getLiveStreamFrame();
+  res.json({
+    success: true,
+    ...info
+  });
+});
+
 // Route: API Upload to Supabase Storage
 app.post('/api/booth/upload', async (req, res) => {
   const { image } = req.body;

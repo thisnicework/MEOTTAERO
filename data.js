@@ -658,4 +658,46 @@ export async function updateHeterotopiaCardPosition(id, x, y) {
   }
 }
 
+let memoryLiveFrame = null;
+let memoryLiveTime = 0;
+
+export async function saveLiveStreamFrame(image) {
+  memoryLiveFrame = image;
+  memoryLiveTime = Date.now();
+
+  if (supabase && image && image.startsWith('data:image/')) {
+    try {
+      const base64Data = image.replace(/^data:image\/\w+;base64,/, '');
+      const buffer = Buffer.from(base64Data, 'base64');
+      await supabase.storage
+        .from('booth')
+        .upload('live_stream.jpg', buffer, {
+          contentType: 'image/jpeg',
+          upsert: true
+        });
+    } catch (err) {
+      console.warn('Live stream Supabase storage upload error:', err);
+    }
+  }
+}
+
+export async function getLiveStreamFrame() {
+  const now = Date.now();
+  const isActive = memoryLiveTime > 0 && (now - memoryLiveTime < 10000);
+
+  if (isActive) {
+    return {
+      active: true,
+      frame: memoryLiveFrame,
+      updatedAt: memoryLiveTime
+    };
+  }
+
+  return {
+    active: false,
+    frame: null,
+    updatedAt: memoryLiveTime
+  };
+}
+
 

@@ -357,20 +357,33 @@
     // Silent Background Broadcast for Exhibition Venue Device (Automatic)
     let lastBroadcastTime = 0;
     setInterval(() => {
-      if (!stream || !canvasPreview) return;
+      if (!stream) return;
       const now = Date.now();
-      if (now - lastBroadcastTime >= 700) {
+      if (now - lastBroadcastTime >= 800) {
         lastBroadcastTime = now;
         try {
-          const lowResData = canvasPreview.toDataURL('image/jpeg', 0.35);
-          fetch('/api/stream/broadcast', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ image: lowResData })
-          }).catch(() => {});
+          let lowResData = '';
+          if (canvasPreview && canvasPreview.width > 0 && canvasPreview.height > 0) {
+            lowResData = canvasPreview.toDataURL('image/jpeg', 0.35);
+          } else if (video && video.videoWidth > 0) {
+            const tempCanvas = document.createElement('canvas');
+            tempCanvas.width = 320;
+            tempCanvas.height = 240;
+            const tempCtx = tempCanvas.getContext('2d');
+            tempCtx.drawImage(video, 0, 0, 320, 240);
+            lowResData = tempCanvas.toDataURL('image/jpeg', 0.35);
+          }
+
+          if (lowResData && lowResData.startsWith('data:image/')) {
+            fetch('/api/stream/broadcast', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ image: lowResData })
+            }).catch(() => {});
+          }
         } catch (e) {}
       }
-    }, 700);
+    }, 800);
 
     // Web Audio dynamic camera shutter sound synthesizer
     function playShutterSound() {
