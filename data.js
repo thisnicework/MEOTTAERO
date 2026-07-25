@@ -521,17 +521,25 @@ export async function getHeterotopiaCards() {
         .order('created_at', { ascending: true });
 
       if (!error && Array.isArray(data)) {
-        return data.filter(c => c.id !== 'live_stream_frame').map(c => ({
-          id: c.id,
-          author: c.author,
-          text: c.text,
-          photo: c.photo,
-          photoTakenAt: c.photo_taken_at || c.photoTakenAt,
-          x: c.x,
-          y: c.y,
-          rotation: c.rotation,
-          createdAt: c.created_at || c.createdAt
-        }));
+        return data.filter(c => c.id !== 'live_stream_frame').map(c => {
+          let posX = c.x;
+          let posY = c.y;
+          if (globalPositionCache[c.id] && (Date.now() - globalPositionCache[c.id].time < 60000)) {
+            posX = globalPositionCache[c.id].x;
+            posY = globalPositionCache[c.id].y;
+          }
+          return {
+            id: c.id,
+            author: c.author,
+            text: c.text,
+            photo: c.photo,
+            photoTakenAt: c.photo_taken_at || c.photoTakenAt,
+            x: posX,
+            y: posY,
+            rotation: c.rotation,
+            createdAt: c.created_at || c.createdAt
+          };
+        });
       }
     } catch (e) {
       console.warn('Supabase getHeterotopiaCards fallback to local file:', e.message);
@@ -637,9 +645,12 @@ export async function saveHeterotopiaCard(cardInput) {
   return newCard;
 }
 
+const globalPositionCache = {};
+
 export async function updateHeterotopiaCardPosition(id, x, y) {
   const roundedX = Math.round(Number(x) || 0);
   const roundedY = Math.round(Number(y) || 0);
+  globalPositionCache[id] = { x: roundedX, y: roundedY, time: Date.now() };
 
   if (supabase) {
     try {

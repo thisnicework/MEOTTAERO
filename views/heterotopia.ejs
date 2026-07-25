@@ -660,6 +660,11 @@
     // ----------------------------------------------------
     let cardsData = [];
     let currentlyDraggingCardId = null;
+    const localPositionMemory = {};
+
+    function rememberLocalPosition(id, x, y) {
+      localPositionMemory[id] = { x: Math.round(x), y: Math.round(y), time: Date.now() };
+    }
 
     async function fetchCards() {
       try {
@@ -670,6 +675,9 @@
             if (currentlyDraggingCardId === c.id) {
               const localCard = cardsData.find(lc => lc.id === c.id);
               if (localCard) return { ...c, x: localCard.x, y: localCard.y };
+            }
+            if (localPositionMemory[c.id] && (Date.now() - localPositionMemory[c.id].time < 60000)) {
+              return { ...c, x: localPositionMemory[c.id].x, y: localPositionMemory[c.id].y };
             }
             return c;
           });
@@ -779,6 +787,7 @@
           if (hasMoved && cardObj.id) {
             const rx = Math.round(cardObj.x);
             const ry = Math.round(cardObj.y);
+            rememberLocalPosition(cardObj.id, rx, ry);
 
             const target = cardsData.find(c => c.id === cardObj.id);
             if (target) {
