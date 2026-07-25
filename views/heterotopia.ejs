@@ -230,34 +230,6 @@
     box-shadow: 2px 2px 0 var(--color-fg);
   }
 
-  /* Live Multi-User Cursors */
-  .user-cursor {
-    position: absolute;
-    pointer-events: none;
-    z-index: 300;
-    transition: left 0.15s ease-out, top 0.15s ease-out;
-    display: flex;
-    align-items: flex-start;
-    gap: 4px;
-  }
-  .user-cursor-pointer {
-    width: 16px;
-    height: 16px;
-    filter: drop-shadow(0 1px 3px rgba(0,0,0,0.6));
-  }
-  .user-cursor-badge {
-    background: #000000;
-    color: #ffffff;
-    font-size: 0.65rem;
-    font-family: monospace;
-    font-weight: bold;
-    padding: 2px 6px;
-    border-radius: 3px;
-    white-space: nowrap;
-    box-shadow: 2px 2px 0px rgba(0,0,0,0.4);
-    letter-spacing: 0.05em;
-  }
-
   /* Card Creation Modal */
   .modal-overlay {
     display: none;
@@ -460,7 +432,6 @@
       <div class="grid-pattern"></div>
       <div class="world-boundary"></div>
       <div id="cards-container"></div>
-      <div id="cursors-container"></div>
     </div>
   </div>
 </main>
@@ -681,83 +652,6 @@
       panY = viewport.clientHeight / 2;
       updateWorldTransform();
     });
-
-    // ----------------------------------------------------
-    // Multi-User Live Cursor System
-    // ----------------------------------------------------
-    const cursorsContainer = document.getElementById('cursors-container');
-    const userSessionId = 'u_' + Math.random().toString(36).substring(2, 9);
-    const neonColors = ['#ff0055', '#00f0ff', '#39ff14', '#ff00ff', '#ffb703', '#9d4edd', '#0077b6'];
-    const userNeonColor = neonColors[Math.floor(Math.random() * neonColors.length)];
-    const userBadgeName = `GUEST #${userSessionId.slice(-4).toUpperCase()}`;
-
-    let clientWorldX = 0;
-    let clientWorldY = 0;
-    let hasMouseMoved = false;
-
-    viewport.addEventListener('mousemove', function (e) {
-      clientWorldX = Math.round((e.clientX - panX) / scale);
-      clientWorldY = Math.round((e.clientY - panY) / scale);
-      hasMouseMoved = true;
-    });
-
-    const activeRemoteCursors = new Map();
-
-    async function syncCursors() {
-      if (!hasMouseMoved && activeRemoteCursors.size === 0) return;
-      try {
-        const res = await fetch('/api/heterotopia/cursors', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            id: userSessionId,
-            x: clientWorldX,
-            y: clientWorldY,
-            name: userBadgeName,
-            color: userNeonColor
-          })
-        });
-
-        const data = await res.json();
-        if (data.success && Array.isArray(data.cursors)) {
-          renderRemoteCursors(data.cursors.filter(c => c.id !== userSessionId));
-        }
-      } catch (err) {}
-    }
-
-    function renderRemoteCursors(remoteCursors) {
-      const activeIds = new Set();
-
-      remoteCursors.forEach(c => {
-        activeIds.add(c.id);
-        let cursorEl = activeRemoteCursors.get(c.id);
-
-        if (!cursorEl) {
-          cursorEl = document.createElement('div');
-          cursorEl.className = 'user-cursor';
-          cursorEl.innerHTML = `
-            <svg class="user-cursor-pointer" viewBox="0 0 24 24" fill="${c.color}" stroke="#000" stroke-width="1.5">
-              <path d="M3 3l7 18 3-7 7-3L3 3z"/>
-            </svg>
-            <span class="user-cursor-badge" style="border-left: 3px solid ${c.color};">${escapeHtml(c.name)}</span>
-          `;
-          cursorsContainer.appendChild(cursorEl);
-          activeRemoteCursors.set(c.id, cursorEl);
-        }
-
-        cursorEl.style.left = `${c.x}px`;
-        cursorEl.style.top = `${c.y}px`;
-      });
-
-      for (const [id, el] of activeRemoteCursors.entries()) {
-        if (!activeIds.has(id)) {
-          el.remove();
-          activeRemoteCursors.delete(id);
-        }
-      }
-    }
-
-    setInterval(syncCursors, 300);
 
     // ----------------------------------------------------
     // Load & Render Guestbook Cards
