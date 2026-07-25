@@ -226,6 +226,14 @@ app.get(['/HETEROTOPIA', '/heterotopia'], (req, res) => {
   });
 });
 
+// Route: HETEROTOPIA Live Stream Page
+app.get(['/HETEROTOPIA/stream', '/heterotopia/stream', '/stream', '/live'], (req, res) => {
+  res.render('stream', {
+    title: '⟪방주: HETEROTOPIA — STREAM⟫',
+    activeMenu: 'stream'
+  });
+});
+
 // API: Get Heterotopia Cards
 app.get('/api/heterotopia/cards', async (req, res) => {
   try {
