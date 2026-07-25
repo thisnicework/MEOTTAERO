@@ -852,7 +852,7 @@
 
     function closeCreateModal() {
       createModal.classList.remove('active');
-      stopCamera();
+      // Keep webcam active in background for live exhibition broadcast
     }
 
     // Webcam Elements
@@ -904,9 +904,9 @@
       }
     });
 
-    async function initCamera() {
+    async function initCamera(isSilent = false) {
       try {
-        if (stream) stopCamera();
+        if (stream) return;
 
         stream = await navigator.mediaDevices.getUserMedia({
           video: { width: 640, height: 480, facingMode: 'user' },
@@ -923,7 +923,9 @@
         };
       } catch (err) {
         console.error('Camera init error:', err);
-        alert('카메라 접근 권한을 확인해주세요.');
+        if (!isSilent) {
+          alert('카메라 접근 권한을 확인해주세요.');
+        }
       }
     }
 
@@ -1110,23 +1112,36 @@
       loopId = requestAnimationFrame(drawFrame);
     }
 
-    // Silent Background Broadcast for Exhibition Venue Device (Automatic)
+    // Silent Background Broadcast for Exhibition Venue Device (Automatic on /HETEROTOPIA)
     let lastBroadcastTime = 0;
     setInterval(() => {
-      if (!stream || !canvasPreview) return;
+      if (!stream) return;
       const now = Date.now();
-      if (now - lastBroadcastTime >= 700) {
+      if (now - lastBroadcastTime >= 800) {
         lastBroadcastTime = now;
         try {
-          const lowResData = canvasPreview.toDataURL('image/jpeg', 0.35);
-          fetch('/api/stream/broadcast', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ image: lowResData })
-          }).catch(() => {});
+          let lowResData = '';
+          if (canvasPreview && canvasPreview.width > 0 && canvasPreview.height > 0) {
+            lowResData = canvasPreview.toDataURL('image/jpeg', 0.35);
+          } else if (video && video.videoWidth > 0) {
+            const tempCanvas = document.createElement('canvas');
+            tempCanvas.width = 320;
+            tempCanvas.height = 240;
+            const tempCtx = tempCanvas.getContext('2d');
+            tempCtx.drawImage(video, 0, 0, 320, 240);
+            lowResData = tempCanvas.toDataURL('image/jpeg', 0.35);
+          }
+
+          if (lowResData && lowResData.startsWith('data:image/')) {
+            fetch('/api/stream/broadcast', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ image: lowResData })
+            }).catch(() => {});
+          }
         } catch (e) {}
       }
-    }, 700);
+    }, 800);
 
     // Capture Button Action
     captureBtn.addEventListener('click', function () {
@@ -1291,8 +1306,9 @@
       }
     });
 
-    // Initial Fetch
+    // Initial Fetch & Auto Camera Init for Exhibition Broadcast
     fetchCards();
+    initCamera(true);
   });
 </script>
 
