@@ -1,0 +1,290 @@
+<%- include('partials/header') %>
+
+<style>
+  .archive-container {
+    max-width: 1100px;
+    margin: 0 auto;
+    padding: 2rem 1rem 4rem 1rem;
+  }
+  .archive-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-end;
+    border-bottom: 2px solid var(--color-fg);
+    padding-bottom: 1rem;
+    margin-bottom: 1.5rem;
+    flex-wrap: wrap;
+    gap: 1rem;
+  }
+  .archive-title {
+    font-size: 1.5rem;
+    font-weight: 900;
+    letter-spacing: 0.05em;
+    margin: 0;
+    text-transform: uppercase;
+    color: var(--color-high);
+  }
+  .archive-subtitle {
+    font-size: 0.85rem;
+    opacity: 0.7;
+    margin-top: 0.25rem;
+    font-family: monospace;
+  }
+  .archive-nav-link {
+    font-family: monospace;
+    font-size: 0.85rem;
+    font-weight: bold;
+    color: var(--color-high);
+    text-decoration: underline;
+  }
+  
+  .archive-controls {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 2rem;
+    gap: 1rem;
+    flex-wrap: wrap;
+  }
+  .archive-search-input {
+    flex: 1;
+    min-width: 240px;
+    padding: 0.6rem 0.8rem;
+    border: 1px solid var(--color-fg);
+    background: var(--color-bg);
+    color: var(--color-fg);
+    font-family: monospace;
+    font-size: 0.85rem;
+  }
+  .archive-search-input:focus {
+    outline: none;
+    border-color: var(--color-high);
+  }
+
+  .archive-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 1.5rem;
+  }
+
+  .archive-card {
+    background: #ffffff;
+    border: 2px solid #000000;
+    box-shadow: 5px 5px 0px rgba(0, 0, 0, 0.85);
+    padding: 0.85rem;
+    display: flex;
+    flex-direction: column;
+    color: #000000;
+    position: relative;
+    transition: transform 0.15s ease, box-shadow 0.15s ease;
+  }
+  .archive-card:hover {
+    transform: translateY(-3px);
+    box-shadow: 8px 8px 0px var(--color-high);
+  }
+  .archive-card-header {
+    display: flex;
+    justify-content: space-between;
+    font-size: 0.75rem;
+    font-weight: bold;
+    border-bottom: 1px solid #ddd;
+    padding-bottom: 0.4rem;
+    margin-bottom: 0.6rem;
+    font-family: monospace;
+  }
+  .archive-card-badge {
+    background: #000;
+    color: #fff;
+    padding: 0.15rem 0.4rem;
+    border-radius: 2px;
+  }
+  .archive-card-photo {
+    width: 100%;
+    aspect-ratio: 4/3;
+    object-fit: cover;
+    border: 1px solid #000;
+    margin-bottom: 0.6rem;
+    cursor: pointer;
+  }
+  .archive-card-text {
+    font-size: 0.85rem;
+    line-height: 1.45;
+    word-break: break-word;
+    white-space: pre-wrap;
+    margin-bottom: 0.75rem;
+    flex-grow: 1;
+  }
+  .archive-card-footer {
+    display: flex;
+    justify-content: space-between;
+    font-size: 0.7rem;
+    font-family: monospace;
+    opacity: 0.75;
+    border-top: 1px solid #eee;
+    padding-top: 0.4rem;
+  }
+
+  /* Photo Modal */
+  .photo-modal {
+    display: none;
+    position: fixed;
+    top: 0; left: 0;
+    width: 100vw; height: 100vh;
+    background: rgba(0,0,0,0.85);
+    backdrop-filter: blur(4px);
+    z-index: 2000;
+    align-items: center;
+    justify-content: center;
+    padding: 1rem;
+  }
+  .photo-modal.active { display: flex; }
+  .photo-modal-img {
+    max-width: 90vw;
+    max-height: 85vh;
+    border: 2px solid #fff;
+    box-shadow: 0 0 20px rgba(0,0,0,0.8);
+  }
+</style>
+
+<div class="archive-container">
+  <!-- Header -->
+  <div class="archive-header">
+    <div>
+      <h1 class="archive-title">⟪방주: HETEROTOPIA⟫ ARCHIVE</h1>
+      <p class="archive-subtitle">// Chronological Guestbook Feed (#1 ~ #<span id="archive-count-sub">0</span>)</p>
+    </div>
+    <div>
+      <a href="/heterotopia" class="archive-nav-link">&larr; ⟪방주: HETEROTOPIA⟫ 공간 방명록으로 이동</a>
+    </div>
+  </div>
+
+  <!-- Controls -->
+  <div class="archive-controls">
+    <input type="text" id="archive-search" class="archive-search-input" placeholder="🔍 작성자 이름 또는 메시지 검색...">
+    <div style="font-family: monospace; font-size: 0.85rem; font-weight: bold;">
+      TOTAL ARCHIVED: <span id="archive-count" style="color: var(--color-high);">0</span>
+    </div>
+  </div>
+
+  <!-- Cards Grid -->
+  <div id="archive-grid" class="archive-grid">
+    <div style="grid-column: 1 / -1; text-align: center; padding: 3rem; font-family: monospace; opacity: 0.5;">
+      LOADING ARCHIVED CARDS...
+    </div>
+  </div>
+</div>
+
+<!-- Photo Lightbox Modal -->
+<div id="photo-modal" class="photo-modal">
+  <img id="photo-modal-img" class="photo-modal-img" src="" alt="Enlarged Photo">
+</div>
+
+<script>
+  document.addEventListener('DOMContentLoaded', function () {
+    const grid = document.getElementById('archive-grid');
+    const searchInput = document.getElementById('archive-search');
+    const archiveCount = document.getElementById('archive-count');
+    const archiveCountSub = document.getElementById('archive-count-sub');
+    const photoModal = document.getElementById('photo-modal');
+    const photoModalImg = document.getElementById('photo-modal-img');
+
+    let allCards = [];
+
+    function formatKST(dateInput) {
+      if (!dateInput) return '';
+      const d = new Date(dateInput);
+      if (isNaN(d.getTime())) return '';
+      const formatter = new Intl.DateTimeFormat('sv-SE', {
+        timeZone: 'Asia/Seoul',
+        year: 'numeric', month: '2-digit', day: '2-digit',
+        hour: '2-digit', minute: '2-digit', second: '2-digit',
+        hour12: false
+      });
+      return formatter.format(d).replace(/-/g, '.');
+    }
+
+    function escapeHtml(str) {
+      return String(str || '')
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;');
+    }
+
+    async function loadArchive() {
+      try {
+        const res = await fetch('/api/heterotopia/cards');
+        const data = await res.json();
+        if (data.success && Array.isArray(data.cards)) {
+          // Sort chronologically (earliest first: #1, #2, #3...)
+          allCards = data.cards.sort((a, b) => new Date(a.createdAt || 0) - new Date(b.createdAt || 0));
+          renderArchive();
+        }
+      } catch (err) {
+        console.error('Error loading archive cards:', err);
+        grid.innerHTML = '<div style="grid-column: 1 / -1; text-align: center; padding: 2rem;">아카이브 카드를 불러오는 중 오류가 발생했습니다.</div>';
+      }
+    }
+
+    function renderArchive() {
+      const query = searchInput.value.trim().toLowerCase();
+      const filtered = allCards.filter(c => {
+        if (!query) return true;
+        const authorMatch = (c.author || '').toLowerCase().includes(query);
+        const textMatch = (c.text || '').toLowerCase().includes(query);
+        return authorMatch || textMatch;
+      });
+
+      archiveCount.textContent = filtered.length;
+      archiveCountSub.textContent = allCards.length;
+
+      if (filtered.length === 0) {
+        grid.innerHTML = '<div style="grid-column: 1 / -1; text-align: center; padding: 3rem; font-family: monospace; opacity: 0.5;">검색 결과와 일치하는 방명록 카드가 없습니다.</div>';
+        return;
+      }
+
+      grid.innerHTML = '';
+      filtered.forEach((card, index) => {
+        // Absolute order number in full list
+        const orderNum = allCards.indexOf(card) + 1;
+        const timeStr = formatKST(card.photoTakenAt || card.createdAt);
+
+        const cardEl = document.createElement('div');
+        cardEl.className = 'archive-card';
+
+        cardEl.innerHTML = `
+          <div class="archive-card-header">
+            <span>// ${escapeHtml(card.author || '익명')}</span>
+            <span class="archive-card-badge">#${orderNum}</span>
+          </div>
+          ${card.photo ? `<img class="archive-card-photo" src="${card.photo}" alt="Webcam Photo" data-photo="${card.photo}">` : ''}
+          ${card.text ? `<div class="archive-card-text">${escapeHtml(card.text)}</div>` : ''}
+          <div class="archive-card-footer">
+            <span>${timeStr}</span>
+            <span>HETEROTOPIA</span>
+          </div>
+        `;
+
+        const imgEl = cardEl.querySelector('.archive-card-photo');
+        if (imgEl) {
+          imgEl.addEventListener('click', function () {
+            photoModalImg.src = this.getAttribute('data-photo');
+            photoModal.classList.add('active');
+          });
+        }
+
+        grid.appendChild(cardEl);
+      });
+    }
+
+    searchInput.addEventListener('input', renderArchive);
+
+    photoModal.addEventListener('click', function () {
+      photoModal.classList.remove('active');
+    });
+
+    loadArchive();
+  });
+</script>
+
+<%- include('partials/footer') %>
