@@ -265,6 +265,43 @@ app.patch('/api/heterotopia/cards/:id/position', async (req, res) => {
   }
 });
 
+// Active multi-user presence store for HETEROTOPIA canvas cursors
+const activeHeterotopiaCursors = new Map();
+
+// API: Multi-user live cursor heartbeat
+app.post('/api/heterotopia/cursors', (req, res) => {
+  const { id, x, y, name, color } = req.body || {};
+  const now = Date.now();
+
+  if (id && typeof x === 'number' && typeof y === 'number') {
+    activeHeterotopiaCursors.set(id, {
+      id,
+      x: Math.round(x),
+      y: Math.round(y),
+      name: name || 'GUEST',
+      color: color || '#ff0055',
+      lastSeen: now
+    });
+  }
+
+  // Purge stale sessions older than 4 seconds
+  for (const [key, value] of activeHeterotopiaCursors.entries()) {
+    if (now - value.lastSeen > 4000) {
+      activeHeterotopiaCursors.delete(key);
+    }
+  }
+
+  const cursors = Array.from(activeHeterotopiaCursors.values()).map(c => ({
+    id: c.id,
+    x: c.x,
+    y: c.y,
+    name: c.name,
+    color: c.color
+  }));
+
+  res.json({ success: true, cursors });
+});
+
 // Route: API Upload to Supabase Storage
 app.post('/api/booth/upload', async (req, res) => {
   const { image } = req.body;
