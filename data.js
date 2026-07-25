@@ -638,9 +638,20 @@ export async function saveHeterotopiaCard(cardInput) {
 }
 
 export async function updateHeterotopiaCardPosition(id, x, y) {
+  const roundedX = Math.round(Number(x) || 0);
+  const roundedY = Math.round(Number(y) || 0);
+
   if (supabase) {
     try {
-      await supabase.from('heterotopia_cards').update({ x, y }).eq('id', id);
+      const { data, error } = await supabase
+        .from('heterotopia_cards')
+        .update({ x: roundedX, y: roundedY })
+        .eq('id', id)
+        .select();
+
+      if (error) {
+        console.warn('Supabase update position error:', error.message);
+      }
     } catch (e) {
       console.warn('Supabase updateHeterotopiaCardPosition error:', e.message);
     }
@@ -650,8 +661,8 @@ export async function updateHeterotopiaCardPosition(id, x, y) {
     const cards = await getHeterotopiaCards();
     const card = cards.find(c => c.id === id);
     if (card) {
-      card.x = x;
-      card.y = y;
+      card.x = roundedX;
+      card.y = roundedY;
       fs.writeFileSync(HETEROTOPIA_FILE, JSON.stringify(cards, null, 2), 'utf8');
     }
   } catch (e) {

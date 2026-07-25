@@ -746,39 +746,46 @@
       let cardStartY = 0;
       let hasMoved = false;
 
-      cardEl.addEventListener('mousedown', function (e) {
-        e.stopPropagation();
+      function startDrag(clientX, clientY) {
         isDraggingCard = true;
         currentlyDraggingCardId = cardObj.id;
         hasMoved = false;
         cardEl.classList.add('dragging');
-        cardStartX = e.clientX;
-        cardStartY = e.clientY;
-      });
+        cardStartX = clientX;
+        cardStartY = clientY;
+      }
 
-      window.addEventListener('mousemove', function (e) {
+      function moveDrag(clientX, clientY) {
         if (!isDraggingCard) return;
-        const dx = (e.clientX - cardStartX) / scale;
-        const dy = (e.clientY - cardStartY) / scale;
+        const dx = (clientX - cardStartX) / scale;
+        const dy = (clientY - cardStartY) / scale;
         if (Math.abs(dx) > 0.1 || Math.abs(dy) > 0.1) hasMoved = true;
-        
+
         cardObj.x += dx;
         cardObj.y += dy;
         cardEl.style.left = `${cardObj.x}px`;
         cardEl.style.top = `${cardObj.y}px`;
 
-        cardStartX = e.clientX;
-        cardStartY = e.clientY;
-      });
+        cardStartX = clientX;
+        cardStartY = clientY;
+      }
 
-      window.addEventListener('mouseup', function () {
+      function endDrag() {
         if (isDraggingCard) {
           isDraggingCard = false;
           currentlyDraggingCardId = null;
           cardEl.classList.remove('dragging');
+
           if (hasMoved && cardObj.id) {
             const rx = Math.round(cardObj.x);
             const ry = Math.round(cardObj.y);
+
+            const target = cardsData.find(c => c.id === cardObj.id);
+            if (target) {
+              target.x = rx;
+              target.y = ry;
+            }
+
             fetch(`/api/heterotopia/cards/${cardObj.id}/position`, {
               method: 'PATCH',
               headers: { 'Content-Type': 'application/json' },
@@ -786,6 +793,36 @@
             }).catch(err => console.error('Failed to save card position:', err));
           }
         }
+      }
+
+      cardEl.addEventListener('mousedown', function (e) {
+        e.stopPropagation();
+        startDrag(e.clientX, e.clientY);
+      });
+
+      window.addEventListener('mousemove', function (e) {
+        moveDrag(e.clientX, e.clientY);
+      });
+
+      window.addEventListener('mouseup', function () {
+        endDrag();
+      });
+
+      cardEl.addEventListener('touchstart', function (e) {
+        if (e.touches.length === 1) {
+          e.stopPropagation();
+          startDrag(e.touches[0].clientX, e.touches[0].clientY);
+        }
+      }, { passive: true });
+
+      window.addEventListener('touchmove', function (e) {
+        if (isDraggingCard && e.touches.length === 1) {
+          moveDrag(e.touches[0].clientX, e.touches[0].clientY);
+        }
+      }, { passive: true });
+
+      window.addEventListener('touchend', function () {
+        endDrag();
       });
     }
 
