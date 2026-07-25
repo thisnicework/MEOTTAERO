@@ -1,125 +1,117 @@
-<%- include('partials/header') %>
-
-<main style="max-width: 960px; margin: 0 auto; padding: 1.5rem 1rem;">
-  <!-- Section Title -->
-  <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid var(--color-fg); padding-bottom: 0.75rem; margin-bottom: 1.5rem;">
-    <div>
-      <h2 style="font-size: 1.25rem; font-weight: 900; letter-spacing: 0.05em; margin: 0; text-transform: uppercase; color: var(--color-high);">
-        ⟪방주: HETEROTOPIA⟫ LIVE STREAM
-      </h2>
-      <p style="font-size: 0.8rem; opacity: 0.7; margin: 0.2rem 0 0 0; font-family: monospace;">
-        // Real-Time Exhibition Hall Webcam Broadcast
-      </p>
-    </div>
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title><%= title %></title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    html, body {
+      width: 100%;
+      height: 100%;
+      background: #000;
+      color: #fff;
+      font-family: monospace;
+      overflow: hidden;
+    }
+  </style>
+</head>
+<body>
+  <!-- Full Screen CCTV Monitor -->
+  <div style="position: relative; width: 100vw; height: 100vh; background: #000; display: flex; align-items: center; justify-content: center; overflow: hidden;">
     
-    <!-- Status Badge -->
-    <div id="status-badge" style="display: flex; align-items: center; gap: 0.5rem; background: #111; color: #fff; padding: 0.4rem 0.8rem; border-radius: 4px; font-size: 0.75rem; font-weight: bold; font-family: monospace; border: 1px solid var(--color-fg);">
-      <span id="status-dot" style="width: 8px; height: 8px; border-radius: 50%; background: #888;"></span>
-      <span id="status-text">CONNECTING...</span>
-    </div>
-  </div>
+    <!-- CRT Scanline Effect Overlay -->
+    <div style="position: absolute; top:0; left:0; width:100%; height:100%; background: repeating-linear-gradient(0deg, rgba(0,0,0,0.15), rgba(0,0,0,0.15) 1px, transparent 1px, transparent 2px); pointer-events: none; z-index: 5;"></div>
 
-  <!-- CCTV Monitor Display -->
-  <div class="cctv-monitor" style="position: relative; width: 100%; aspect-ratio: 16/9; background: #080808; border: 2px solid var(--color-fg); box-shadow: 6px 6px 0px rgba(0,0,0,0.85); overflow: hidden; display: flex; align-items: center; justify-content: center;">
-    
-    <!-- CRT Overlay Lines -->
-    <div style="position: absolute; top:0; left:0; width:100%; height:100%; background: repeating-linear-gradient(0deg, rgba(0,0,0,0.12), rgba(0,0,0,0.12) 1px, transparent 1px, transparent 2px); pointer-events: none; z-index: 5;"></div>
-
-    <!-- Active Video Frame -->
-    <img id="stream-frame" src="" alt="Exhibition Live Stream" style="display: none; width: 100%; height: 100%; object-fit: contain;">
+    <!-- Active Stream Image Frame -->
+    <img id="stream-frame" src="" alt="Live Stream" style="width: 100%; height: 100%; object-fit: contain; display: none;">
 
     <!-- Offline Standby Display -->
-    <div id="standby-screen" style="display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; color: #fff; padding: 2rem; font-family: monospace;">
-      <div style="font-size: 3rem; margin-bottom: 1rem; opacity: 0.3;">📹</div>
-      <div style="font-size: 1.1rem; font-weight: bold; letter-spacing: 0.1em; color: #aaa; margin-bottom: 0.5rem;">
+    <div id="standby-screen" style="display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; color: #fff; padding: 2rem;">
+      <div style="font-size: 4rem; margin-bottom: 1rem; opacity: 0.25;">📹</div>
+      <div style="font-size: 1.25rem; font-weight: bold; letter-spacing: 0.15em; color: #aaa; margin-bottom: 0.5rem;">
         [ EXHIBITION OFFLINE / STANDBY ]
       </div>
-      <p style="font-size: 0.8rem; opacity: 0.5; max-width: 420px; line-height: 1.5; margin: 0;">
-        현재 전시장 웹캠 송출이 비활성화되어 있습니다.<br>
-        전시장 기기에서 <code>?stream=true</code> 모드로 웹캠이 작동되면 실시간 영상이 여기에 표시됩니다.
+      <p style="font-size: 0.85rem; opacity: 0.4; max-width: 420px; line-height: 1.5;">
+        전시장 웹캠 송출이 준비 중입니다.<br>전시장 기기에서 <code>/HETEROTOPIA</code> 가 켜지면 영상이 표시됩니다.
       </p>
     </div>
 
-    <!-- Stream Header Overlay -->
-    <div style="position: absolute; top: 12px; left: 16px; z-index: 6; font-family: monospace; font-size: 0.75rem; color: #00ffcc; text-shadow: 0 0 5px rgba(0,255,204,0.5); pointer-events: none;">
+    <!-- Top Left Overlay: Camera Name -->
+    <div style="position: absolute; top: 16px; left: 20px; z-index: 6; font-size: 0.85rem; font-weight: bold; color: #00ffcc; text-shadow: 0 0 6px rgba(0,255,204,0.6); pointer-events: none; letter-spacing: 0.05em;">
       CAM 01 // EXHIBITION HALL
     </div>
 
-    <!-- Stream Clock Overlay -->
-    <div id="stream-clock" style="position: absolute; top: 12px; right: 16px; z-index: 6; font-family: monospace; font-size: 0.75rem; color: #fff; text-shadow: 0 0 5px rgba(255,255,255,0.5); pointer-events: none;">
-      --:--:--
+    <!-- Top Right Overlay: Live Badge & KST Clock -->
+    <div style="position: absolute; top: 16px; right: 20px; z-index: 6; display: flex; align-items: center; gap: 0.75rem; pointer-events: none;">
+      <div id="status-badge" style="display: flex; align-items: center; gap: 0.4rem; background: rgba(0,0,0,0.75); color: #fff; padding: 0.3rem 0.7rem; border-radius: 4px; font-size: 0.75rem; font-weight: bold; border: 1px solid #444;">
+        <span id="status-dot" style="width: 8px; height: 8px; border-radius: 50%; background: #888;"></span>
+        <span id="status-text">CONNECTING</span>
+      </div>
+      <div id="stream-clock" style="font-size: 0.85rem; color: #fff; text-shadow: 0 0 5px rgba(255,255,255,0.5);">
+        --:--:--
+      </div>
     </div>
   </div>
 
-  <!-- Information / Guide Footer -->
-  <div style="margin-top: 1.5rem; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem; font-size: 0.8rem; font-family: monospace; opacity: 0.8;">
-    <div>
-      <span>REFRESH: 1.5 FPS (LOW-RES STREAM)</span>
-    </div>
-    <div>
-      <a href="/heterotopia" style="color: var(--color-high); font-weight: bold; text-decoration: underline;">⟪방주: HETEROTOPIA⟫ 방명록 이동 &rarr;</a>
-    </div>
-  </div>
-</main>
+  <script>
+    (function () {
+      const frameImg = document.getElementById('stream-frame');
+      const standbyScreen = document.getElementById('standby-screen');
+      const statusDot = document.getElementById('status-dot');
+      const statusText = document.getElementById('status-text');
+      const statusBadge = document.getElementById('status-badge');
+      const streamClock = document.getElementById('stream-clock');
 
-<script>
-  (function () {
-    const frameImg = document.getElementById('stream-frame');
-    const standbyScreen = document.getElementById('standby-screen');
-    const statusDot = document.getElementById('status-dot');
-    const statusText = document.getElementById('status-text');
-    const statusBadge = document.getElementById('status-badge');
-    const streamClock = document.getElementById('stream-clock');
-
-    function updateClock() {
-      const now = new Date();
-      const formatter = new Intl.DateTimeFormat('sv-SE', {
-        timeZone: 'Asia/Seoul',
-        year: 'numeric', month: '2-digit', day: '2-digit',
-        hour: '2-digit', minute: '2-digit', second: '2-digit',
-        hour12: false
-      });
-      streamClock.textContent = formatter.format(now).replace(/-/g, '.') + ' KST';
-    }
-
-    setInterval(updateClock, 1000);
-    updateClock();
-
-    async function fetchLiveStream() {
-      try {
-        const res = await fetch('/api/stream/live');
-        const data = await res.json();
-
-        if (data.success && data.active && data.frame) {
-          let frameSrc = data.frame;
-          if (frameSrc.startsWith('http')) {
-            frameSrc = frameSrc.split('?')[0] + '?t=' + Date.now();
-          }
-          frameImg.src = frameSrc;
-          frameImg.style.display = 'block';
-          standbyScreen.style.display = 'none';
-
-          statusDot.style.background = '#ff0055';
-          statusDot.style.boxShadow = '0 0 8px #ff0055';
-          statusText.textContent = 'LIVE 🔴';
-          statusBadge.style.borderColor = '#ff0055';
-        } else {
-          frameImg.style.display = 'none';
-          standbyScreen.style.display = 'flex';
-
-          statusDot.style.background = '#888';
-          statusDot.style.boxShadow = 'none';
-          statusText.textContent = 'OFFLINE';
-          statusBadge.style.borderColor = 'var(--color-fg)';
-        }
-      } catch (err) {
-        console.error('Stream fetch error:', err);
+      function updateClock() {
+        const now = new Date();
+        const formatter = new Intl.DateTimeFormat('sv-SE', {
+          timeZone: 'Asia/Seoul',
+          year: 'numeric', month: '2-digit', day: '2-digit',
+          hour: '2-digit', minute: '2-digit', second: '2-digit',
+          hour12: false
+        });
+        streamClock.textContent = formatter.format(now).replace(/-/g, '.') + ' KST';
       }
-    }
 
-    setInterval(fetchLiveStream, 400);
-    fetchLiveStream();
-  })();
-</script>
+      setInterval(updateClock, 1000);
+      updateClock();
 
-<%- include('partials/footer') %>
+      async function fetchLiveStream() {
+        try {
+          const res = await fetch('/api/stream/live');
+          const data = await res.json();
+
+          if (data.success && data.active && data.frame) {
+            let frameSrc = data.frame;
+            if (frameSrc.startsWith('http')) {
+              frameSrc = frameSrc.split('?')[0] + '?t=' + Date.now();
+            }
+            frameImg.src = frameSrc;
+            frameImg.style.display = 'block';
+            standbyScreen.style.display = 'none';
+
+            statusDot.style.background = '#ff0055';
+            statusDot.style.boxShadow = '0 0 8px #ff0055';
+            statusText.textContent = 'LIVE 🔴';
+            statusBadge.style.borderColor = '#ff0055';
+          } else {
+            frameImg.style.display = 'none';
+            standbyScreen.style.display = 'flex';
+
+            statusDot.style.background = '#888';
+            statusDot.style.boxShadow = 'none';
+            statusText.textContent = 'OFFLINE';
+            statusBadge.style.borderColor = '#444';
+          }
+        } catch (err) {
+          console.error('Stream fetch error:', err);
+        }
+      }
+
+      setInterval(fetchLiveStream, 500);
+      fetchLiveStream();
+    })();
+  </script>
+</body>
+</html>
