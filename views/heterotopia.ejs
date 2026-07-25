@@ -658,12 +658,34 @@
     // ----------------------------------------------------
     let cardsData = [];
 
+    function getStoredPositions() {
+      try {
+        return JSON.parse(localStorage.getItem('heterotopia_card_positions') || '{}');
+      } catch (e) {
+        return {};
+      }
+    }
+
+    function setStoredPosition(id, x, y) {
+      try {
+        const stored = getStoredPositions();
+        stored[id] = { x: Math.round(x), y: Math.round(y) };
+        localStorage.setItem('heterotopia_card_positions', JSON.stringify(stored));
+      } catch (e) {}
+    }
+
     async function fetchCards() {
       try {
         const res = await fetch('/api/heterotopia/cards');
         const data = await res.json();
         if (data.success && Array.isArray(data.cards)) {
-          cardsData = data.cards;
+          const stored = getStoredPositions();
+          cardsData = data.cards.map(c => {
+            if (stored[c.id]) {
+              return { ...c, x: stored[c.id].x, y: stored[c.id].y };
+            }
+            return c;
+          });
           renderCards();
         }
       } catch (err) {
@@ -767,10 +789,13 @@
           isDraggingCard = false;
           cardEl.classList.remove('dragging');
           if (hasMoved && cardObj.id) {
+            const rx = Math.round(cardObj.x);
+            const ry = Math.round(cardObj.y);
+            setStoredPosition(cardObj.id, rx, ry);
             fetch(`/api/heterotopia/cards/${cardObj.id}/position`, {
               method: 'PATCH',
               headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify({ x: Math.round(cardObj.x), y: Math.round(cardObj.y) })
+              body: JSON.stringify({ x: rx, y: ry })
             }).catch(err => console.error('Failed to save card position:', err));
           }
         }
@@ -1224,6 +1249,7 @@
 
         const data = await res.json();
         if (data.success && data.card) {
+          setStoredPosition(data.card.id, data.card.x, data.card.y);
           cardsData.push(data.card);
           renderCards();
 
