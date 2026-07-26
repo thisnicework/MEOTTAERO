@@ -153,15 +153,21 @@ footer {
 }
 
 a:link[href*="//"]:not([href*=".dev.localhost"]):not([href*=".seoularts.ac.kr"]),
+a:visited[href*="//"]:not([href*=".dev.localhost"]):not([href*=".seoularts.ac.kr"]),
 a:link[href^="mailto:"],
-a:link[href^="tel:"] {
+a:visited[href^="mailto:"],
+a:link[href^="tel:"],
+a:visited[href^="tel:"] {
 	cursor:-webkit-ne-resize;
 	cursor:ne-resize;
 }
 
 a:link[href*="//"]:not([href*=".dev.localhost"]):not([href*=".seoularts.ac.kr"])::after,
+a:visited[href*="//"]:not([href*=".dev.localhost"]):not([href*=".seoularts.ac.kr"])::after,
 a:link[href^="mailto:"]::after,
-a:link[href^="tel:"]::after {
+a:visited[href^="mailto:"]::after,
+a:link[href^="tel:"]::after,
+a:visited[href^="tel:"]::after {
 	color:var(--color-high);
 	content:"\2197";
 	/* remove a:link text-decoration */
@@ -272,13 +278,21 @@ main div.init {
 }
 
 main div.project a:link[href^="/"]::after,
+main div.project a:visited[href^="/"]::after,
 main div.project a:link[href^="#"]::after,
+main div.project a:visited[href^="#"]::after,
 main div.student a:link[href^="/"]::after,
+main div.student a:visited[href^="/"]::after,
 main div.student a:link[href^="#"]::after,
+main div.student a:visited[href^="#"]::after,
 main div.project a:link[href*="//"][href*=".dev.localhost"]::after,
+main div.project a:visited[href*="//"][href*=".dev.localhost"]::after,
 main div.student a:link[href*="//"][href*=".dev.localhost"]::after,
+main div.student a:visited[href*="//"][href*=".dev.localhost"]::after,
 main div.project a:link[href*="//"][href*=".seoularts.ac.kr"]::after,
-main div.student a:link[href*="//"][href*=".seoularts.ac.kr"]::after {
+main div.project a:visited[href*="//"][href*=".seoularts.ac.kr"]::after,
+main div.student a:link[href*="//"][href*=".seoularts.ac.kr"]::after,
+main div.student a:visited[href*="//"][href*=".seoularts.ac.kr"]::after {
 	color:var(--color-high);
 	content:"\2191";
 	/* remove a:link text-decoration */
