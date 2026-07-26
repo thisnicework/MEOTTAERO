@@ -761,3 +761,10 @@ main img + * {
 	color: var(--color-fg) !important;
 }
 
+/* Hide 'play' menu item on mobile devices */
+@media (max-width: 39.938em) {
+	header nav#menu > a[href="/play"] {
+		display: none;
+	}
+}
+
