@@ -147,6 +147,12 @@
         <a class="article-item block" data-article="paper_arts_funding" style="cursor: pointer;">
           <h2 class="bold">디지털 미디어 예술을 위한 재원 조성 모델</h2>
         </a>
+        <a class="article-item block" data-article="paper_space_syntax" style="cursor: pointer;">
+          <h2 class="bold">전시 공간 레이아웃과 관객 경로의 공간구문 분석</h2>
+        </a>
+        <a class="article-item block" data-article="paper_hybrid_space" style="cursor: pointer;">
+          <h2 class="bold">하이브리드 전시 설계: 물리-디지털 공간 통합 모델</h2>
+        </a>
       </div>
     </div>
   </section>
@@ -196,7 +202,9 @@
         paper_forsythe: '안무적 객체와 무용 공간의 재구성 (Choreographic Objects)',
         paper_cunningham: '컴퓨터 지원 안무 기법 연구 (LifeForms: The Use of Computer Software in Dance Curation)',
         paper_arts_marketing: '예술단체의 디지털 큐레이션과 관객 개발 (Audience Development and Digital Curation in Arts Organizations)',
-        paper_arts_funding: '디지털 미디어 예술을 위한 재원 조성 모델 (Capitalizing Culture: Funding Models for Digital Media Arts)'
+        paper_arts_funding: '디지털 미디어 예술을 위한 재원 조성 모델 (Capitalizing Culture: Funding Models for Digital Media Arts)',
+        paper_space_syntax: '전시 공간 레이아웃과 관객 경로의 공간구문 분석 (The Space of the Museum: Exhibition Layout and Visitor Behavior)',
+        paper_hybrid_space: '하이브리드 전시 설계: 물리-디지털 공간 통합 모델 (Hybrid Space Design: Integrating Physical and Digital Exhibition Environments)'
       };
 
       // Leaked DB Articles
@@ -282,7 +290,7 @@
           <p><strong>[화소 미분 기반 광학 흐름 연산 모델]</strong></p>
           <p>카메라 입력 영상 속 무용수의 동작 다이내믹을 정량화하기 위해 논문은 화소(Pixel) 단위의 밝기 변화를 시간 축으로 편미분하는 광학 흐름(Optical Flow) 알고리즘을 최적화하여 적용합니다. 물리 연산 공식은 다음과 같이 구동됩니다.</p>
           <ul>
-            <li><strong>속도 벡터 필드 산출:</strong> 무용수의 외곽 윤곽선 내에 존재하는 화소들의 공간적 이동 속도 벡터 V = (dx/dt, dy/dt)를 매 프레임 병렬 계산합니다. 실시간 픽셀 도함수 $\nabla I = (I_x, I_y, I_t)$를 Lucas-Kanade 공식을 기초로 연산하여 2차원 또는 가상의 3차원 속도 벡터 필드(Vector Field)를 가상으로 중첩 생성합니다.</li>
+            <li><strong>속도 벡터 필드 산출:</strong> 무용수의 외곽 윤곽선 내에 존재하는 화소들의 공간적 이동 속도 벡터 V = (dx/dt, dy/dt)를 매 프레임 병렬 계산합니다. 실시간 픽셀 도함수 ∇I = (Ix, Iy, It)를 Lucas-Kanade 공식을 기초로 연산하여 2차원 또는 가상의 3차원 속도 벡터 필드(Vector Field)를 가상으로 중첩 생성합니다.</li>
             <li><strong>물리 시뮬레이션 매핑:</strong> 산출된 모션 속도 벡터는 가상 3D 엔진 속의 동역학 물리 입자(Particle System) 및 실시간 유체역학 파티클 시뮬레이션(Grid-based Navier-Stokes Fluid Solver)에 외력(External Force)으로 직결 투입됩니다. 이에 따라 안무가가 팔을 뻗어 공간을 가르는 에너지만큼 가상 유체가 밀려나거나 빛의 입자가 산란하는 고화질 반응형 시각 미술 효과가 즉각 렌더링됩니다.</li>
             <li><strong>질량 중심 및 모멘텀 추적:</strong> 전체 실루엣 내 화소 밀도 분포를 기반으로 무용수의 무게 중심점과 몸 전체의 물리적 질량 모멘텀(Momentum) 변화를 실시간 감지하여, 무대 전방의 대형 스크린 프로젝션 비주얼을 다이내믹하게 제어합니다.</li>
           </ul>
@@ -369,7 +377,7 @@
           <p>이 모델은 입력 영상 프레임에서 배경 분할(Background Subtraction)을 거쳐 획득한 2D 이진 실루엣에 대해, 회전 대칭적이고 위상 보존적인 3차원 공간 복원을 위해 다음과 같은 공학 기법을 설계합니다.</p>
           <ul>
             <li><strong>커널 주성분 분석 (Kernel PCA) 및 챔퍼 매칭 (Chamfer Matching):</strong> 실루엣의 윤곽선 형태 분포를 고차원 특징 공간(Feature Space)으로 정사영시킨 뒤, 미리 데이터셋화된 표준 인체 포즈 다양체(Manifold) 상의 거리 함수 연산을 통해 가장 근접한 관절 각도 좌표들을 선출해 냅니다.</li>
-            <li><strong>비선형 방사 기저 함수 신경망 (RBF Network):</strong> 2D 실루엣 특징 공간 벡터 $x$를 입력받아 3D 골격 조인트 관절 각도 벡터 $y$로 직접 매핑하는 방사 기저 함수 망을 구축합니다. 이 변환은 다차원 행렬 연산을 통해 프레임당 수 밀리초 이내에 연산되므로, 안무 비디오 입력으로부터 무용수의 3차원 움직임 궤적을 실시간으로 추적하는 동역학 연동 성능을 보장합니다.</li>
+            <li><strong>비선형 방사 기저 함수 신경망 (RBF Network):</strong> 2D 실루엣 특징 공간 벡터 x를 입력받아 3D 골격 조인트 관절 각도 벡터 y로 직접 매핑하는 방사 기저 함수 망을 구축합니다. 이 변환은 다차원 행렬 연산을 통해 프레임당 수 밀리초 이내에 연산되므로, 안무 비디오 입력으로부터 무용수의 3차원 움직임 궤적을 실시간으로 추적하는 동역학 연동 성능을 보장합니다.</li>
           </ul>
           <p><strong>[비전 엔지니어링적 기여]</strong></p>
           <p>본 논문은 적외선 센서나 트래커의 도움 없이 일반 카메라 피드에서 안무가의 다차원 3D 관절 회전값을 공학적으로 재구성해 냄으로써, 안무 비디오 아카이빙 및 반응형 비주얼 생성 아트의 수학적 자유도를 혁명적으로 확장시켰습니다. 단일 비전 센서만으로 복합 공간 가상 캐릭터 구동 및 3D 드로잉 아트를 형성하게 만드는 기하학적 토대를 공고히 했습니다.</p>
@@ -584,6 +592,49 @@
           </ul>
           <p><strong>[디지털 자산화 및 지식재산권(IP) 파이낸싱]</strong></p>
           <p>본 논문은 실물이 없는 소프트웨어 기반 작품의 디지털 소스 코드, 실시간 모션 매핑 알고리즘 프레임워크, 혹은 생성된 3D 가상 아바타 디자인 소스를 하나의 디지털 지식재산권(IP) 자산으로 규정하고, 이를 기반으로 라이센스 판매 또는 클라우드 기반 아카이브 유료 구독 형태의 지속적인 부가가치 창출 구조(Digital IP Financing)를 제안했습니다. 이는 디지털 아트를 단순한 일회성 전시에 가두지 않고 경제적 효용이 상시 순환되는 문화경제학적 자본 순환 통로를 최초로 해명한 선구적 연구로 평가받습니다.</p>
+        `,
+
+        paper_space_syntax: `
+          <div class="paper-citation-block">
+            <table>
+              <tr><td class="label">논문명</td><td><strong>The Space of the Museum: Exhibition Layout and Visitor Behavior</strong></td></tr>
+              <tr><td class="label">저자</td><td>Bill Hillier, Kali Tzortzi</td></tr>
+              <tr><td class="label">발행기관</td><td>Bartlett School of Architecture, UCL / Space Syntax Symposium</td></tr>
+              <tr><td class="label">발행연도</td><td>2006년</td></tr>
+            </table>
+          </div>
+          <p><strong>[서론 및 공간 분석학적 배경]</strong></p>
+          <p>미술관이나 전시 기획에서 전시 벽면의 물리적 배치와 통로 설계는 관람객의 시각적 범위와 보행 동선을 강제적으로 결정짓는 공간적 질서(Spatial Order)를 내포합니다. 공간 구문론(Space Syntax)의 창시자인 빌 힐리어(Bill Hillier)와 칼리 초르치(Kali Tzortzi)는 전시장 레이아웃 구조가 관람객의 무의식적 경로 선택 및 작품 인지 수준에 어떤 영향을 주는지 규명하기 위해 시각 그래프 및 위상기하학적 연결 지표를 정의하고 이를 수학적으로 분석했습니다.</p>
+          <p><strong>[시각 그래프 분석 및 위상적 공간 분석 기술]</strong></p>
+          <p>논문에서는 전시장 물리 공간을 3차원 격자 또는 시야가 확보되는 2차원 볼록 다각형 영역(Convex Spaces)으로 분할하고, 다음과 같은 기하학적 공간 정량 지표를 측정합니다.</p>
+          <ul>
+            <li><strong>연결도 (Connectivity):</strong> 특정 전시 지점에서 직접 시각적으로 노출되거나 한 걸음에 도달 가능한 인접 영역의 총 수입니다. 연결도가 높은 중심 노드에는 관객의 능동적 참여를 유도하는 핵심 센서 장치나 입체 설치물을 배치해야 효과적임을 증명합니다.</li>
+            <li><strong>통합도 (Integration):</strong> 전시장 전체 구조에서 특정 전시 공간이 중심부에 속해 있어 관객 접근성이 얼마나 극대화되는지를 나타내는 척도입니다. 통합도가 낮은 주변 구역(Segregated Zones)에는 비교적 소음이 심하거나 어두운 분위기에서 장기 감상이 필요한 몰입형 단독 미디어 박스를 기획 배치하여 전체 공간의 불균형을 해소합니다.</li>
+            <li><strong>시각 그래프 분석 (Visibility Graph Analysis, VGA):</strong> 관람객의 눈높이 시점(Eye-level)을 평면 그리드 상에 사영하고, 각 셀 간의 가시성 벡터 행렬을 연산하여 병목 현상이 발생할 공간 좌표를 사전 예측하는 공간 연산 아키텍처를 제시합니다.</li>
+          </ul>
+          <p><strong>[학술적 공헌 및 실무 기획 가치]</strong></p>
+          <p>본 연구는 감상자의 행동 심리와 건축 공간 설계를 공간 구문 분석(Space Syntax)이라는 엄격한 공간 통계학 모델로 결합해 냈습니다. 전시장 큐레이터나 하드웨어 연출 팀이 관객 흐름의 교차 상태를 사전에 완벽히 조율하고, 인터랙션 센싱 감지 오동작을 줄이도록 최적의 물리적 방해 요소 배제 가이드를 제공하는 데 필수적인 공학적 지침서로 활용됩니다.</p>
+        `,
+
+        paper_hybrid_space: `
+          <div class="paper-citation-block">
+            <table>
+              <tr><td class="label">논문명</td><td><strong>Hybrid Space Design: Integrating Physical and Digital Exhibition Environments</strong></td></tr>
+              <tr><td class="label">저자</td><td>Hiroshi Ishii</td></tr>
+              <tr><td class="label">발행기관</td><td>MIT Media Lab / CoDesign Journal</td></tr>
+              <tr><td class="label">발행연도</td><td>2008년</td></tr>
+            </table>
+          </div>
+          <p><strong>[서론 및 환경 설계적 배경]</strong></p>
+          <p>디지털 미디어 전시 기획에서 단순히 어두운 방(Black Box)을 만들고 프로젝터로 평면 스크린에 영상을 쏘는 전통적 스크린 설계 방식은 관객을 가상 세계로부터 물리적으로 분리시킵니다. MIT 미디어랩 탠지블 미디어 그룹(Tangible Media Group)의 수장 히로시 이시이(Hiroshi Ishii) 교수는 "탠저블 비츠(Tangible Bits)" 이론을 무대 및 전시장 환경 설계로 확장하여, 물리적 건축 요소(벽체, 바닥, 가구)와 가상 디지털 정보(프로젝션 매핑, 입체 입자, 음향)가 경계 없이 일체화되는 '하이브리드 공간 디자인(Hybrid Space Design)' 공학 모델을 정립했습니다.</p>
+          <p><strong>[물리-디지털 통합 인터페이스 및 건축 설계 프레임워크]</strong></p>
+          <p>이 설계 프레임워크는 전시장의 구조물을 반응형 하드웨어로 취급하며, 다음과 같은 통합 시스템 디자인을 제안합니다.</p>
+          <ul>
+            <li><strong>탠저블 표면 가상화 (Tangible Surfaces):</strong> 전시 벽면을 정전식 터치 센싱이나 카메라 적외선 면광 트래킹 장치(FTIR)가 내장된 거대한 입출력 반응형 플레이트로 설계하여, 관객이 물리 벽체를 매만지거나 두드릴 때 발생하는 압력이 오실레이션 파형과 합성 비주얼로 즉각 투영되게 제어합니다.</li>
+            <li><strong>공간적 입체 음향 및 비주얼 통합 (Spatial Synchronization):</strong> 지향성 초음파 스피커 레이아웃을 천장 격자 그리드에 매핑하여, 특정 3D 그래픽 파티클이 벽체 면을 따라 이동하는 궤적과 청각적 사운드 음원의 공간 위치(Panning Vector)를 실시간 기하 일치(Spatial Coherence)시킵니다.</li>
+          </ul>
+          <p><strong>[미디어 건축 및 HCI적 의의]</strong></p>
+          <p>이 논문은 컴퓨터 인터페이스를 모니터 화면에서 끄집어내어 인간이 딛고 서 있는 전시장 공간 전체로 확산시키는 미디어 건축(Media Architecture)의 청사진을 수립했습니다. 물리적 공간의 질감과 디지털 비트의 가변성을 하나로 바인딩하여 관객이 공간 내부에서 완전한 물리적 상호작용 피드백을 체득하게 만드는 전시 인바이러먼탈 설계 표준으로 전 세계에서 연구 인용되고 있습니다.</p>
         `
       };
 
