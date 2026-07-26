@@ -96,28 +96,25 @@
         // ACADEMIC PAPERS
       </div>
       
-      <!-- List matching semesters / students native anchors -->
+      <!-- List matching semesters / students native anchors (without numbers) -->
       <div class="articles">
-        <a class="article-item block active" data-article="sys_index" style="cursor: pointer;">
-          <h2 class="bold">소개 (INDEX)</h2>
-        </a>
-        <a class="article-item block" data-article="paper_wanderley" style="cursor: pointer;">
-          <h2 class="bold">[01] 소리 합성의 제스처 제어</h2>
+        <a class="article-item block active" data-article="paper_wanderley" style="cursor: pointer;">
+          <h2 class="bold">소리 합성의 제스처 제어</h2>
         </a>
         <a class="article-item block" data-article="paper_fiebrink" style="cursor: pointer;">
-          <h2 class="bold">[02] 제스처 악기의 머신러닝</h2>
+          <h2 class="bold">제스처 악기의 머신러닝</h2>
         </a>
         <a class="article-item block" data-article="paper_winkler" style="cursor: pointer;">
-          <h2 class="bold">[03] 인터랙티브 댄스 시스템 설계</h2>
+          <h2 class="bold">인터랙티브 댄스 시스템 설계</h2>
         </a>
         <a class="article-item block" data-article="paper_latulipe" style="cursor: pointer;">
-          <h2 class="bold">[04] 안무 분석을 위한 컴퓨터 비전</h2>
+          <h2 class="bold">안무 분석을 위한 컴퓨터 비전</h2>
         </a>
         <a class="article-item block" data-article="paper_waisvisz" style="cursor: pointer;">
-          <h2 class="bold">[05] 손동작 기반 음향 제어</h2>
+          <h2 class="bold">손동작 기반 음향 제어</h2>
         </a>
         <a class="article-item block" data-article="paper_godoy" style="cursor: pointer;">
-          <h2 class="bold">[06] 신체 움직임과 소리의 매핑</h2>
+          <h2 class="bold">신체 움직임과 소리의 매핑</h2>
         </a>
       </div>
     </div>
@@ -131,7 +128,7 @@
     <div class="wiki-content">
       <!-- Upper title header -->
       <div class="wiki-window-header" id="wiki-window-title">
-        소개 (INDEX)
+        소리 합성의 제스처 제어
       </div>
 
       <!-- Main Text Body -->
@@ -140,175 +137,169 @@
       </div>
     </div>
   </section>
-</main>
 
-<script>
-  document.addEventListener('DOMContentLoaded', () => {
-    const termBody = document.getElementById('wiki-window-body');
-    const termTitle = document.getElementById('wiki-window-title');
-    const articleItems = document.querySelectorAll('.article-item');
-    const backBtn = document.getElementById('wiki-back-btn');
-    const sectionOne = document.getElementById('one');
-    const sectionTwo = document.getElementById('two');
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      const termBody = document.getElementById('wiki-window-body');
+      const termTitle = document.getElementById('wiki-window-title');
+      const articleItems = document.querySelectorAll('.article-item');
+      const backBtn = document.getElementById('wiki-back-btn');
+      const sectionOne = document.getElementById('one');
+      const sectionTwo = document.getElementById('two');
 
-    const titles = {
-      sys_index: '소개 (INDEX)',
-      paper_wanderley: '[01] Gestural Control of Sound Synthesis',
-      paper_fiebrink: '[02] Interactive Machine Learning for Gestural Instrument Design',
-      paper_winkler: '[03] Designing Interactive Dance Performance Systems',
-      paper_latulipe: '[04] Computer Vision Methods for Choreographic Analysis',
-      paper_waisvisz: '[05] The Handposture Instrument',
-      paper_godoy: '[06] Mapping Body Movement to Musical Sound'
-    };
+      const titles = {
+        paper_wanderley: '소리 합성의 제스처 제어 (Gestural Control of Sound Synthesis)',
+        paper_fiebrink: '제스처 악기의 머신러닝 (Interactive Machine Learning for Gestural Instrument Design)',
+        paper_winkler: '인터랙티브 댄스 시스템 설계 (Designing Interactive Dance Performance Systems)',
+        paper_latulipe: '안무 분석을 위한 컴퓨터 비전 (Computer Vision Methods for Choreographic Analysis)',
+        paper_waisvisz: '손동작 기반 음향 제어 (The Handposture Instrument)',
+        paper_godoy: '신체 움직임과 소리의 매핑 (Mapping Body Movement to Musical Sound)'
+      };
 
-    // Leaked DB Articles
-    const articles = {
-      sys_index: `
-        <p>멋대로(MEOTTAERO) 웹 백과사전 학술 아카이브입니다. 춤과 몸짓(Gesture), 그리고 음악(Music)의 상호작용 및 실시간 매핑 기술을 다룬 대표적인 공학 논문들을 분석하고 기록했습니다.</p>
-        <p>좌측의 논문 목록에서 하나를 클릭하여, 각 연구의 서지 사항, 핵심 초록(Abstract), 그리고 크루 멋대로의 시각에서 재해석한 현대 미디어 아트적 의의를 즉시 열람해 보실 수 있습니다.</p>
-      `,
+      // Leaked DB Articles
+      const articles = {
+        paper_wanderley: `
+          <div class="paper-citation-block">
+            <table>
+              <tr><td class="label">논문명</td><td><strong>Gestural Control of Sound Synthesis</strong></td></tr>
+              <tr><td class="label">저자</td><td>Marcelo M. Wanderley, Marc Battier</td></tr>
+              <tr><td class="label">발행기관</td><td>NIME (New Interfaces for Musical Expression)</td></tr>
+              <tr><td class="label">발행연도</td><td>2001년</td></tr>
+            </table>
+          </div>
+          <p><strong>[국문 초록 및 요약]</strong></p>
+          <p>본 논문은 연주자 및 무용수의 실시간 신체 모션을 컴퓨터 음악의 신디사이저 파라미터 소리로 매핑(Mapping)하는 구조를 최초로 체계화한 연구입니다. 신체 모션 데이터를 분석 장치(가속도 센서, 카메라 트래커 등)로 읽어 들이고, 이를 음향 합성 알고리즘에 실시간 신호로 집어넣을 때 요구되는 제어 가이드라인을 제공합니다.</p>
+          <p><strong>[멋대로 분석 및 연구적 의의]</strong></p>
+          <ul>
+            <li><strong>매핑 구조의 정립:</strong> 모션 데이터를 입력값(Input)으로 받아 사운드 제어인자(Output)로 보낼 때, 1:1 매핑뿐 아니라 여러 모션이 하나의 사운드를 제어하는 다대일(N:1) 매핑, 혹은 하나의 모션이 사운드의 다차원적 질감을 바꾸는 일대다(1:N) 매핑의 수학적 원리를 정리하여 오늘날 인터랙티브 퍼포먼스 제어의 뼈대를 제공합니다.</li>
+            <li><strong>악기로서의 신체:</strong> 무용수가 움직이는 각속도와 팔다리 궤적이 무대 위의 음역대와 이펙터 에코 피드백을 실시간으로 연주하는 거대한 신체 악기로 승화되는 원동력을 고스란히 증명해 냈습니다.</li>
+          </ul>
+        `,
 
-      paper_wanderley: `
-        <div class="paper-citation-block">
-          <table>
-            <tr><td class="label">논문명</td><td><strong>Gestural Control of Sound Synthesis</strong></td></tr>
-            <tr><td class="label">저자</td><td>Marcelo M. Wanderley, Marc Battier</td></tr>
-            <tr><td class="label">발행기관</td><td>NIME (New Interfaces for Musical Expression)</td></tr>
-            <tr><td class="label">발행연도</td><td>2001년</td></tr>
-          </table>
-        </div>
-        <p><strong>[국문 초록 및 요약]</strong></p>
-        <p>본 논문은 연주자 및 무용수의 실시간 신체 모션을 컴퓨터 음악의 신디사이저 파라미터 소리로 매핑(Mapping)하는 구조를 최초로 체계화한 연구입니다. 신체 모션 데이터를 분석 장치(가속도 센서, 카메라 트래커 등)로 읽어 들이고, 이를 음향 합성 알고리즘에 실시간 신호로 집어넣을 때 요구되는 제어 가이드라인을 제공합니다.</p>
-        <p><strong>[멋대로 분석 및 연구적 의의]</strong></p>
-        <ul>
-          <li><strong>매핑 구조의 정립:</strong> 모션 데이터를 입력값(Input)으로 받아 사운드 제어인자(Output)로 보낼 때, 1:1 매핑뿐 아니라 여러 모션이 하나의 사운드를 제어하는 다대일(N:1) 매핑, 혹은 하나의 모션이 사운드의 다차원적 질감을 바꾸는 일대다(1:N) 매핑의 수학적 원리를 정리하여 오늘날 인터랙티브 퍼포먼스 제어의 뼈대를 제공합니다.</li>
-          <li><strong>악기로서의 신체:</strong> 무용수가 움직이는 각속도와 팔다리 궤적이 무대 위의 음역대와 이펙터 에코 피드백을 실시간으로 연주하는 거대한 신체 악기로 승화되는 원동력을 고스란히 증명해 냈습니다.</li>
-        </ul>
-      `,
+        paper_fiebrink: `
+          <div class="paper-citation-block">
+            <table>
+              <tr><td class="label">논문명</td><td><strong>Interactive Machine Learning for Gestural Instrument Design</strong></td></tr>
+              <tr><td class="label">저자</td><td>Rebecca Fiebrink</td></tr>
+              <tr><td class="label">발행기관</td><td>MIT Press / Computer Music Journal (Vol 35)</td></tr>
+              <tr><td class="label">발행연도</td><td>2011년</td></tr>
+            </table>
+          </div>
+          <p><strong>[국문 초록 및 요약]</strong></p>
+          <p>개발자가 신체 센서 데이터 값을 사운드 파라미터에 매칭하기 위해 수십 줄의 조건문(if-else) 코드를 수동으로 하드코딩하는 대신, 머신러닝 알고리즘(Interactive Machine Learning)을 접목하여 예술가가 직관적인 제스처 학습(Training)만으로 제스처 악기를 설계하는 혁신적 소프트웨어 'Wekinator'의 작동 원리와 방법론을 설계한 논문입니다.</p>
+          <p><strong>[멋대로 분석 및 연구적 의의]</strong></p>
+          <ul>
+            <li><strong>대화형 머신러닝의 보급:</strong> 예술가가 카메라 앞에서 손을 몇 번 흔들어 "이 동작은 도(C) 음이야", "이 동작은 솔(G) 음이야"라고 AI에게 짧게 예시를 주어 지도학습(Classification / Regression)을 시키면, 컴퓨터가 스스로 그 사이의 모호한 곡선적 모션 가속도를 계산하여 음악 신호로 매핑합니다.</li>
+            <li><strong>아날로그적 불완전성 수용:</strong> 기계적인 수식 매핑의 딱딱함에서 벗어나, 학습용 모션 데이터의 미세한 오차가 주는 생동감 넘치는 음악적 오발음(Human Feel)을 예술적으로 포용하는 길을 열었습니다.</li>
+          </ul>
+        `,
 
-      paper_fiebrink: `
-        <div class="paper-citation-block">
-          <table>
-            <tr><td class="label">논문명</td><td><strong>Interactive Machine Learning for Gestural Instrument Design</strong></td></tr>
-            <tr><td class="label">저자</td><td>Rebecca Fiebrink</td></tr>
-            <tr><td class="label">발행기관</td><td>MIT Press / Computer Music Journal (Vol 35)</td></tr>
-            <tr><td class="label">발행연도</td><td>2011년</td></tr>
-          </table>
-        </div>
-        <p><strong>[국문 초록 및 요약]</strong></p>
-        <p>개발자가 신체 센서 데이터 값을 사운드 파라미터에 매칭하기 위해 수십 줄의 조건문(if-else) 코드를 수동으로 하드코딩하는 대신, 머신러닝 알고리즘(Interactive Machine Learning)을 접목하여 예술가가 직관적인 제스처 학습(Training)만으로 제스처 악기를 설계하는 혁신적 소프트웨어 'Wekinator'의 작동 원리와 방법론을 설계한 논문입니다.</p>
-        <p><strong>[멋대로 분석 및 연구적 의의]</strong></p>
-        <ul>
-          <li><strong>대화형 머신러닝의 보급:</strong> 예술가가 카메라 앞에서 손을 몇 번 흔들어 "이 동작은 도(C) 음이야", "이 동작은 솔(G) 음이야"라고 AI에게 짧게 예시를 주어 지도학습(Classification / Regression)을 시키면, 컴퓨터가 스스로 그 사이의 모호한 곡선적 모션 가속도를 계산하여 음악 신호로 매핑합니다.</li>
-          <li><strong>아날로그적 불완전성 수용:</strong> 기계적인 수식 매핑의 딱딱함에서 벗어나, 학습용 모션 데이터의 미세한 오차가 주는 생동감 넘치는 음악적 오발음(Human Feel)을 예술적으로 포용하는 길을 열었습니다.</li>
-        </ul>
-      `,
+        paper_winkler: `
+          <div class="paper-citation-block">
+            <table>
+              <tr><td class="label">논문명</td><td><strong>Designing Interactive Dance Performance Systems: A Review of Technology and Aesthetics</strong></td></tr>
+              <tr><td class="label">저자</td><td>Todd Winkler</td></tr>
+              <tr><td class="label">발행기관</td><td>ICMC (International Computer Music Conference)</td></tr>
+              <tr><td class="label">발행연도</td><td>1998년</td></tr>
+            </table>
+          </div>
+          <p><strong>[국문 초록 및 요약]</strong></p>
+          <p>무대 위의 무용수가 실시간 컴퓨터 시스템(오디오 및 비주얼 피드백)과 유기적으로 상호작용하기 위한 시스템 아키텍처 설계와 지연율(Latency) 문제를 기술적, 미학적 관점에서 종합 검토한 선구자적 가이드라인 연구입니다. 무용수의 자율성과 센서의 정확도 균형을 다루었습니다.</p>
+          <p><strong>[멋대로 분석 및 연구적 의의]</strong></p>
+          <ul>
+            <li><strong>30ms의 지연율 규칙:</strong> 무용수가 공중으로 몸을 던지거나 발을 구를 때, 웅장한 신디사이저 파형과 반응형 입자가 늦어도 30ms 이내에 물리 세계로 함께 피드백되어야만 인간 뇌가 일체감을 인지한다는 한계 반응 속도를 공학적으로 규정했습니다.</li>
+            <li><strong>피드백 루프의 구축:</strong> 단순히 동작을 입력받아 소리를 트래킹하는 수동적 매칭을 넘어, 무용수가 소리의 템포에 맞춰 춤을 추고 그 춤이 다시 소리를 뒤바꾸는 상호 순환적 지능형 피드백 루프의 구성법을 설파했습니다.</li>
+          </ul>
+        `,
 
-      paper_winkler: `
-        <div class="paper-citation-block">
-          <table>
-            <tr><td class="label">논문명</td><td><strong>Designing Interactive Dance Performance Systems: A Review of Technology and Aesthetics</strong></td></tr>
-            <tr><td class="label">저자</td><td>Todd Winkler</td></tr>
-            <tr><td class="label">발행기관</td><td>ICMC (International Computer Music Conference)</td></tr>
-            <tr><td class="label">발행연도</td><td>1998년</td></tr>
-          </table>
-        </div>
-        <p><strong>[국문 초록 및 요약]</strong></p>
-        <p>무대 위의 무용수가 실시간 컴퓨터 시스템(오디오 및 비주얼 피드백)과 유기적으로 상호작용하기 위한 시스템 아키텍처 설계와 지연율(Latency) 문제를 기술적, 미학적 관점에서 종합 검토한 선구자적 가이드라인 연구입니다. 무용수의 자율성과 센서의 정확도 균형을 다루었습니다.</p>
-        <p><strong>[멋대로 분석 및 연구적 의의]</strong></p>
-        <ul>
-          <li><strong>30ms의 지연율 규칙:</strong> 무용수가 공중으로 몸을 던지거나 발을 구를 때, 웅장한 신디사이저 파형과 반응형 입자가 늦어도 30ms 이내에 물리 세계로 함께 피드백되어야만 인간 뇌가 일체감을 인지한다는 한계 반응 속도를 공학적으로 규정했습니다.</li>
-          <li><strong>피드백 루프의 구축:</strong> 단순히 동작을 입력받아 소리를 트래킹하는 수동적 매칭을 넘어, 무용수가 소리의 템포에 맞춰 춤을 추고 그 춤이 다시 소리를 뒤바꾸는 상호 순환적 지능형 피드백 루프의 구성법을 설파했습니다.</li>
-        </ul>
-      `,
+        paper_latulipe: `
+          <div class="paper-citation-block">
+            <table>
+              <tr><td class="label">논문명</td><td><strong>Computer Vision Methods for Choreographic Analysis</strong></td></tr>
+              <tr><td class="label">저자</td><td>Christian Latulipe, David Wilson, Sybil Huskey</td></tr>
+              <tr><td class="label">발행기관</td><td>IEEE Transactions on Visualization and Computer Graphics</td></tr>
+              <tr><td class="label">발행연도</td><td>2010년</td></tr>
+            </table>
+          </div>
+          <p><strong>[국문 초록 및 요약]</strong></p>
+          <p>적외선 모션 캡처 마커를 몸바탕에 주렁주렁 붙이지 않고도, 일반 비디오 웹캠 카메라 피드만으로 실시간 무용 안무 동작의 프레임별 변화를 추적하는 그래픽스/비전 분석 프레임워크 연구입니다. 픽셀 레벨의 변화율을 미분하는 광학 흐름(Optical Flow)과 다이내믹 텍스처 분석을 수학적으로 증명했습니다.</p>
+          <p><strong>[멋대로 분석 및 연구적 의의]</strong></p>
+          <ul>
+            <li><strong>광학 흐름 벡터 필드:</strong> 안무가가 무대를 가로지르며 손을 휘저을 때, 화면의 픽셀 이동 속도와 가시 벡터 V = (dx/dt, dy/dt)를 매 프레임 실시간 연산하여, 가상 3D 공간 상에 생성된 특수효과 그래픽 파티클(Particle)에게 물리적 에너지 힘으로 밀어주는 유체역학적 동력 전달 과정을 완성했습니다.</li>
+            <li><strong>카메라의 물리 조이스틱화:</strong> 이를 통해 컴퓨터 웹캠은 단순한 녹화 도구에서 벗어나 무용수의 실루엣 질량을 실시간으로 읽어내는 공간적인 물리 입력 장치(Choreographic Interface)로 거듭나게 됩니다.</li>
+          </ul>
+        `,
 
-      paper_latulipe: `
-        <div class="paper-citation-block">
-          <table>
-            <tr><td class="label">논문명</td><td><strong>Computer Vision Methods for Choreographic Analysis</strong></td></tr>
-            <tr><td class="label">저자</td><td>Christian Latulipe, David Wilson, Sybil Huskey</td></tr>
-            <tr><td class="label">발행기관</td><td>IEEE Transactions on Visualization and Computer Graphics</td></tr>
-            <tr><td class="label">발행연도</td><td>2010년</td></tr>
-          </table>
-        </div>
-        <p><strong>[국문 초록 및 요약]</strong></p>
-        <p>적외선 모션 캡처 마커를 몸바탕에 주렁주렁 붙이지 않고도, 일반 비디오 웹캠 카메라 피드만으로 실시간 무용 안무 동작의 프레임별 변화를 추적하는 그래픽스/비전 분석 프레임워크 연구입니다. 픽셀 레벨의 변화율을 미분하는 광학 흐름(Optical Flow)과 다이내믹 텍스처 분석을 수학적으로 증명했습니다.</p>
-        <p><strong>[멋대로 분석 및 연구적 의의]</strong></p>
-        <ul>
-          <li><strong>광학 흐름 벡터 필드:</strong> 안무가가 무대를 가로지르며 손을 휘저을 때, 화면의 픽셀 이동 속도와 가시 벡터 V = (dx/dt, dy/dt)를 매 프레임 실시간 연산하여, 가상 3D 공간 상에 생성된 특수효과 그래픽 파티클(Particle)에게 물리적 에너지 힘으로 밀어주는 유체역학적 동력 전달 과정을 완성했습니다.</li>
-          <li><strong>카메라의 물리 조이스틱화:</strong> 이를 통해 컴퓨터 웹캠은 단순한 녹화 도구에서 벗어나 무용수의 실루엣 질량을 실시간으로 읽어내는 공간적인 물리 입력 장치(Choreographic Interface)로 거듭나게 됩니다.</li>
-        </ul>
-      `,
+        paper_waisvisz: `
+          <div class="paper-citation-block">
+            <table>
+              <tr><td class="label">논문명</td><td><strong>The Handposture Instrument</strong></td></tr>
+              <tr><td class="label">저자</td><td>Michel Waisvisz</td></tr>
+              <tr><td class="label">발행기관</td><td>MIT Press / Computer Music Journal (Vol 9)</td></tr>
+              <tr><td class="label">발행연도</td><td>1985년</td></tr>
+            </table>
+          </div>
+          <p><strong>[국문 초록 및 요약]</strong></p>
+          <p>1980년대 아날로그 신디사이저와 신체 모션 센서를 결합한 기념비적 피지컬 컴퓨팅 하드웨어 악기 'The Hands'의 설계와 운지 및 가속도 데이터를 소리 합성 모델로 연동한 오리지널 논문입니다. 손가락을 굽히는 굴곡 정도와 손목의 털기 가속도를 감지하는 수제 악기의 구조를 다룹니다.</p>
+          <p><strong>[멋대로 분석 및 연구적 의의]</strong></p>
+          <ul>
+            <li><strong>피지컬 컴퓨팅의 시초:</strong> 마우스와 기계 키보드가 입력 장치의 전부이던 시절, 인간의 가장 직관적인 손가락 제스처와 공중 움직임을 전압 제어 신호로 다이렉트 연동하여 소리를 자아내는 현대 웨어러블 디바이스의 아키텍처적 조상을 구축했습니다.</li>
+            <li><strong>음악적 표현의 극대화:</strong> 물리적인 접촉 없이도 손을 쥐고 펼치는 근육의 긴장도가 신스 사운드의 엔벨로프(Envelope)와 하모닉스 필터 차단 주파수를 움켜쥐는 역동적인 촉각적 공감각 디자인을 제시했습니다.</li>
+          </ul>
+        `,
 
-      paper_waisvisz: `
-        <div class="paper-citation-block">
-          <table>
-            <tr><td class="label">논문명</td><td><strong>The Handposture Instrument</strong></td></tr>
-            <tr><td class="label">저자</td><td>Michel Waisvisz</td></tr>
-            <tr><td class="label">발행기관</td><td>MIT Press / Computer Music Journal (Vol 9)</td></tr>
-            <tr><td class="label">발행연도</td><td>1985년</td></tr>
-          </table>
-        </div>
-        <p><strong>[국문 초록 및 요약]</strong></p>
-        <p>1980년대 아날로그 신디사이저와 신체 모션 센서를 결합한 기념비적 피지컬 컴퓨팅 하드웨어 악기 'The Hands'의 설계와 운지 및 가속도 데이터를 소리 합성 모델로 연동한 오리지널 논문입니다. 손가락을 굽히는 굴곡 정도와 손목의 털기 가속도를 감지하는 수제 악기의 구조를 다룹니다.</p>
-        <p><strong>[멋대로 분석 및 연구적 의의]</strong></p>
-        <ul>
-          <li><strong>피지컬 컴퓨팅의 시초:</strong> 마우스와 기계 키보드가 입력 장치의 전부이던 시절, 인간의 가장 직관적인 손가락 제스처와 공중 움직임을 전압 제어 신호로 다이렉트 연동하여 소리를 자아내는 현대 웨어러블 디바이스의 아키텍처적 조상을 구축했습니다.</li>
-          <li><strong>음악적 표현의 극대화:</strong> 물리적인 접촉 없이도 손을 쥐고 펼치는 근육의 긴장도가 신스 사운드의 엔벨로프(Envelope)와 하모닉스 필터 차단 주파수를 움켜쥐는 역동적인 촉각적 공감각 디자인을 제시했습니다.</li>
-        </ul>
-      `,
+        paper_godoy: `
+          <div class="paper-citation-block">
+            <table>
+              <tr><td class="label">논문명</td><td><strong>Mapping Body Movement to Musical Sound</strong></td></tr>
+              <tr><td class="label">저자</td><td>Rolf Inge Godøy, Egil Haga, Alexander Refsum Jensenius</td></tr>
+              <tr><td class="label">발행기관</td><td>Journal of New Music Research</td></tr>
+              <tr><td class="label">발행연도</td><td>2006년</td></tr>
+            </table>
+          </div>
+          <p><strong>[국문 초록 및 요약]</strong></p>
+          <p>인지음악학(Cognitive Musicology)과 제스처 이론(Gesture Theory)을 융합하여, 인간이 사운드를 들을 때 무의식적으로 머릿속으로 신체 움직임을 시뮬레이션하거나(Sound-producing Gestures) 역으로 특정 신체 궤적을 그리며 그와 닮은 청각 이미지(Acoustic Shapes)를 도출해내는 인지 공학적 상호 연관 관계를 분석한 논문입니다.</p>
+          <p><strong>[멋대로 분석 및 연구적 의의]</strong></p>
+          <ul>
+            <li><strong>공감각적 스키마(Schema):</strong> 인간은 날카로운 긁는 소리를 들으면 머릿속으로 손톱으로 긁는 궤적을 연상하고, 웅장하게 확장되는 저음을 들으면 양팔을 벌리는 거대한 신체 제스처 스키마를 작동합니다. 이 인지 메커니즘을 규정하여, 움직임을 음악으로 변환할 때 가장 자연스러운 '인지적 일관성'을 제공합니다.</li>
+            <li><strong>예술과 감정의 연계:</strong> 춤과 음악의 결합이 단순한 데이터 노이즈의 수치 매칭을 넘어, 인간의 뇌가 시각과 청각을 동일한 '에너지 모션'으로 해석하는 근본적인 공감각적 연결고리임을 학술적으로 해명했습니다.</li>
+          </ul>
+        `
+      };
 
-      paper_godoy: `
-        <div class="paper-citation-block">
-          <table>
-            <tr><td class="label">논문명</td><td><strong>Mapping Body Movement to Musical Sound</strong></td></tr>
-            <tr><td class="label">저자</td><td>Rolf Inge Godøy, Egil Haga, Alexander Refsum Jensenius</td></tr>
-            <tr><td class="label">발행기관</td><td>Journal of New Music Research</td></tr>
-            <tr><td class="label">발행연도</td><td>2006년</td></tr>
-          </table>
-        </div>
-        <p><strong>[국문 초록 및 요약]</strong></p>
-        <p>인지음악학(Cognitive Musicology)과 제스처 이론(Gesture Theory)을 융합하여, 인간이 사운드를 들을 때 무의식적으로 머릿속으로 신체 움직임을 시뮬레이션하거나(Sound-producing Gestures) 역으로 특정 신체 궤적을 그리며 그와 닮은 청각 이미지(Acoustic Shapes)를 도출해내는 인지 공학적 상호 연관 관계를 분석한 논문입니다.</p>
-        <p><strong>[멋대로 분석 및 연구적 의의]</strong></p>
-        <ul>
-          <li><strong>공감각적 스키마(Schema):</strong> 인간은 날카로운 긁는 소리를 들으면 머릿속으로 손톱으로 긁는 궤적을 연상하고, 웅장하게 확장되는 저음을 들으면 양팔을 벌리는 거대한 신체 제스처 스키마를 작동합니다. 이 인지 메커니즘을 규정하여, 움직임을 음악으로 변환할 때 가장 자연스러운 '인지적 일관성'을 제공합니다.</li>
-          <li><strong>예술과 감정의 연계:</strong> 춤과 음악의 결합이 단순한 데이터 노이즈의 수치 매칭을 넘어, 인간의 뇌가 시각과 청각을 동일한 '에너지 모션'으로 해석하는 근본적인 공감각적 연결고리임을 학술적으로 해명했습니다.</li>
-        </ul>
-      `
-    };
-
-    function loadArticle(id) {
-      const titleText = titles[id] || '';
-      const bodyContent = articles[id] || '';
-      
-      termTitle.innerHTML = titleText;
-      termBody.innerHTML = bodyContent;
-    }
-
-    // Sidebar navigation trigger
-    articleItems.forEach(item => {
-      item.addEventListener('click', () => {
-        articleItems.forEach(i => i.classList.remove('active'));
-        item.classList.add('active');
+      function loadArticle(id) {
+        const titleText = titles[id] || '';
+        const bodyContent = articles[id] || '';
         
-        const id = item.getAttribute('data-article');
-        loadArticle(id);
+        termTitle.innerHTML = titleText;
+        termBody.innerHTML = bodyContent;
+      }
 
-        // Mobile responsive toggle
-        sectionOne.setAttribute('aria-expanded', 'false');
-        sectionTwo.setAttribute('aria-expanded', 'true');
+      // Sidebar navigation trigger
+      articleItems.forEach(item => {
+        item.addEventListener('click', () => {
+          articleItems.forEach(i => i.classList.remove('active'));
+          item.classList.add('active');
+          
+          const id = item.getAttribute('data-article');
+          loadArticle(id);
+
+          // Mobile responsive toggle
+          sectionOne.setAttribute('aria-expanded', 'false');
+          sectionTwo.setAttribute('aria-expanded', 'true');
+        });
       });
-    });
 
-    // Mobile back navigation trigger
-    backBtn.addEventListener('click', () => {
-      sectionOne.setAttribute('aria-expanded', 'true');
-      sectionTwo.setAttribute('aria-expanded', 'false');
-    });
+      // Mobile back navigation trigger
+      backBtn.addEventListener('click', () => {
+        sectionOne.setAttribute('aria-expanded', 'true');
+        sectionTwo.setAttribute('aria-expanded', 'false');
+      });
 
-    // Load first article on start
-    loadArticle('sys_index');
-  });
-</script>
+      // Load first article (Wanderley) on start
+      loadArticle('paper_wanderley');
+    });
+  </script>
+</main>
 
 <%- include('partials/footer') %>
