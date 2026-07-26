@@ -6,7 +6,7 @@
 :root {
 	--color-bg:rgb(255,255,255);
 	--color-fg:rgb(0,0,0);
-	--color-high:rgb(25, 111, 61);
+	--color-high:rgb(0,0,255);
 	--color-err:rgb(255,0,0);
 	--color-low:rgb(240,240,240);
 	--color-mid:rgba(0,0,0,0.15);

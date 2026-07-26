@@ -14,6 +14,13 @@
     <meta name="twitter:card" content="summary_large_image">
     <link rel="license" href="//creativecommons.org/licenses/by-nc-nd/4.0">
     <link rel="stylesheet" type="text/css" href="/assets/css/index.css">
+    <% if (activeMenu === 'heterotopia') { %>
+      <style>
+        :root {
+          --color-high: rgb(25, 111, 61);
+        }
+      </style>
+    <% } %>
     
     <% if (activeMenu === 'projects' || activeMenu === 'crew') { %>
       <script src="/assets/js/scroll.js"></script>
