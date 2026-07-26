@@ -1,0 +1,1043 @@
+<%- include('partials/header') %>
+
+<style>
+  /* Soundboard & Sequencer Custom Styles */
+  .play-layout {
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+    box-sizing: border-box;
+  }
+
+  /* Sequencer Grid */
+  .seq-grid {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    margin-bottom: 2rem;
+  }
+  .seq-row {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+  }
+  .seq-row-label {
+    width: 70px;
+    font-family: monospace;
+    font-size: 0.85rem;
+    font-weight: bold;
+    text-transform: uppercase;
+    color: var(--color-fg);
+  }
+  .seq-steps {
+    display: flex;
+    flex: 1;
+    gap: 4px;
+  }
+  .seq-step {
+    flex: 1;
+    aspect-ratio: 1/1;
+    border: 1px solid var(--color-fg);
+    background: var(--color-low);
+    cursor: pointer;
+    transition: background 0.1s ease;
+  }
+  .seq-step:hover {
+    background: var(--color-mid);
+  }
+  .seq-step.active {
+    background: var(--color-high);
+    border-color: var(--color-high);
+  }
+  .seq-step.playing-step {
+    outline: 2px solid var(--color-fg);
+    outline-offset: 1px;
+    z-index: 10;
+  }
+  .seq-step.active.playing-step {
+    background: #00ff00; /* flash green when playing an active step */
+    border-color: #00ff00;
+  }
+
+  /* Controls and Sliders */
+  .control-group {
+    display: flex;
+    flex-direction: column;
+    gap: 0.8rem;
+    margin-bottom: 2rem;
+    padding: 1rem;
+    border: 1px solid var(--color-fg);
+    background: #fff;
+  }
+  .slider-row {
+    display: flex;
+    flex-direction: column;
+    gap: 0.3rem;
+  }
+  .slider-header {
+    display: flex;
+    justify-content: space-between;
+    font-family: monospace;
+    font-size: 0.8rem;
+    font-weight: bold;
+  }
+  .slider-input {
+    width: 100%;
+    -webkit-appearance: none;
+    background: var(--color-low);
+    height: 6px;
+    border: 1px solid var(--color-fg);
+    outline: none;
+  }
+  .slider-input::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    width: 14px;
+    height: 14px;
+    background: var(--color-high);
+    border: 1px solid var(--color-fg);
+    cursor: pointer;
+  }
+
+  /* FX Pads */
+  .pads-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 0.8rem;
+    margin-bottom: 2rem;
+  }
+  .pad-btn {
+    border: 1px solid var(--color-fg);
+    background: #fff;
+    color: var(--color-fg);
+    padding: 1.2rem;
+    font-family: inherit;
+    font-size: 0.95rem;
+    font-weight: bold;
+    cursor: pointer;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.3rem;
+    transition: background 0.15s ease, color 0.15s ease;
+  }
+  .pad-btn:hover {
+    background: var(--color-low);
+  }
+  .pad-btn:active, .pad-btn.triggered {
+    background: var(--color-high);
+    color: #fff;
+  }
+  .pad-key {
+    font-family: monospace;
+    font-size: 0.72rem;
+    opacity: 0.6;
+    border: 1px solid currentColor;
+    padding: 0.1rem 0.3rem;
+  }
+
+  /* Play Button */
+  .action-btn {
+    border: 2px solid var(--color-fg);
+    background: var(--color-high);
+    color: #fff;
+    padding: 1rem;
+    font-family: inherit;
+    font-weight: bold;
+    font-size: 1rem;
+    cursor: pointer;
+    width: 100%;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    margin-bottom: 1.5rem;
+    transition: background 0.15s ease, color 0.15s ease;
+  }
+  .action-btn:active {
+    background: #000;
+  }
+  .action-btn.playing {
+    background: #000;
+  }
+
+  /* Audio Visualizer Canvas */
+  .visualizer-container {
+    width: 100%;
+    aspect-ratio: 16/9;
+    border: 1px solid var(--color-fg);
+    background: #000;
+    margin-bottom: 2rem;
+    position: relative;
+    overflow: hidden;
+  }
+  .visualizer-canvas {
+    width: 100%;
+    height: 100%;
+    display: block;
+  }
+  
+  /* Options toggles */
+  .toggle-row {
+    display: flex;
+    gap: 1.5rem;
+    margin-bottom: 1.5rem;
+    font-size: 0.9rem;
+    font-weight: bold;
+  }
+  .toggle-checkbox {
+    display: none;
+  }
+  .toggle-label {
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    user-select: none;
+  }
+  .toggle-box {
+    width: 16px;
+    height: 16px;
+    border: 1px solid var(--color-fg);
+    background: #fff;
+    display: inline-block;
+    position: relative;
+  }
+  .toggle-checkbox:checked + .toggle-label .toggle-box {
+    background: var(--color-high);
+  }
+  .toggle-checkbox:checked + .toggle-label .toggle-box::after {
+    content: "";
+    position: absolute;
+    top: 2px;
+    left: 5px;
+    width: 4px;
+    height: 8px;
+    border: solid white;
+    border-width: 0 2px 2px 0;
+    transform: rotate(45deg);
+  }
+
+  .instructions-list {
+    margin-top: 1.5rem;
+    font-size: 0.85rem;
+    line-height: 1.5;
+  }
+  .instructions-list li {
+    margin-bottom: 0.5rem;
+  }
+
+  /* Custom grid layout alignment with class standard */
+  @media (min-width:60em) {
+    .play-layout {
+      flex-direction: row;
+    }
+  }
+</style>
+
+<main class="fixed">
+  <!-- Left Side: Audio Controls & Instructions -->
+  <section id="one" class="left" aria-expanded="true">
+    <div class="column" style="max-width: 100%; width: 100%;">
+      <button id="master-play-btn" class="action-btn">Start Synthesizer</button>
+
+      <div class="control-group">
+        <h3 class="bold" style="margin-bottom: 0.5rem; font-size: 0.85rem;">MASTER CONTROLS</h3>
+        
+        <!-- BPM Slider -->
+        <div class="slider-row">
+          <div class="slider-header">
+            <span>TEMPO (BPM)</span>
+            <span id="bpm-val">120</span>
+          </div>
+          <input type="range" id="bpm-slider" class="slider-input" min="60" max="180" value="120">
+        </div>
+
+        <!-- Filter Cutoff Slider -->
+        <div class="slider-row">
+          <div class="slider-header">
+            <span>BASS CUTOFF</span>
+            <span id="cutoff-val">800 Hz</span>
+          </div>
+          <input type="range" id="cutoff-slider" class="slider-input" min="100" max="3000" value="800">
+        </div>
+
+        <!-- Filter Resonance Slider -->
+        <div class="slider-row">
+          <div class="slider-header">
+            <span>BASS RESONANCE</span>
+            <span id="q-val">3</span>
+          </div>
+          <input type="range" id="q-slider" class="slider-input" min="0" max="15" value="3" step="0.5">
+        </div>
+
+        <!-- Echo Delay Time Slider -->
+        <div class="slider-row">
+          <div class="slider-header">
+            <span>ECHO DELAY</span>
+            <span id="delay-val">0.3s</span>
+          </div>
+          <input type="range" id="delay-slider" class="slider-input" min="0" max="0.8" value="0.3" step="0.05">
+        </div>
+
+        <!-- Echo Feedback Slider -->
+        <div class="slider-row">
+          <div class="slider-header">
+            <span>ECHO FEEDBACK</span>
+            <span id="feedback-val">30%</span>
+          </div>
+          <input type="range" id="feedback-slider" class="slider-input" min="0" max="80" value="30">
+        </div>
+      </div>
+
+      <div class="instructions">
+        <h3 class="bold" style="font-size: 0.9rem; margin-bottom: 0.5rem;">[CONTROLS & SHORTCUTS]</h3>
+        <ul class="instructions-list">
+          <li><strong>Spacebar:</strong> 비트 재생 및 정지 (Play / Stop)</li>
+          <li><strong>키보드 [A, S, D, F]:</strong> 각각의 사운드 효과음 패드 트리거</li>
+          <li><strong>BASS LOOP 토글:</strong> 그루비한 펑크 신스 베이스라인 자동 루프</li>
+          <li><strong>드럼 격자판:</strong> KICK, SNARE, HI-HAT 비트를 격자를 클릭해 실시간 시퀀싱</li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <!-- Right Side: Sequencer, Pads & Visualizer -->
+  <section id="two" class="right" aria-expanded="true">
+    <div style="padding-bottom: 3rem;">
+      <!-- Canvas Visualizer -->
+      <div class="visualizer-container">
+        <canvas id="visualizer" class="visualizer-canvas"></canvas>
+        <div style="position: absolute; top: 0.5rem; left: 0.5rem; font-family: monospace; font-size: 0.72rem; color: #fff; z-index: 5; opacity: 0.6;">
+          // AUDIO SPECTRUM & WAVEFORM
+        </div>
+      </div>
+
+      <!-- Toggles (Bass Loop, Sound FX Delay toggle, etc.) -->
+      <div class="toggle-row">
+        <div>
+          <input type="checkbox" id="bass-loop-toggle" class="toggle-checkbox" checked>
+          <label for="bass-loop-toggle" class="toggle-label">
+            <span class="toggle-box"></span>
+            <span>BASS LOOP</span>
+          </label>
+        </div>
+      </div>
+
+      <!-- Step Sequencer Grid -->
+      <div class="seq-grid">
+        <!-- Hi-Hat Row -->
+        <div class="seq-row" data-channel="hihat">
+          <span class="seq-row-label">HI-HAT</span>
+          <div class="seq-steps">
+            <% for(let i=0; i<16; i++) { %>
+              <div class="seq-step" data-step="<%= i %>"></div>
+            <% } %>
+          </div>
+        </div>
+
+        <!-- Snare Row -->
+        <div class="seq-row" data-channel="snare">
+          <span class="seq-row-label">SNARE</span>
+          <div class="seq-steps">
+            <% for(let i=0; i<16; i++) { %>
+              <div class="seq-step" data-step="<%= i %>"></div>
+            <% } %>
+          </div>
+        </div>
+
+        <!-- Kick Row -->
+        <div class="seq-row" data-channel="kick">
+          <span class="seq-row-label">KICK</span>
+          <div class="seq-steps">
+            <% for(let i=0; i<16; i++) { %>
+              <div class="seq-step" data-step="<%= i %>"></div>
+            <% } %>
+          </div>
+        </div>
+      </div>
+
+      <!-- FX Pads -->
+      <h3 class="bold" style="margin-bottom: 0.8rem; font-size: 0.9rem;">LIVE PERFORMANCE PADS</h3>
+      <div class="pads-grid">
+        <button class="pad-btn" id="pad-1" data-fx="chord">
+          <span>CHORD STAB</span>
+          <span class="pad-key">Key A</span>
+        </button>
+        <button class="pad-btn" id="pad-2" data-fx="scratch">
+          <span>DJ SCRATCH</span>
+          <span class="pad-key">Key S</span>
+        </button>
+        <button class="pad-btn" id="pad-3" data-fx="siren">
+          <span>RAVE SIREN</span>
+          <span class="pad-key">Key D</span>
+        </button>
+        <button class="pad-btn" id="pad-4" data-fx="laser">
+          <span>LASER SWEEP</span>
+          <span class="pad-key">Key F</span>
+        </button>
+      </div>
+    </div>
+  </section>
+</main>
+
+<!-- Audio Synthesis & Visualizer Engine Script -->
+<script>
+  document.addEventListener('DOMContentLoaded', () => {
+    // ----------------------------------------------------------------
+    // Web Audio Synthesizer Engine
+    // ----------------------------------------------------------------
+    let audioCtx = null;
+    let masterGain = null;
+    let filterNode = null;
+    let delayNode = null;
+    let delayFeedback = null;
+    let analyser = null;
+    
+    let isPlaying = false;
+    let bpm = 120;
+    let currentStep = 0;
+    
+    // Sequencer States
+    const sequencerData = {
+      hihat: Array(16).fill(false),
+      snare: Array(16).fill(false),
+      kick: Array(16).fill(false)
+    };
+
+    // Set default pattern for an initial groove
+    sequencerData.kick[0] = true;
+    sequencerData.kick[8] = true;
+    sequencerData.kick[12] = true;
+    sequencerData.snare[4] = true;
+    sequencerData.snare[12] = true;
+    sequencerData.hihat[2] = true;
+    sequencerData.hihat[6] = true;
+    sequencerData.hihat[10] = true;
+    sequencerData.hihat[14] = true;
+
+    // Load initial HTML visual states
+    Object.keys(sequencerData).forEach(channel => {
+      const row = document.querySelector(`.seq-row[data-channel="${channel}"]`);
+      if (row) {
+        const steps = row.querySelectorAll('.seq-step');
+        sequencerData[channel].forEach((val, idx) => {
+          if (val) steps[idx].classList.add('active');
+        });
+      }
+    });
+
+    // Scheduler variables
+    let nextNoteTime = 0.0;
+    let timerId = null;
+    const lookahead = 25.0; // Milliseconds
+    const scheduleAheadTime = 0.1; // Seconds
+
+    // Bass notes sequence (A1, C2, D2, G2)
+    // Placed on key steps (0, 3, 6, 8, 11, 14)
+    const bassSequence = Array(16).fill(null);
+    bassSequence[0] = 55.00;  // A1
+    bassSequence[3] = 55.00;  // A1
+    bassSequence[6] = 65.41;  // C2
+    bassSequence[8] = 73.42;  // D2
+    bassSequence[11] = 73.42; // D2
+    bassSequence[14] = 98.00; // G2
+
+    function initAudio() {
+      if (audioCtx) return;
+
+      const AudioContextClass = window.AudioContext || window.webkitAudioContext;
+      audioCtx = new AudioContextClass();
+
+      // Master Gain
+      masterGain = audioCtx.createGain();
+      masterGain.gain.setValueAtTime(0.7, audioCtx.currentTime);
+
+      // Lowpass Filter (mainly for Bass Synth)
+      filterNode = audioCtx.createBiquadFilter();
+      filterNode.type = 'lowpass';
+      filterNode.frequency.setValueAtTime(parseFloat(document.getElementById('cutoff-slider').value), audioCtx.currentTime);
+      filterNode.Q.setValueAtTime(parseFloat(document.getElementById('q-slider').value), audioCtx.currentTime);
+
+      // Delay Node
+      delayNode = audioCtx.createDelay(1.0);
+      delayNode.delayTime.setValueAtTime(parseFloat(document.getElementById('delay-slider').value), audioCtx.currentTime);
+
+      delayFeedback = audioCtx.createGain();
+      delayFeedback.gain.setValueAtTime(parseFloat(document.getElementById('feedback-slider').value) / 100, audioCtx.currentTime);
+
+      // Connect Delay Feedback Loop
+      delayNode.connect(delayFeedback);
+      delayFeedback.connect(delayNode);
+
+      // Analyser Node
+      analyser = audioCtx.createAnalyser();
+      analyser.fftSize = 512;
+
+      // Routing
+      // Synthesized audio -> filter -> masterGain -> destination
+      // delay is patched in parallel from filter -> delay -> masterGain
+      filterNode.connect(masterGain);
+      
+      // Delay routing (only apply delay on FX/Melodic items)
+      delayNode.connect(masterGain);
+
+      masterGain.connect(analyser);
+      analyser.connect(audioCtx.destination);
+
+      // Build noise buffer once for Hi-hat / Snare
+      initNoiseBuffer();
+      
+      // Start Visualizer Canvas Frame Loop
+      startVisualizer();
+    }
+
+    // White Noise buffer generator
+    let noiseBuffer = null;
+    function initNoiseBuffer() {
+      const bufferSize = audioCtx.sampleRate * 2; // 2 seconds
+      noiseBuffer = audioCtx.createBuffer(1, bufferSize, audioCtx.sampleRate);
+      const output = noiseBuffer.getChannelData(0);
+      for (let i = 0; i < bufferSize; i++) {
+        output[i] = Math.random() * 2 - 1;
+      }
+    }
+
+    // ----------------------------------------------------------------
+    // Drum Synth Sounds Generator
+    // ----------------------------------------------------------------
+    function playKick(time) {
+      const osc = audioCtx.createOscillator();
+      const gain = audioCtx.createGain();
+
+      osc.connect(gain);
+      gain.connect(masterGain); // Direct to master to keep kick clean from filters/delay
+
+      osc.type = 'sine';
+      osc.frequency.setValueAtTime(150, time);
+      osc.frequency.exponentialRampToValueAtTime(0.01, time + 0.18);
+
+      gain.gain.setValueAtTime(1.0, time);
+      gain.gain.linearRampToValueAtTime(0.0, time + 0.2);
+
+      osc.start(time);
+      osc.stop(time + 0.2);
+    }
+
+    function playSnare(time) {
+      // Noise component
+      const noiseSource = audioCtx.createBufferSource();
+      noiseSource.buffer = noiseBuffer;
+
+      const noiseFilter = audioCtx.createBiquadFilter();
+      noiseFilter.type = 'bandpass';
+      noiseFilter.frequency.value = 1000;
+
+      const noiseGain = audioCtx.createGain();
+      noiseGain.gain.setValueAtTime(0.6, time);
+      noiseGain.gain.exponentialRampToValueAtTime(0.01, time + 0.15);
+
+      noiseSource.connect(noiseFilter);
+      noiseFilter.connect(noiseGain);
+      noiseGain.connect(masterGain);
+
+      // Tone thump component
+      const osc = audioCtx.createOscillator();
+      const oscGain = audioCtx.createGain();
+
+      osc.type = 'triangle';
+      osc.frequency.setValueAtTime(180, time);
+      osc.frequency.linearRampToValueAtTime(100, time + 0.1);
+
+      oscGain.gain.setValueAtTime(0.8, time);
+      oscGain.gain.exponentialRampToValueAtTime(0.01, time + 0.1);
+
+      osc.connect(oscGain);
+      oscGain.connect(masterGain);
+
+      noiseSource.start(time);
+      noiseSource.stop(time + 0.16);
+      osc.start(time);
+      osc.stop(time + 0.11);
+    }
+
+    function playHihat(time) {
+      const source = audioCtx.createBufferSource();
+      source.buffer = noiseBuffer;
+
+      const filter = audioCtx.createBiquadFilter();
+      filter.type = 'highpass';
+      filter.frequency.value = 8000;
+
+      const gain = audioCtx.createGain();
+      gain.gain.setValueAtTime(0.45, time);
+      gain.gain.exponentialRampToValueAtTime(0.01, time + 0.05);
+
+      source.connect(filter);
+      filter.connect(gain);
+      gain.connect(masterGain);
+
+      source.start(time);
+      source.stop(time + 0.06);
+    }
+
+    // ----------------------------------------------------------------
+    // Synth Bass Generator
+    // ----------------------------------------------------------------
+    function playBassNote(freq, time) {
+      const osc = audioCtx.createOscillator();
+      const gain = audioCtx.createGain();
+
+      osc.connect(gain);
+      // Route through BiquadFilter for cut-off sweeper knobs
+      gain.connect(filterNode);
+
+      osc.type = 'sawtooth';
+      osc.frequency.setValueAtTime(freq, time);
+
+      // Simple slide/glide from octave below to create a funk synth slide
+      osc.frequency.setValueAtTime(freq / 2, time);
+      osc.frequency.exponentialRampToValueAtTime(freq, time + 0.05);
+
+      gain.gain.setValueAtTime(0.7, time);
+      // Quick staccato/decay envelope
+      gain.gain.exponentialRampToValueAtTime(0.01, time + 0.18);
+
+      osc.start(time);
+      osc.stop(time + 0.22);
+    }
+
+    // ----------------------------------------------------------------
+    // Live Performance FX Pads Trigger Logic
+    // ----------------------------------------------------------------
+    function triggerFX(type) {
+      initAudio();
+      if (audioCtx.state === 'suspended') {
+        audioCtx.resume();
+      }
+
+      const now = audioCtx.currentTime;
+
+      if (type === 'chord') {
+        // Neon Minor 7th Chord Stab
+        const frequencies = [220.00, 261.63, 329.63, 392.00]; // A3, C4, E4, G4
+        const oscs = [];
+        const chordGain = audioCtx.createGain();
+        chordGain.gain.setValueAtTime(0.0, now);
+        chordGain.gain.linearRampToValueAtTime(0.65, now + 0.02);
+        chordGain.gain.exponentialRampToValueAtTime(0.01, now + 0.6);
+
+        // Send to Filter AND Delay for spacey vibe
+        chordGain.connect(filterNode);
+        chordGain.connect(delayNode);
+
+        // Fast cutoff sweeps
+        filterNode.frequency.setValueAtTime(3000, now);
+        filterNode.frequency.exponentialRampToValueAtTime(500, now + 0.4);
+
+        frequencies.forEach(freq => {
+          const osc = audioCtx.createOscillator();
+          osc.type = 'sawtooth';
+          osc.frequency.setValueAtTime(freq, now);
+          // slight detune for stereo width chorusing
+          osc.detune.setValueAtTime((Math.random() * 12) - 6, now);
+          osc.connect(chordGain);
+          osc.start(now);
+          osc.stop(now + 0.75);
+          oscs.push(osc);
+        });
+      }
+      else if (type === 'scratch') {
+        // Scratch emulator (Double fast sweep)
+        const osc = audioCtx.createOscillator();
+        const gain = audioCtx.createGain();
+
+        osc.type = 'triangle';
+        gain.connect(filterNode);
+        gain.connect(delayNode);
+        osc.connect(gain);
+
+        // First scratch (forward)
+        osc.frequency.setValueAtTime(100, now);
+        osc.frequency.exponentialRampToValueAtTime(1200, now + 0.06);
+        gain.gain.setValueAtTime(0.7, now);
+        gain.gain.exponentialRampToValueAtTime(0.01, now + 0.08);
+
+        // Second scratch (backwards)
+        osc.frequency.setValueAtTime(1200, now + 0.09);
+        osc.frequency.exponentialRampToValueAtTime(80, now + 0.16);
+        gain.gain.setValueAtTime(0.65, now + 0.09);
+        gain.gain.exponentialRampToValueAtTime(0.01, now + 0.18);
+
+        osc.start(now);
+        osc.stop(now + 0.2);
+      }
+      else if (type === 'siren') {
+        // Rave Siren
+        const osc = audioCtx.createOscillator();
+        const gain = audioCtx.createGain();
+
+        osc.type = 'sine';
+        gain.connect(filterNode);
+        gain.connect(delayNode);
+        osc.connect(gain);
+
+        gain.gain.setValueAtTime(0.0, now);
+        gain.gain.linearRampToValueAtTime(0.5, now + 0.1);
+        gain.gain.setValueAtTime(0.5, now + 0.7);
+        gain.gain.exponentialRampToValueAtTime(0.01, now + 0.95);
+
+        // Modulate Siren pitch up and down
+        osc.frequency.setValueAtTime(500, now);
+        osc.frequency.linearRampToValueAtTime(1000, now + 0.2);
+        osc.frequency.linearRampToValueAtTime(500, now + 0.4);
+        osc.frequency.linearRampToValueAtTime(1000, now + 0.6);
+        osc.frequency.linearRampToValueAtTime(500, now + 0.8);
+
+        osc.start(now);
+        osc.stop(now + 1.0);
+      }
+      else if (type === 'laser') {
+        // Laser Sweep
+        const osc = audioCtx.createOscillator();
+        const gain = audioCtx.createGain();
+
+        osc.type = 'sawtooth';
+        gain.connect(filterNode);
+        gain.connect(delayNode);
+        osc.connect(gain);
+
+        gain.gain.setValueAtTime(0.8, now);
+        gain.gain.exponentialRampToValueAtTime(0.01, now + 0.35);
+
+        osc.frequency.setValueAtTime(3200, now);
+        osc.frequency.exponentialRampToValueAtTime(90, now + 0.3);
+
+        osc.start(now);
+        osc.stop(now + 0.4);
+      }
+    }
+
+    // ----------------------------------------------------------------
+    // Scheduler and Clock timing
+    // ----------------------------------------------------------------
+    function nextStep() {
+      // Advance step position (16 steps grid)
+      currentStep = (currentStep + 1) % 16;
+    }
+
+    function scheduleNote(stepNumber, time) {
+      // Play sequencer channels if step active
+      if (sequencerData.kick[stepNumber]) {
+        playKick(time);
+      }
+      if (sequencerData.snare[stepNumber]) {
+        playSnare(time);
+      }
+      if (sequencerData.hihat[stepNumber]) {
+        playHihat(time);
+      }
+
+      // Play Bass loop if checked
+      const bassLoopChecked = document.getElementById('bass-loop-toggle').checked;
+      if (bassLoopChecked && bassSequence[stepNumber] !== null) {
+        playBassNote(bassSequence[stepNumber], time);
+      }
+
+      // Schedule Visual active step marker updates in EJS Grid
+      const delayMs = Math.max(0, (time - audioCtx.currentTime) * 1000);
+      setTimeout(() => {
+        updateVisualStep(stepNumber);
+      }, delayMs);
+    }
+
+    function updateVisualStep(stepNum) {
+      const allSteps = document.querySelectorAll('.seq-step');
+      allSteps.forEach(s => s.classList.remove('playing-step'));
+
+      // Highlight the active playing step in columns
+      const activeSteps = document.querySelectorAll(`.seq-step[data-step="${stepNum}"]`);
+      activeSteps.forEach(s => s.classList.add('playing-step'));
+    }
+
+    function scheduler() {
+      // while there are notes to play before the next interval
+      while (nextNoteTime < audioCtx.currentTime + scheduleAheadTime) {
+        scheduleNote(currentStep, nextNoteTime);
+        const secondsPerBeat = 60.0 / bpm;
+        const stepInterval = secondsPerBeat / 4; // 16th note steps
+        nextNoteTime += stepInterval;
+        nextStep();
+      }
+      timerId = setTimeout(scheduler, lookahead);
+    }
+
+    function startSequencer() {
+      initAudio();
+      if (audioCtx.state === 'suspended') {
+        audioCtx.resume();
+      }
+
+      isPlaying = true;
+      currentStep = 0;
+      nextNoteTime = audioCtx.currentTime + 0.05;
+      scheduler();
+
+      const btn = document.getElementById('master-play-btn');
+      btn.textContent = 'Stop Synthesizer';
+      btn.classList.add('playing');
+    }
+
+    function stopSequencer() {
+      isPlaying = false;
+      clearTimeout(timerId);
+      timerId = null;
+
+      const btn = document.getElementById('master-play-btn');
+      btn.textContent = 'Start Synthesizer';
+      btn.classList.remove('playing');
+
+      // Clear visual markers
+      const allSteps = document.querySelectorAll('.seq-step');
+      allSteps.forEach(s => s.classList.remove('playing-step'));
+    }
+
+    // Toggle play state
+    document.getElementById('master-play-btn').addEventListener('click', () => {
+      if (isPlaying) {
+        stopSequencer();
+      } else {
+        startSequencer();
+      }
+    });
+
+    // ----------------------------------------------------------------
+    // UI Event Handlers (Sliders)
+    // ----------------------------------------------------------------
+    const bpmSlider = document.getElementById('bpm-slider');
+    const bpmVal = document.getElementById('bpm-val');
+    bpmSlider.addEventListener('input', function() {
+      bpm = parseInt(this.value);
+      bpmVal.textContent = bpm;
+    });
+
+    const cutoffSlider = document.getElementById('cutoff-slider');
+    const cutoffVal = document.getElementById('cutoff-val');
+    cutoffSlider.addEventListener('input', function() {
+      const val = parseFloat(this.value);
+      cutoffVal.textContent = Math.round(val) + ' Hz';
+      if (filterNode) {
+        filterNode.frequency.setValueAtTime(val, audioCtx.currentTime);
+      }
+    });
+
+    const qSlider = document.getElementById('q-slider');
+    const qVal = document.getElementById('q-val');
+    qSlider.addEventListener('input', function() {
+      const val = parseFloat(this.value);
+      qVal.textContent = val;
+      if (filterNode) {
+        filterNode.Q.setValueAtTime(val, audioCtx.currentTime);
+      }
+    });
+
+    const delaySlider = document.getElementById('delay-slider');
+    const delayVal = document.getElementById('delay-val');
+    delaySlider.addEventListener('input', function() {
+      const val = parseFloat(this.value);
+      delayVal.textContent = val + 's';
+      if (delayNode) {
+        delayNode.delayTime.setValueAtTime(val, audioCtx.currentTime);
+      }
+    });
+
+    const feedbackSlider = document.getElementById('feedback-slider');
+    const feedbackVal = document.getElementById('feedback-val');
+    feedbackSlider.addEventListener('input', function() {
+      const val = parseFloat(this.value);
+      feedbackVal.textContent = val + '%';
+      if (delayFeedback) {
+        delayFeedback.gain.setValueAtTime(val / 100, audioCtx.currentTime);
+      }
+    });
+
+    // ----------------------------------------------------------------
+    // Sequencer Grid Interaction
+    // ----------------------------------------------------------------
+    const stepsGrid = document.querySelector('.seq-grid');
+    stepsGrid.addEventListener('click', (e) => {
+      const stepEl = e.target.closest('.seq-step');
+      if (!stepEl) return;
+
+      const row = stepEl.closest('.seq-row');
+      const channel = row.getAttribute('data-channel');
+      const stepIdx = parseInt(stepEl.getAttribute('data-step'));
+
+      // Toggle state
+      sequencerData[channel][stepIdx] = !sequencerData[channel][stepIdx];
+      stepEl.classList.toggle('active');
+
+      // Boot audio context if clicked (safari requirement)
+      initAudio();
+    });
+
+    // Pads Clicks
+    document.querySelectorAll('.pad-btn').forEach(btn => {
+      btn.addEventListener('click', function() {
+        const fxType = this.getAttribute('data-fx');
+        triggerFX(fxType);
+      });
+    });
+
+    // Keyboard Bindings
+    window.addEventListener('keydown', (e) => {
+      const key = e.key.toLowerCase();
+
+      // Spacebar plays/stops
+      if (e.code === 'Space' || key === ' ') {
+        e.preventDefault();
+        if (isPlaying) {
+          stopSequencer();
+        } else {
+          startSequencer();
+        }
+        return;
+      }
+
+      // FX triggers
+      let pad = null;
+      let fx = '';
+      if (key === 'a') {
+        pad = document.getElementById('pad-1');
+        fx = 'chord';
+      } else if (key === 's') {
+        pad = document.getElementById('pad-2');
+        fx = 'scratch';
+      } else if (key === 'd') {
+        pad = document.getElementById('pad-3');
+        fx = 'siren';
+      } else if (key === 'f') {
+        pad = document.getElementById('pad-4');
+        fx = 'laser';
+      }
+
+      if (pad) {
+        e.preventDefault();
+        pad.classList.add('triggered');
+        triggerFX(fx);
+        setTimeout(() => pad.classList.remove('triggered'), 150);
+      }
+    });
+
+    // ----------------------------------------------------------------
+    // Canvas Audio Visualizer
+    // ----------------------------------------------------------------
+    const canvas = document.getElementById('visualizer');
+    const canvasCtx = canvas.getContext('2d');
+    let visualizerLoopId = null;
+
+    function resizeCanvas() {
+      const container = canvas.parentElement;
+      canvas.width = container.clientWidth;
+      canvas.height = container.clientHeight;
+    }
+    window.addEventListener('resize', resizeCanvas);
+    resizeCanvas();
+
+    function startVisualizer() {
+      if (visualizerLoopId) return;
+
+      const bufferLength = analyser.frequencyBinCount;
+      const dataArrayFreq = new Uint8Array(bufferLength);
+      const dataArrayTime = new Uint8Array(bufferLength);
+
+      function draw() {
+        visualizerLoopId = requestAnimationFrame(draw);
+
+        const w = canvas.width;
+        const h = canvas.height;
+
+        analyser.getByteFrequencyData(dataArrayFreq);
+        analyser.getByteTimeDomainData(dataArrayTime);
+
+        // Low-opacity clear for trailing glow effect
+        canvasCtx.fillStyle = 'rgba(0, 0, 0, 0.16)';
+        canvasCtx.fillRect(0, 0, w, h);
+
+        // 1. Draw grid background lines
+        canvasCtx.strokeStyle = 'rgba(255, 255, 255, 0.04)';
+        canvasCtx.lineWidth = 1;
+        
+        // vertical grid
+        for (let i = 0; i < w; i += 40) {
+          canvasCtx.beginPath();
+          canvasCtx.moveTo(i, 0);
+          canvasCtx.lineTo(i, h);
+          canvasCtx.stroke();
+        }
+        // horizontal grid
+        for (let i = 0; i < h; i += 30) {
+          canvasCtx.beginPath();
+          canvasCtx.moveTo(0, i);
+          canvasCtx.lineTo(w, i);
+          canvasCtx.stroke();
+        }
+
+        // 2. Draw frequency spectrum bars at the bottom
+        const barWidth = (w / bufferLength) * 2.5;
+        let barHeight;
+        let x = 0;
+
+        for (let i = 0; i < bufferLength; i++) {
+          barHeight = (dataArrayFreq[i] / 255) * h * 0.7;
+
+          // Draw neon blue outline bars
+          canvasCtx.fillStyle = 'rgba(0, 0, 255, 0.15)';
+          canvasCtx.fillRect(x, h - barHeight, barWidth - 1, barHeight);
+          
+          canvasCtx.strokeStyle = 'rgba(0, 0, 255, 0.4)';
+          canvasCtx.lineWidth = 0.5;
+          canvasCtx.strokeRect(x, h - barHeight, barWidth - 1, barHeight);
+
+          x += barWidth + 1;
+        }
+
+        // 3. Draw time domain oscilloscope waveform across the middle
+        canvasCtx.strokeStyle = '#00ff00'; // neon green active waveform
+        
+        // Dynamic color swap depending on frequency energy (turn blue/red under spikes)
+        let totalEnergy = 0;
+        for (let i = 0; i < 40; i++) totalEnergy += dataArrayFreq[i];
+        if (totalEnergy > 4000) {
+          canvasCtx.strokeStyle = 'rgb(0, 0, 255)'; // change to deep blue when high beat energy is present
+        }
+
+        canvasCtx.lineWidth = 3;
+        canvasCtx.shadowBlur = 12;
+        canvasCtx.shadowColor = canvasCtx.strokeStyle;
+        canvasCtx.beginPath();
+
+        const sliceWidth = w / bufferLength;
+        let waveX = 0;
+
+        for (let i = 0; i < bufferLength; i++) {
+          const v = dataArrayTime[i] / 128.0; // 0.0 to 2.0
+          const waveY = (v * h) / 2;
+
+          if (i === 0) {
+            canvasCtx.moveTo(waveX, waveY);
+          } else {
+            canvasCtx.lineTo(waveX, waveY);
+          }
+
+          waveX += sliceWidth;
+        }
+
+        canvasCtx.lineTo(w, h / 2);
+        canvasCtx.stroke();
+        canvasCtx.shadowBlur = 0; // reset shadow
+      }
+
+      draw();
+    }
+  });
+</script>
+
+<%- include('partials/footer') %>

@@ -210,6 +210,14 @@ app.get('/about', (req, res) => {
   });
 });
 
+// Route: Play Page (Soundboard / Sequencer)
+app.get('/play', (req, res) => {
+  res.render('play', {
+    title: '// MEOTTAERO — Play',
+    activeMenu: 'play'
+  });
+});
+
 // Route: Photo Booth Page
 app.get('/booth', (req, res) => {
   res.render('booth', {
