@@ -624,6 +624,14 @@ app.post('/admin/delete', requireAdminAuth, async (req, res) => {
   }
 });
 
+// 404 Error Handler (Catch-all for unmatched routes)
+app.use((req, res, next) => {
+  res.status(404).render('404', {
+    title: '// MEOTTAERO — 404',
+    activeMenu: '404'
+  });
+});
+
 // Export app for serverless environments (Vercel)
 export default app;
 
