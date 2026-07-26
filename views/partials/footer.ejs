@@ -1,8 +1,33 @@
-<% if (activeMenu !== 'booth') { %>
+<% if (activeMenu !== 'booth' && activeMenu !== 'heterotopia') { %>
 <footer class="footer">
   <p><a href="/">&copy; 2026 <span class="bold">// MEOTTAERO</span></a></p>
 </footer>
+<% } else if (activeMenu === 'heterotopia') { %>
+<footer class="heterotopia-footer">
+  <p style="margin: 0;">&copy; 2026 뉴폼아트(젊은창작) 콘텐츠 제작 선정작 <span class="bold" style="font-weight: 700;">⟪방주: HETEROTOPIA⟫</span></p>
+</footer>
 <% } %>
+
+<style>
+  footer, .footer, .heterotopia-footer {
+    position: relative !important;
+    bottom: auto !important;
+    left: auto !important;
+    transform: none !important;
+    z-index: 100 !important;
+    text-align: center !important;
+    font-size: 0.8rem !important;
+    padding: 2.5rem 1rem !important;
+    margin-top: 2rem !important;
+    white-space: normal !important;
+    pointer-events: auto !important;
+    opacity: 1 !important;
+    clear: both !important;
+    color: #000000 !important;
+    background-color: #ffffff !important;
+    border-top: 1px solid rgba(0, 0, 0, 0.15) !important;
+  }
+</style>
 </body>
 
 </html>
