@@ -123,6 +123,18 @@
         <a class="article-item block" data-article="paper_tanaka" style="cursor: pointer;">
           <h2 class="bold">생체 전극 신호 기반 음악적 표현 제어</h2>
         </a>
+        <a class="article-item block" data-article="paper_curation" style="cursor: pointer;">
+          <h2 class="bold">디지털 아트 전시에서의 상호작용 기획</h2>
+        </a>
+        <a class="article-item block" data-article="paper_production" style="cursor: pointer;">
+          <h2 class="bold">디지털 라이브 퍼포먼스의 프로덕션 관리</h2>
+        </a>
+        <a class="article-item block" data-article="paper_vr_museum" style="cursor: pointer;">
+          <h2 class="bold">가상 미술관의 큐레이션 및 관객 흐름 설계</h2>
+        </a>
+        <a class="article-item block" data-article="paper_engagement" style="cursor: pointer;">
+          <h2 class="bold">인터랙티브 전시의 관객 참여형 행동 기획</h2>
+        </a>
       </div>
     </div>
   </section>
@@ -164,7 +176,11 @@
         paper_essl: '모바일 센서 기반 실시간 오디오 매핑 (Mobile Phone as a Musical Instrument)',
         paper_elgammal: '3차원 안무 동작 복원을 위한 비전 학습 (Learning Silhouette Features for 3D Pose Recovery)',
         paper_dourish: '가상 현실과 체화된 인지 기반 인터랙션 (Action-centric Interaction in Virtual Environments)',
-        paper_tanaka: '생체 전극 신호 기반 음악적 표현 제어 (Biosensors for Musical Expression)'
+        paper_tanaka: '생체 전극 신호 기반 음악적 표현 제어 (Biosensors for Musical Expression)',
+        paper_curation: '디지털 아트 전시에서의 상호작용 기획 (Curation and Audience Interaction in Digital Art Exhibitions)',
+        paper_production: '디지털 라이브 퍼포먼스의 프로덕션 관리 (Managing Digital Performance: Production and Curation Models)',
+        paper_vr_museum: '가상 미술관의 큐레이션 및 관객 흐름 설계 (The Virtual Museum: Curation, Operation and User Experience)',
+        paper_engagement: '인터랙티브 전시의 관객 참여형 행동 기획 (Designing for Audience Engagement in Interactive Performance)'
       };
 
       // Leaked DB Articles
@@ -266,13 +282,13 @@
             </table>
           </div>
           <p><strong>[서론 및 연구 배경]</strong></p>
-          <p>1980년대 컴퓨터 음악의 여명기에 디지털 악기 제어 인터페이스는 여전히 기계식 오르간 건반이나 초기의 단순한 MIDI 컨트롤러 슬라이더 수준에 갇혀 있었습니다. 전위예술가이자 전산 엔지니어였던 Michel Waisvisz는 건반형 제어기가 제공하지 못하는 인간 손가락의 연속적인 유기적 제스처 긴장도와 공간 가속도를 디지털 음원 합성기 신호로 전달하기 위해 세계 최초의 신체 웨어러블 컴퓨터 제어 장치인 'The Hands'를 개발하고 그 하드웨어 아키텍처와 전기적 매핑 원리를 상세히 기술했습니다.</p>
+          <p>1980년대 컴퓨터 음악의 여명기에 디지털 악기 제어 인터페이스는 여전히 기계식 오르간 건반형 슬라이더 수준에 갇혀 있었습니다. 전위예술가이자 전산 엔지니어였던 Michel Waisvisz는 건반형 제어기가 제공하지 못하는 인간 손가락의 연속적인 유기적 제스처 긴장도와 공간 가속도를 디지털 음원 합성기 신호로 전달하기 위해 세계 최초의 신체 웨어러블 컴퓨터 제어 장치인 'The Hands'를 개발하고 그 하드웨어 아키텍처와 전기적 매핑 원리를 상세히 기술했습니다.</p>
           <p><strong>[웨어러블 센서 통합 및 아날로그 변조 제어]</strong></p>
           <p>장치는 알루미늄 프레임으로 제작되어 연주자의 양손에 장착되는 웨어러블 형태로 고안되었습니다. 물리적 모션을 아날로그 전압 값으로 변조하기 위해 장착된 핵심 전기 센서 회로는 다음과 같습니다.</p>
           <ul>
             <li><strong>손가락 굴곡 감지 센서:</strong> 양손 손가락 관절 부분에 장착된 굽힘 감지 장치를 통해 연주자가 주먹을 쥐거나 손가락을 구부리는 미세한 물리적 긴장도를 연속적인 전기 아날로그 전압 신호(Control Voltage)로 변환해 냅니다.</li>
             <li><strong>손목 탑재 가속도계 및 소나 센서:</strong> 손목 부위에 장착된 중력/가속도 센서와 가슴팍에 장착된 초음파 수신기를 사용하여, 연주자가 공중에서 양손을 넓히거나 허공으로 손을 밀칠 때 발생하는 속도와 두 손 사이의 공간적 거리를 마이크로초 단위로 추적합니다.</li>
-            <li><strong>FM 합성 엔진과의 다이렉트 바인딩:</strong> 이 다차원 신호들은 초기 아날로그-디지털 변환 회로(ADC)를 거쳐 주파수 변조(FM) 신디사이저의 고유 캐리어 진동수 및 변조 인덱스 매개변수로 전송됩니다. 손가락을 쥐는 세기에 따라 찢어지는 듯한 FM 배음(Overtones)의 배치 비선형적으로 제어되는 극적인 소리 조작을 현실화했습니다.</li>
+            <li><strong>FM 합성 엔진과의 다이렉트 바인딩:</strong> 이 다차원 신호들은 초기 아날로그-디지털 변환 회로(ADC)를 거쳐 주파수 변조(FM) 신디사이저의 고유 캐리어 진동수 및 변조 인덱스 매개변수로 전송됩니다. 손가락을 쥐는 세기에 따라 찢어지는 듯한 FM 배음(Overtones)의 배치가 비선형적으로 제어되는 극적인 소리 조작을 현실화했습니다.</li>
           </ul>
           <p><strong>[학술적 가치와 역사적 위상]</strong></p>
           <p>Michel Waisvisz의 연구는 오늘날 피지컬 컴퓨팅(Physical Computing) 및 인간-컴퓨터 상호작용(HCI) 분야에서 신체 부착식 센서 인터페이스의 절대적인 효시로 평가받습니다. 마우스나 건반의 불연속적 스위칭 입력을 넘어서, 연주자의 관절 긴장도라는 원초적인 아날로그 물리 역학이 어떻게 전산 음향 합성 장치와 한 몸처럼 밀착 결합될 수 있는지를 증명한 역사적 연구입니다.</p>
@@ -338,7 +354,7 @@
             <li><strong>비선형 방사 기저 함수 신경망 (RBF Network):</strong> 2D 실루엣 특징 공간 벡터 $x$를 입력받아 3D 골격 조인트 관절 각도 벡터 $y$로 직접 매핑하는 방사 기저 함수 망을 구축합니다. 이 변환은 다차원 행렬 연산을 통해 프레임당 수 밀리초 이내에 연산되므로, 안무 비디오 입력으로부터 무용수의 3차원 움직임 궤적을 실시간으로 추적하는 동역학 연동 성능을 보장합니다.</li>
           </ul>
           <p><strong>[학술적 공헌]</strong></p>
-          <p>본 논문은 적외선 센서나 특수 트래커의 도움 없이 일반 카메라 피드에서 안무가의 다차원 3D 관절 회전값을 공학적으로 재구성해 냄으로써, 안무 비디오 아카이빙 및 반응형 비주얼 생성 아트의 수학적 자유도를 혁명적으로 확장시켰습니다. 단일 비전 센서만으로 복합 공간 드로잉 아트를 형성하게 만드는 기하학적 토대를 공고히 했습니다.</p>
+          <p>본 논문은 적외선 센서나 트래커의 도움 없이 일반 카메라 피드에서 안무가의 다차원 3D 관절 회전값을 공학적으로 재구성해 냄으로써, 안무 비디오 아카이빙 및 반응형 비주얼 생성 아트의 수학적 자유도를 혁명적으로 확장시켰습니다. 단일 비전 센서만으로 복합 공간 드로잉 아트를 형성하게 만드는 기하학적 토대를 공고히 했습니다.</p>
         `,
 
         paper_dourish: `
@@ -356,7 +372,7 @@
           <p>HCI 설계 프레임워크 측면에서 본 연구는 인간이 가상 공간의 경계를 넘나들며 인지적 행위력을 투사하는 통로를 다음의 세 단계로 구체화합니다.</p>
           <ul>
             <li><strong>공간적 행동의 맥락화 (Contextual Navigation):</strong> 가상 3D 공간의 유물론적 좌표계(X, Y, Z)보다 사용자가 특정 개체와 맺는 행동 관계(예: 바라보기, 다가가기, 상호작용하기)에 따라 공간 구조의 밀도와 사운드 피드백 반향 속도가 변조되는 가변형 씬 노드(Scene Node) 아키텍처를 연동합니다.</li>
-            <li><strong>사회적 현존감 (Social Embodiment):</strong> 네트워크로 연동된 멀티유저 가상 현실에서 아바타의 신체적 춤이나 제스처 에너지가 가상 유체 방주(Ark Heterotopia) 공간에 실시간 분산 저장되는 아카이브 캐시 구조를 설계하여, 상호 동작이 흔적으로 보존되게 만드는 시공간 데이터 로깅 시스템을 제시합니다.</li>
+            <li><strong>사회적 현존감 (Social Embodiment):</strong> 네트워크로 연동된 멀티유저 가상 현실에서 아바타의 신체적 춤이나 제스처 에너지가 가상 유체 공간에 실시간 분산 저장되는 아카이브 캐시 구조를 설계하여, 상호 동작이 흔적으로 보존되게 만드는 시공간 데이터 로깅 시스템을 제시합니다.</li>
           </ul>
           <p><strong>[학술적 기여 및 미디어 아트적 위상]</strong></p>
           <p>본 논문은 가상 갤러리와 3D 미디어 공간을 설계할 때 단순한 입체물 렌더링에 그치지 않고, 가상 공간 자체가 참여자의 동적인 신체 활동을 통해 실시간으로 변모하며 역사성을 획득하는 구조를 설파했습니다. 이는 디지털 네트워크 갤러리 ⟪방주⟫ 전시 등 관객 참여형 가상 미술관 시스템 설계의 미학적, 철학적 전산 공학 지표로 작동하고 있습니다.</p>
@@ -377,10 +393,94 @@
           <p>이 생체 센서 신호 처리 모델은 신체 피부 표면에 부착된 생체 전극(EMG 센서)을 통해 연주자가 주먹을 꽉 쥐거나 힘을 주어 버티는 순간적인 근섬유의 전기 신호를 받아 다음과 같은 하드웨어/소프트웨어 전산 프로세싱을 거칩니다.</p>
           <ul>
             <li><strong>대역 통과 필터링 (Bandpass Filter) 및 엔벨로프 추출 (Envelope Follower):</strong> EMG 센서의 20Hz-500Hz 대역 잡음을 걸러내고 물리적 수축 압력의 RMS(Root Mean Square) 에너지 레벨 값을 실시간 변환 추출합니다.</li>
-            <li><strong>동적 질감 파라미터 매핑:</strong> 추출된 근육의 전기 에너지 전압 레벨은 실시간 과립형 사운드 합성(Granular Synthesis) 엔진의 그레인 밀도(Grain Density), 혹은 가상 아날로그 신스의 피치 변조 인덱스로 정사영 매핑됩니다. 연주자가 팔뚝 근육에 강하게 힘을 가할 때 사운드가 즉각 찌그러지며 음색적 밀도가 포화 상태로 가닿는 다이내믹 바이오 피드백을 발생시킵니다.</li>
+            <li><strong>동적 질감 파라미터 매핑:</strong> 추출된 근육의 전기 에너지 전압 레벨은 실시간 과립형 사운드 합성(Granular Synthesis) 엔진의 그레인 밀도(Grain Density), 혹은 가상 아날로그 신스의 피치 변조 인덱스로 정사영 매핑됩니다. 연주자가 팔뚝 근육에 힘을 가할 때 사운드가 즉각 찌그러지며 음색적 밀도가 포화 상태로 가닿는 다이내믹 바이오 피드백을 발생시킵니다.</li>
           </ul>
           <p><strong>[학술적 기여 및 의의]</strong></p>
           <p>Atau Tanaka의 본 논문은 단순한 동작 위치 추적의 기하학적 매핑 차원을 넘어서, 인간 신체의 내부 생체 전압 에너지 자체가 전산 시스템의 핵심 사운드 오실레이터(Oscillator) 모듈로서 다이렉트 연동되는 전기-음향학적 통합 모델을 구축했습니다. 바이오 아트, 웨어러블 헬스케어 기반 음악 제어, 신체-기계 일체형 미디어 퍼포먼스 공학 설계의 핵심 랜드마크로 평가받고 있습니다.</p>
+        `,
+
+        paper_curation: `
+          <div class="paper-citation-block">
+            <table>
+              <tr><td class="label">논문명</td><td><strong>Curation and Audience Interaction in Digital Art Exhibitions</strong></td></tr>
+              <tr><td class="label">저자</td><td>Beryl Graham, Sarah Cook</td></tr>
+              <tr><td class="label">발행기관</td><td>MIT Press (Rethinking Curating)</td></tr>
+              <tr><td class="label">발행연도</td><td>2010년</td></tr>
+            </table>
+          </div>
+          <p><strong>[서론 및 기획적 배경]</strong></p>
+          <p>인터랙티브 테크놀로지가 접목된 디지털 미디어 아트는 전통적인 오브제 중심의 미술 전시 기획 및 미술관 운영론에 커다란 구조적 전환을 요구합니다. 본 연구는 물리적인 작품 관리 체제를 넘어, 소프트웨어 기반 예술품의 가변성, 관객의 실시간 참여에 따른 결과의 비결정성, 그리고 관객 행위 분석을 통합하는 디지털 아트 전문 큐레이션 기획 모델을 체계화했습니다.</p>
+          <p><strong>[전시 기획 및 공간 상호작용 운영론]</strong></p>
+          <p>연구자들은 디지털 미디어가 전시장 내부에서 장기적으로 오작동 없이 영구 구동되기 위해 요구되는 공간 기획과 운영 설계 방법론을 다음과 같이 제시합니다.</p>
+          <ul>
+            <li><strong>관객 상호작용 행동 분석 (Behavioral Mapping):</strong> 관객이 작품 앞에 머무는 평균 체류 시간(Dwell Time)과 센서 오작동 비율 간의 상관관계를 통계적으로 분석합니다. 센서 반응 반경(Sensing Zone)에 따라 관객의 물리적 동선을 사전에 시뮬레이션하여 병목 현상을 방지하는 전시장 공간 레이아웃 기획 프로세스를 수립했습니다.</li>
+            <li><strong>기술 가변적 아카이빙 (Variable Media Curation):</strong> 소프트웨어 버전 업데이트나 하드웨어 노후화에 대비하여 작품의 미디어 코드를 에뮬레이션 가능한 규격으로 정의하고, 현장 도슨트나 스태프가 작품 리셋 및 보정을 수행할 수 있도록 매뉴얼화하는 기술 관리 운영 워크플로우를 체계화했습니다.</li>
+          </ul>
+          <p><strong>[학술적 기여 및 전시 기획적 의의]</strong></p>
+          <p>Beryl Graham의 큐레이션 연구는 디지털 예술품을 고정된 물질이 아닌 끊임없이 변모하는 하나의 '프로세스'이자 '시스템'으로 정의했습니다. 이는 미디어 전시 기획자가 단순한 공간 배치를 넘어 테크니컬 스태프와 유기적으로 협업하는 현대 융복합 전시 기획의 실무 프로세스 준칙으로 널리 통용되고 있습니다.</p>
+        `,
+
+        paper_production: `
+          <div class="paper-citation-block">
+            <table>
+              <tr><td class="label">논문명</td><td><strong>Managing Digital Performance: Production and Curation Models</strong></td></tr>
+              <tr><td class="label">저자</td><td>Steve Dixon</td></tr>
+              <tr><td class="label">발행기관</td><td>MIT Press (Digital Performance)</td></tr>
+              <tr><td class="label">발행연도</td><td>2007년</td></tr>
+            </table>
+          </div>
+          <p><strong>[서론 및 운영적 배경]</strong></p>
+          <p>실시간 동작 트래킹 비전 센서나 음향 생성 컴퓨터 시스템이 무대에 직접 탑재되는 융복합 디지털 라이브 퍼포먼스는 전통 연극이나 현대 무용 프로덕션 기획 단계와 전혀 다른 리스크 요소들을 수반합니다. Steve Dixon은 테크놀로지 융복합 무대 공연의 제작 기간(Pre-production) 설계, 개발자와 연출가 간의 직무 협업 분할, 그리고 생방송 공연 진행 시 무대에서 발생할 수 있는 시스템 다운 상황에 대처하는 프로덕션 관리 프레임워크를 정립했습니다.</p>
+          <p><strong>[프로덕션 관리 및 무대 운영 리스크 제어]</strong></p>
+          <p>시스템적 리스크가 존재하는 융복합 무대의 기획 및 운영 실무를 위해 논문은 다음과 같은 공학적 프로덕션 파이프라인 관리 기법을 제안합니다.</p>
+          <ul>
+            <li><strong>다분야 융합 워크플로우 (Interdisciplinary Pipeline):</strong> 소프트웨어 프로그래머의 소스코드 디버깅 일정과 무대 안무가의 리허설 일정을 분리하여 점진적 통합 테스트(Integration Testing) 일정을 조율하는 기획 마일스톤 설계를 제시합니다. 기술 안정도에 따라 안무의 복잡도를 동적으로 조정하는 협업 프로덕션을 기획합니다.</li>
+            <li><strong>무대 장애 극복 대책 (Fallback Strategy):</strong> 실시간 카메라 비전 트래커나 생체 전극 센서가 노이즈 또는 조명 간섭으로 인해 오작동할 경우를 대비하여, 무대 감독이 1초 이내에 일반 프리셋된 MIDI 신호나 프리렌더링된 사운드/비주얼 아카이브 소스로 백업 제어를 즉시 전환할 수 있는 무대 리스크 방지용 전산 브리지 스위칭 설계를 의무화합니다.</li>
+          </ul>
+          <p><strong>[학술적 기여 및 프로덕션적 가치]</strong></p>
+          <p>Dixon 교수의 연구는 뉴미디어를 무대 위에 올릴 때 아티스트의 예술적 상상력만큼이나 시스템의 신뢰성과 운영 관리 체제의 구조화가 절대적으로 중요함을 역설했습니다. 이는 현대 대형 실시간 융복합 멀티미디어 콘서트, 뮤지컬, 테크놀로지 연동 현대 무용의 예산 배정, 기술 스태프 구성, 극장 운영 매뉴얼 설계의 고전적 교과서로 활용되고 있습니다.</p>
+        `,
+
+        paper_vr_museum: `
+          <div class="paper-citation-block">
+            <table>
+              <tr><td class="label">논문명</td><td><strong>The Virtual Museum: Curation, Operation and User Experience</strong></td></tr>
+              <tr><td class="label">저자</td><td>Maria Roussou</td></tr>
+              <tr><td class="label">발행기관</td><td>Information Design Journal</td></tr>
+              <tr><td class="label">발행연도</td><td>2002년</td></tr>
+            </table>
+          </div>
+          <p><strong>[서론 및 운영적 배경]</strong></p>
+          <p>가상현실(VR) 미술관이나 몰입형 입체 갤러리는 참여자의 직접적이고 동적인 조작을 전제로 작동하지만, 불특정 다수의 관객이 밀집하는 실제 대규모 공공 행사 공간에서 이를 성공적으로 운영하는 것은 매우 복잡한 기획적 난제입니다. Maria Roussou는 인터랙티브 몰입형 미술 전시 기획 단계에서 관객의 동선 흐름(Throughput), 소프트웨어의 다중 사용자 접속 신뢰성, 그리고 관객의 조작 학습 곡선(Learning Curve)을 공학적으로 평가하고 제어하는 사용자 경험(UX) 운영 프레임워크를 도출했습니다.</p>
+          <p><strong>[다중 사용자 접속 및 관객 처리 흐름 설계]</strong></p>
+          <p>전시장 내부에서 관람객들의 쾌적한 조작 경험과 시스템 과부하를 막기 위해 논문은 다음과 같은 전시 관리 프로토콜을 규정합니다.</p>
+          <ul>
+            <li><strong>관객 트래픽 흐름 제어 (Throughput Optimization):</strong> 다중 참여자의 실시간 카메라 좌표 트래킹 및 가상 공간 투영 연산 부하를 분산하기 위해, 가상 월드 내 다중 사용자 연결 관리 세션을 기획 및 구성합니다. 대기자들의 시각 피로를 해소하고 몰입감을 분할 수용할 수 있는 보조 디스플레이 공간 설계를 물리적으로 제어합니다.</li>
+            <li><strong>직관적 행위 사용성 (Affordance Design):</strong> 가상 갤러리 내에 투사되는 디지털 입자나 방명록 아카이브 데이터에 관객이 직관적으로 다가갈 수 있도록 인터랙션 반응 반경을 다이내믹하게 조정하고, 자연스럽게 시스템 조작법을 체득하게 만드는 시각적 안내(Affordance) 기획안을 도출했습니다.</li>
+          </ul>
+          <p><strong>[학술적 공헌 및 전시기획적 의의]</strong></p>
+          <p>본 연구는 디지털 가상 공간 전시가 단순한 가상 그래픽 렌더링에 그쳐서는 안 되며, 전시장 현장에 진입하는 대규모 군중의 물리적 밀도 및 동선 관리(Crowd Control) 기획과 결합되어야 실용적으로 완결될 수 있음을 전산 모델로 증명했습니다. 이는 현대 대형 미디어 테마파크, 실시간 다중 사용자 네트워크 기반 전시(Heterotopia 등)의 핵심 운영 규범으로 널리 사용됩니다.</p>
+        `,
+
+        paper_engagement: `
+          <div class="paper-citation-block">
+            <table>
+              <tr><td class="label">논문명</td><td><strong>Designing for Audience Engagement in Interactive Performance</strong></td></tr>
+              <tr><td class="label">저자</td><td>Jo Sheridan, Nick Bryan-Kinns, Alice Bayliss</td></tr>
+              <tr><td class="label">발행기관</td><td>CoDesign (International Journal of CoCreation in Design)</td></tr>
+              <tr><td class="label">발행연도</td><td>2009년</td></tr>
+            </table>
+          </div>
+          <p><strong>[서론 및 기획적 배경]</strong></p>
+          <p>대부분의 인터랙티브 전시 공간에 입장한 관객들은 처음에는 센서 카메라나 오디오 연동 디바이스 앞에 적극적으로 나서는 것에 심리적 저항감과 부끄러움을 느낍니다. Jo Sheridan의 연구는 관람자가 어떻게 관망하는 수동적 상태(Passive Spectator)에서 다른 관객을 구경하는 상태(Spectator as Performer)를 거쳐, 스스로 작품의 주도권을 쥐고 움직이는 적극적 참여자(Active Participant)로 발전해 나가는지를 공간 사회학 및 행위 디자인 기획의 관점에서 모델화했습니다.</p>
+          <p><strong>[참여 유도를 위한 전시장 행동 및 공간 영역 설계]</strong></p>
+          <p>예술가와 전시 기획자가 전시장 내에서 참여자의 행동 심리 장벽을 단계적으로 완화하도록 제안하는 세부 행동 기획 매커니즘은 다음과 같습니다.</p>
+          <ul>
+            <li><strong>3단계 참여 임계 영역(Interaction Zones) 배치:</strong> 전시장 입구에서부터 안쪽까지 물리적 영역을 세 단계로 설계합니다. 첫째, 멀리서 타인의 반응을 편안히 관찰하는 '주변 관망 구역(Peripheral Zone)', 둘째, 타인의 참여법을 파악하고 호기심을 갖는 '과도기 구역(Transition Zone)', 셋째, 완벽한 몰입 상태로 센서 동작을 취하는 '활성 참여 구역(Active Zone)'을 물리적/음향적 조명 배치를 통해 자연스러운 그라데이션 동선으로 유도합니다.</li>
+            <li><strong>수행적 스펙타클(Performative Spectatorship) 기획:</strong> 활성 영역에서 동작하는 한 명의 참여자가 보여주는 춤이나 몸짓 자체가 주변 구역에 대기 중인 다른 관객들에게 매력적인 시각 스펙타클이 되도록 가상 비주얼라이저의 스케일과 파티클 연출 다이내믹을 기획함으로써, 대기 관객들의 공간적 진입 욕구를 자연스럽게 이끌어냅니다.</li>
+          </ul>
+          <p><strong>[학술적 기여 및 운영적 가치]</strong></p>
+          <p>본 논문은 기술 위주의 인터랙티브 아트 전시가 지녔던 치명적 결함인 '관객의 소외 현상'을 해결하는 유용한 사회공학적 가이드를 확립했습니다. 전시 기획자가 공간 속 인간의 군중 심리와 동선 흐름을 고려하여 공간의 물리적 레이아웃과 반응형 비주얼 크기를 기획·조정함으로써 관객의 실질적 참여율을 최대화하는 실천적 기획 프레임워크로 각광받고 있습니다.</p>
         `
       };
 
