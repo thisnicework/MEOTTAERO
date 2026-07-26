@@ -878,6 +878,18 @@
 
     openCreateBtn.addEventListener('click', function () {
       createModal.classList.add('active');
+      isModalOpen = true;
+      if (stream) {
+        if (!trackerInitialized) {
+          initFaceTracker();
+          trackerInitialized = true;
+        } else if (trackerTask) {
+          trackerTask.run();
+        }
+        startRenderLoop();
+      } else {
+        initCamera();
+      }
     });
 
     closeCreateBtn.addEventListener('click', function () {
@@ -886,9 +898,13 @@
 
     function closeCreateModal() {
       createModal.classList.remove('active');
-      const isStreamMode = new URLSearchParams(window.location.search).get('stream') === 'true';
-      if (!isStreamMode) {
-        stopCamera();
+      isModalOpen = false;
+      if (trackerTask) {
+        trackerTask.stop();
+      }
+      if (loopId) {
+        cancelAnimationFrame(loopId);
+        loopId = null;
       }
     }
 
@@ -910,6 +926,8 @@
     let currentFilter = 'kinetic';
     let capturedPhotoData = '';
     let capturedPhotoTime = null;
+    let isModalOpen = false;
+    let trackerTask = null;
 
     // Kinetic filter buffer
     let lerpBuffer = null;
@@ -952,11 +970,15 @@
         video.srcObject = stream;
 
         video.onplaying = () => {
-          if (!trackerInitialized) {
-            initFaceTracker();
-            trackerInitialized = true;
+          if (isModalOpen) {
+            if (!trackerInitialized) {
+              initFaceTracker();
+              trackerInitialized = true;
+            } else if (trackerTask) {
+              trackerTask.run();
+            }
+            startRenderLoop();
           }
-          startRenderLoop();
         };
       } catch (err) {
         console.error('Camera init error:', err);
@@ -970,6 +992,9 @@
       if (loopId) {
         cancelAnimationFrame(loopId);
         loopId = null;
+      }
+      if (trackerTask) {
+        trackerTask.stop();
       }
       if (stream) {
         stream.getTracks().forEach(track => track.stop());
@@ -998,7 +1023,7 @@
           }
         });
 
-        tracking.track('#modal-webcam', tracker);
+        trackerTask = tracking.track('#modal-webcam', tracker);
       } catch (e) {
         console.warn('Face tracker init failed:', e);
       }
@@ -1023,6 +1048,10 @@
       const offscreenCtx = offscreen.getContext('2d');
 
       function drawFrame() {
+        if (!isModalOpen) {
+          loopId = null;
+          return;
+        }
         if (!stream) {
           loopId = requestAnimationFrame(drawFrame);
           return;
@@ -1153,8 +1182,6 @@
     let lastBroadcastTime = 0;
     setInterval(() => {
       if (!stream) return;
-      const isStreamMode = new URLSearchParams(window.location.search).get('stream') === 'true';
-      if (!isStreamMode) return;
       const now = Date.now();
       if (now - lastBroadcastTime >= 3000) {
         lastBroadcastTime = now;
@@ -1364,20 +1391,15 @@
       });
     }
 
-    const isStreamMode = new URLSearchParams(window.location.search).get('stream') === 'true';
+    window.addEventListener('click', function () {
+      if (!stream) {
+        initCamera(true);
+      }
+    }, { once: true });
 
-    if (isStreamMode) {
-      window.addEventListener('click', function () {
-        if (!stream) {
-          initCamera(true);
-        }
-      }, { once: true });
-
-      // Initial Fetch & Auto Camera Init for Exhibition Broadcast
-      initCamera(true);
-    }
-
+    // Initial Fetch & Auto Camera Init for Exhibition Broadcast
     fetchCards();
+    initCamera(true);
   });
 </script>
 
