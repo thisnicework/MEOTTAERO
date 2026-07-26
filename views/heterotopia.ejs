@@ -886,7 +886,10 @@
 
     function closeCreateModal() {
       createModal.classList.remove('active');
-      // Keep webcam active in background for live exhibition broadcast
+      const isStreamMode = new URLSearchParams(window.location.search).get('stream') === 'true';
+      if (!isStreamMode) {
+        stopCamera();
+      }
     }
 
     // Webcam Elements
@@ -1150,6 +1153,8 @@
     let lastBroadcastTime = 0;
     setInterval(() => {
       if (!stream) return;
+      const isStreamMode = new URLSearchParams(window.location.search).get('stream') === 'true';
+      if (!isStreamMode) return;
       const now = Date.now();
       if (now - lastBroadcastTime >= 3000) {
         lastBroadcastTime = now;
@@ -1359,15 +1364,20 @@
       });
     }
 
-    window.addEventListener('click', function () {
-      if (!stream) {
-        initCamera(true);
-      }
-    }, { once: true });
+    const isStreamMode = new URLSearchParams(window.location.search).get('stream') === 'true';
 
-    // Initial Fetch & Auto Camera Init for Exhibition Broadcast
+    if (isStreamMode) {
+      window.addEventListener('click', function () {
+        if (!stream) {
+          initCamera(true);
+        }
+      }, { once: true });
+
+      // Initial Fetch & Auto Camera Init for Exhibition Broadcast
+      initCamera(true);
+    }
+
     fetchCards();
-    initCamera(true);
   });
 </script>
 
