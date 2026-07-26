@@ -48,7 +48,7 @@ app.get('/', (req, res) => {
   const initialProject = db.getRandomProject();
   const initialStudent = initialProject ? db.getStudent(initialProject.studentId) : null;
   res.render('home', {
-    title: '// MOTTAERO',
+    title: '// MEOTTAERO',
     activeMenu: 'home',
     initialProject,
     initialStudent
@@ -61,7 +61,7 @@ app.get('/projects', (req, res) => {
   const initialStudent = initialProject ? db.getStudent(initialProject.studentId) : null;
   const semesters = db.getSemesters();
   res.render('projects', {
-    title: '// MOTTAERO',
+    title: '// MEOTTAERO',
     activeMenu: 'projects',
     semesters,
     initialProject,
@@ -118,7 +118,7 @@ app.get('/projects/:semester_id', async (req, res) => {
   }
 
   res.render('semester', {
-    title: `// MOTTAERO — ${semester.title}`,
+    title: `// MEOTTAERO — ${semester.title}`,
     activeMenu: 'projects',
     semesters,
     activeSemester: semester,
@@ -133,7 +133,7 @@ app.get('/crew', (req, res) => {
   const initialStudent = initialProject ? db.getStudent(initialProject.studentId) : null;
   const students = db.getStudents();
   res.render('crew', {
-    title: '// MOTTAERO',
+    title: '// MEOTTAERO',
     activeMenu: 'crew',
     students,
     initialProject,
@@ -151,7 +151,7 @@ app.get('/crew/:student_id', (req, res) => {
   const students = db.getStudents();
   const projects = db.getProjectsByStudent(studentId);
   res.render('crew_member', {
-    title: `// MOTTAERO — ${student.name}`,
+    title: `// MEOTTAERO — ${student.name}`,
     activeMenu: 'crew',
     students,
     activeStudent: student,
@@ -170,7 +170,7 @@ app.get('/crew/:student_id/:project_slug', (req, res) => {
   const semester = db.getSemester(project.semesterId);
   const siblingProjects = db.getProjectsByStudent(student_id);
   res.render('project_detail', {
-    title: `// MOTTAERO — ${student.name} — ${project.title}`,
+    title: `// MEOTTAERO — ${student.name} — ${project.title}`,
     activeMenu: 'crew',
     context: 'student',
     student,
@@ -192,7 +192,7 @@ app.get('/projects/:semester_id/:project_slug', (req, res) => {
   const student = db.getStudent(project.studentId);
   const siblingProjects = db.getProjectsBySemester(semester_id);
   res.render('project_detail', {
-    title: `// MOTTAERO — ${student.name} — ${project.title}`,
+    title: `// MEOTTAERO — ${student.name} — ${project.title}`,
     activeMenu: 'projects',
     context: 'semester',
     student,
@@ -205,7 +205,7 @@ app.get('/projects/:semester_id/:project_slug', (req, res) => {
 // Route: About Page
 app.get('/about', (req, res) => {
   res.render('about', {
-    title: '// MOTTAERO — About',
+    title: '// MEOTTAERO — About',
     activeMenu: 'about'
   });
 });
@@ -213,7 +213,7 @@ app.get('/about', (req, res) => {
 // Route: Photo Booth Page
 app.get('/booth', (req, res) => {
   res.render('booth', {
-    title: '// MOTTAERO — Booth',
+    title: '// MEOTTAERO — Booth',
     activeMenu: 'booth'
   });
 });
@@ -474,7 +474,7 @@ app.get('/admin', requireAdminAuth, async (req, res) => {
 
     const capacities = db.getCapacities();
     res.render('bookings', {
-      title: '// MOTTAERO — Admin Dashboard',
+      title: '// MEOTTAERO — Admin Dashboard',
       activeMenu: 'admin',
       bookings,
       capacities
