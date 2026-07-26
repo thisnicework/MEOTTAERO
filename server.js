@@ -218,6 +218,14 @@ app.get('/play', (req, res) => {
   });
 });
 
+// Route: Leaked Wiki Page (Deep Web style)
+app.get('/wiki', (req, res) => {
+  res.render('wiki', {
+    title: '// MEOTTAERO — Hidden Mainframe',
+    activeMenu: 'wiki'
+  });
+});
+
 // Route: Photo Booth Page
 app.get('/booth', (req, res) => {
   res.render('booth', {
