@@ -93,7 +93,7 @@
     <div class="wiki-sidebar-list" style="margin-top: 1rem;">
       <!-- List matching semesters / students native anchors (without numbers) -->
       <div class="articles">
-        <a class="article-item block active" data-article="paper_wanderley" style="cursor: pointer;">
+        <a class="article-item block" data-article="paper_wanderley" style="cursor: pointer;">
           <h2 class="bold">소리 합성의 제스처 제어</h2>
         </a>
         <a class="article-item block" data-article="paper_fiebrink" style="cursor: pointer;">
@@ -614,10 +614,17 @@
       backBtn.addEventListener('click', () => {
         sectionOne.setAttribute('aria-expanded', 'true');
         sectionTwo.setAttribute('aria-expanded', 'false');
+        if (!window.matchMedia("(min-width: 59.938em)").matches) {
+          articleItems.forEach(i => i.classList.remove('active'));
+        }
       });
 
       // Load first article (Wanderley) on start
       loadArticle('paper_wanderley');
+      if (window.matchMedia("(min-width: 59.938em)").matches) {
+        const firstItem = document.querySelector('[data-article="paper_wanderley"]');
+        if (firstItem) firstItem.classList.add('active');
+      }
     });
   </script>
 </main>
