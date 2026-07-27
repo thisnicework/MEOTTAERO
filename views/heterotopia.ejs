@@ -1361,7 +1361,7 @@
               const rx = face.size * 0.55 * scaleX;
               const ry = face.size * 0.15 * scaleY;
               const numStars = 4;
-              const time = Date.now() / 300; // 회전 속도
+              const time = Date.now() / 800; // 회전 속도 (속도를 늦추기 위해 300 -> 800으로 조정)
 
               const stars = [];
               for (let i = 0; i < numStars; i++) {
@@ -1404,7 +1404,7 @@
             const rx = w * 0.18; // 화면 가로폭 대비 일정 비율
             const ry = h * 0.04;
             const numStars = 4;
-            const time = Date.now() / 400; // 회전 속도
+            const time = Date.now() / 1000; // 회전 속도 (속도를 늦추기 위해 400 -> 1000으로 조정)
 
             const stars = [];
             for (let i = 0; i < numStars; i++) {
