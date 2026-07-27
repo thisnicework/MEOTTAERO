@@ -1239,15 +1239,19 @@
           const clampedSize = Math.max(80, Math.min(300, faceSize));
           const factor = 0.65 + ((clampedSize - 80) / 220) * 0.23;
 
-          for (let i = 1; i <= 6; i++) {
+          // 얼굴이 화면에 가까워지면(clampedSize 증가) 화면 수(레이어 수)를 6개에서 3개까지 동적으로 줄입니다.
+          const t = (clampedSize - 80) / 220; // 0.0 ~ 1.0
+          const numLayers = Math.round(6 - t * 3); // 6 (가장 멂) ~ 3 (가장 가까움)
+
+          for (let i = 1; i <= numLayers; i++) {
             const scaleFactor = Math.pow(factor, i);
             const nw = w * scaleFactor;
             const nh = h * scaleFactor;
 
             const oppositeX = mouseX;
-            const oppositeY = h - mouseY;
+            const oppositeY = mouseY;
 
-            const bias = i / 6;
+            const bias = i / numLayers;
             const targetCenterX = w / 2 + (oppositeX - w / 2) * bias;
             const targetCenterY = h / 2 + (oppositeY - h / 2) * bias;
 
@@ -1274,7 +1278,7 @@
           offscreenCtx.drawImage(video, 0, 0, w, h);
           offscreenCtx.restore();
 
-          const scanSpeed = 2;
+          const scanSpeed = 0.8;
           ctx.drawImage(offscreen, 0, scanY, w, scanSpeed, 0, scanY, w, scanSpeed);
 
           scanY += scanSpeed;
@@ -1435,9 +1439,9 @@
           ctx.save();
           ctx.translate(w, 0);
           ctx.scale(-1, 1);
-          ctx.globalAlpha = 0.38; // 뽀샤시 오버레이 강도 (38%)
+          ctx.globalAlpha = 0.48; // 뽀샤시 오버레이 강도 증가 (38% -> 48%)
           ctx.globalCompositeOperation = 'screen';
-          ctx.filter = 'blur(6px) brightness(125%) contrast(105%)';
+          ctx.filter = 'blur(10px) brightness(130%) contrast(100%)'; // 블러 반경 증가 (6px -> 10px)로 피부 톤을 더 뭉개고 화사함 강화
           ctx.drawImage(video, 0, 0, w, h);
           ctx.restore();
         }
