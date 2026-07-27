@@ -974,9 +974,8 @@
         if (!trackerInitialized) {
           initFaceTracker();
           trackerInitialized = true;
-        } else if (trackerTask) {
-          trackerTask.run();
         }
+        faceMeshActive = true;
         startRenderLoop();
       } else {
         initCamera();
