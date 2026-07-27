@@ -453,10 +453,9 @@
     <div style="border: 1px solid #ccc; padding: 0.75rem; background: #fdfdfd;">
       <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem;">
         <span class="form-label" style="font-size: 0.8rem;">📷 PHOTO BOOTH (WEBCAM)</span>
-        <button id="toggle-camera-btn" style="background: none; border: 1px solid #000; padding: 0.2rem 0.5rem; font-size: 0.75rem; cursor: pointer;">카메라 켜기</button>
       </div>
 
-      <div id="camera-area" style="display: none; flex-direction: column; align-items: center;">
+      <div id="camera-area" style="display: flex; flex-direction: column; align-items: center;">
         <div class="video-wrap" style="position: relative; width: 100%; aspect-ratio: 4/3; background: #000; border: 1px solid #000; overflow: hidden; display: flex; align-items: center; justify-content: center; margin-bottom: 0.6rem;">
           <canvas id="modal-canvas-preview" style="width: 100%; height: 100%; object-fit: cover;"></canvas>
 
@@ -1001,7 +1000,6 @@
     }
 
     // Webcam Elements
-    const toggleCameraBtn = document.getElementById('toggle-camera-btn');
     const cameraArea = document.getElementById('camera-area');
     const video = document.getElementById('modal-webcam');
     const canvasPreview = document.getElementById('modal-canvas-preview');
@@ -1040,19 +1038,6 @@
     let trackerInitialized = false;
 
     let detectedFaces = []; // Store coordinates of all detected faces
-
-
-    toggleCameraBtn.addEventListener('click', function () {
-      if (stream) {
-        stopCamera();
-        cameraArea.style.display = 'none';
-        toggleCameraBtn.textContent = '카메라 켜기';
-      } else {
-        cameraArea.style.display = 'flex';
-        toggleCameraBtn.textContent = '카메라 끄기';
-        initCamera();
-      }
-    });
 
     async function initCamera(isSilent = false) {
       try {
@@ -1635,7 +1620,6 @@
           capturedPhotoTime = null;
           previewImg.src = '';
           previewContainer.style.display = 'none';
-          toggleCameraBtn.textContent = '카메라 켜기';
           closeCreateModal();
         } else {
           alert('카드 등록 오류: ' + (data.error || '실패했습니다.'));
