@@ -992,6 +992,10 @@
       createModal.classList.remove('active');
       isModalOpen = false;
       stopCamera();
+      
+      // 다음 촬영 시나리오를 위해 카메라 영역 노출 및 촬영 완료 프리뷰 영역 숨김 원복
+      if (cameraArea) cameraArea.style.display = 'flex';
+      if (previewContainer) previewContainer.style.display = 'none';
     }
 
     // Webcam Elements
