@@ -1276,25 +1276,24 @@
           }
         }
         else if (currentFilter === 'dizzy') {
-          // 원래 비디오 그리기 (거울 모드로 그리기)
+          // 비디오와 별 이펙트를 한 번의 거울 모드 변환 콘텍스트 안에서 연달아 렌더링
           ctx.save();
           ctx.translate(w, 0);
           ctx.scale(-1, 1);
           ctx.drawImage(video, 0, 0, w, h);
-          ctx.restore();
 
           // 감지된 모든 얼굴에 대해 이펙트 렌더링
-          if (detectedFaces.length > 0) {
-            detectedFaces.forEach(face => {
-              ctx.save();
-              // 거울 반전 모드로 비디오가 그려져 있으므로, 캔버스를 반전시킨 뒤 얼굴 중심 좌표 위에 오버레이를 그립니다.
-              ctx.translate(w, 0);
-              ctx.scale(-1, 1);
+          if (detectedFaces && detectedFaces.length > 0) {
+            // 비디오 소스 640x480 대비 현재 캔버스 실제 해상도(w, h) 비율 구하기
+            const scaleX = w / 640;
+            const scaleY = h / 480;
 
-              const centerX = face.x;
-              const centerY = face.y - face.size * 0.55; // 머리 바로 위
-              const rx = face.size * 0.55; // 타원 X반경
-              const ry = face.size * 0.15; // 타원 Y반경
+            detectedFaces.forEach(face => {
+              // 거울모드 캔버스 좌표계이므로, 좌우반전이 내장되어 그냥 face.x 비율 곱을 주면 좌우 대칭이 맞아 떨어집니다.
+              const centerX = face.x * scaleX;
+              const centerY = (face.y - face.size * 0.55) * scaleY;
+              const rx = face.size * 0.55 * scaleX;
+              const ry = face.size * 0.15 * scaleY;
               const numStars = 4;
               const time = Date.now() / 300; // 회전 속도
 
@@ -1309,12 +1308,12 @@
                 stars.push({ x: sx, y: sy, z: z, scale: scaleFactor });
               }
 
-              // Z 깊이 기준 정렬하여 렌더링
+              // Z 깊이 기준 정렬하여 렌더링 (뒤쪽 별을 먼저 그리기)
               stars.sort((a, b) => a.z - b.z);
 
               stars.forEach((star, idx) => {
                 ctx.save();
-                const fontSize = Math.max(14, face.size * 0.2 * star.scale);
+                const fontSize = Math.max(14, face.size * 0.2 * star.scale * scaleX);
                 ctx.font = `${fontSize}px sans-serif`;
                 ctx.textAlign = 'center';
                 ctx.textBaseline = 'middle';
@@ -1328,10 +1327,9 @@
                 ctx.fillText(emoji, star.x, star.y);
                 ctx.restore();
               });
-
-              ctx.restore();
             });
           }
+          ctx.restore();
         }
         else {
           // Normal fallback
