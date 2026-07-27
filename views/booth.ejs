@@ -89,15 +89,7 @@
       <span style="color: var(--color-mid); font-size: 0.85rem; opacity: 0.5;">/</span>
       <button class="filter-opt-btn" data-filter="tunnel">tunnel <span style="font-size: 0.6rem; opacity: 0.55; vertical-align: super;">beta</span></button>
       <span style="color: var(--color-mid); font-size: 0.85rem; opacity: 0.5;">/</span>
-      <button class="filter-opt-btn" data-filter="cyber">cyber glasses</button>
-      <span style="color: var(--color-mid); font-size: 0.85rem; opacity: 0.5;">/</span>
-      <button class="filter-opt-btn" data-filter="kitty">kitty mask</button>
-      <span style="color: var(--color-mid); font-size: 0.85rem; opacity: 0.5;">/</span>
-      <button class="filter-opt-btn" data-filter="popart">pop art</button>
-      <span style="color: var(--color-mid); font-size: 0.85rem; opacity: 0.5;">/</span>
-      <button class="filter-opt-btn" data-filter="mirror">mirror</button>
-      <span style="color: var(--color-mid); font-size: 0.85rem; opacity: 0.5;">/</span>
-      <button class="filter-opt-btn" data-filter="xray">x-ray</button>
+      <button class="filter-opt-btn" data-filter="dizzy">dizzy</button>
     </div>
 
   </div>
@@ -357,7 +349,7 @@
             }
           }
         }
-        else if (currentFilter === 'cyber') {
+        else if (currentFilter === 'dizzy') {
           // 원래 비디오 그리기 (거울 모드로 그리기)
           ctx.save();
           ctx.translate(w, 0);
@@ -371,212 +363,49 @@
             ctx.translate(w, 0);
             ctx.scale(-1, 1);
 
-            // 선글라스 그리기
-            const eyeY = mouseY - faceSize * 0.05;
-            const eyeX = mouseX;
+            const centerX = mouseX;
+            const centerY = mouseY - faceSize * 0.55; // 머리 바로 위
+            const rx = faceSize * 0.6; // 타원 X반경
+            const ry = faceSize * 0.18; // 타원 Y반경
+            const numBirds = 5;
+            const time = Date.now() / 400; // 회전 속도
 
-            // 사이버 안경 프레임
-            ctx.shadowBlur = 15;
-            ctx.shadowColor = '#00ffcc';
-            ctx.strokeStyle = '#00ffcc';
-            ctx.lineWidth = Math.max(3, faceSize * 0.04);
-            ctx.fillStyle = 'rgba(10, 10, 10, 0.85)';
+            // Z-index 시뮬레이션을 위한 새 객체 배열
+            const birds = [];
+            for (let i = 0; i < numBirds; i++) {
+              const angle = time + (i * Math.PI * 2) / numBirds;
+              const bx = centerX + Math.cos(angle) * rx;
+              const by = centerY + Math.sin(angle) * ry;
+              
+              // sin(angle)을 Z 깊이로 활용 (-1: 가장 뒤, 1: 가장 앞)
+              const z = Math.sin(angle); 
+              const scaleFactor = 0.75 + 0.25 * z; // 크기 변동 (75% ~ 100%)
+              
+              birds.push({ x: bx, y: by, z: z, scale: scaleFactor });
+            }
 
-            const lensRadius = faceSize * 0.18;
-            const dist = faceSize * 0.18; // 눈 간격
+            // 깊이(z값) 기준 오름차순 정렬하여 뒤에 있는 새부터 순서대로 렌더링
+            birds.sort((a, b) => a.z - b.z);
 
-            // 왼쪽 렌즈
-            ctx.beginPath();
-            ctx.arc(eyeX - dist, eyeY, lensRadius, 0, Math.PI * 2);
-            ctx.fill();
-            ctx.stroke();
+            birds.forEach(bird => {
+              ctx.save();
+              const fontSize = Math.max(16, faceSize * 0.23 * bird.scale);
+              ctx.font = `${fontSize}px sans-serif`;
+              ctx.textAlign = 'center';
+              ctx.textBaseline = 'middle';
+              
+              // 머리 뒤로 도는 느낌(z < 0)을 강조하기 위해 반투명도 조절
+              if (bird.z < 0) {
+                ctx.globalAlpha = 0.45 + 0.55 * (bird.z + 1); // 0.45 ~ 1.0
+              }
 
-            // 오른쪽 렌즈
-            ctx.beginPath();
-            ctx.arc(eyeX + dist, eyeY, lensRadius, 0, Math.PI * 2);
-            ctx.fill();
-            ctx.stroke();
-
-            // 안경 다리/브릿지 연결선
-            ctx.beginPath();
-            ctx.moveTo(eyeX - dist + lensRadius, eyeY);
-            ctx.lineTo(eyeX + dist - lensRadius, eyeY);
-            ctx.stroke();
-
-            // 광원 반사선
-            ctx.shadowBlur = 0;
-            ctx.strokeStyle = 'rgba(255, 255, 255, 0.6)';
-            ctx.lineWidth = Math.max(2, faceSize * 0.02);
-            ctx.beginPath();
-            ctx.moveTo(eyeX - dist - lensRadius * 0.5, eyeY - lensRadius * 0.5);
-            ctx.lineTo(eyeX - dist + lensRadius * 0.2, eyeY + lensRadius * 0.2);
-            ctx.moveTo(eyeX + dist - lensRadius * 0.5, eyeY - lensRadius * 0.5);
-            ctx.lineTo(eyeX + dist + lensRadius * 0.2, eyeY + lensRadius * 0.2);
-            ctx.stroke();
+              // 파란 새 이모지 그리기
+              ctx.fillText('🐦', bird.x, bird.y);
+              ctx.restore();
+            });
 
             ctx.restore();
           }
-        }
-        else if (currentFilter === 'kitty') {
-          // 비디오 그리기
-          ctx.save();
-          ctx.translate(w, 0);
-          ctx.scale(-1, 1);
-          ctx.drawImage(video, 0, 0, w, h);
-          ctx.restore();
-
-          if (faceSize > 10) {
-            ctx.save();
-            ctx.translate(w, 0);
-            ctx.scale(-1, 1);
-
-            const noseX = mouseX;
-            const noseY = mouseY + faceSize * 0.08; 
-            const earSize = faceSize * 0.25;
-            const earDistY = faceSize * 0.4; 
-            const earDistX = faceSize * 0.35; 
-
-            // 1. 고양이 귀 그리기
-            ctx.fillStyle = '#ff6b81'; // 기본 귀 색상 (분홍 계열)
-            ctx.strokeStyle = '#000000';
-            ctx.lineWidth = Math.max(3, faceSize * 0.03);
-
-            // 왼쪽 귀
-            ctx.beginPath();
-            ctx.moveTo(mouseX - earDistX, mouseY - earDistY);
-            ctx.lineTo(mouseX - earDistX - earSize * 0.4, mouseY - earDistY - earSize);
-            ctx.lineTo(mouseX - earDistX + earSize * 0.6, mouseY - earDistY + earSize * 0.1);
-            ctx.closePath();
-            ctx.fill();
-            ctx.stroke();
-            
-            // 왼쪽 귀 안쪽
-            ctx.fillStyle = '#ffb8b8';
-            ctx.beginPath();
-            ctx.moveTo(mouseX - earDistX - earSize * 0.05, mouseY - earDistY - earSize * 0.1);
-            ctx.lineTo(mouseX - earDistX - earSize * 0.25, mouseY - earDistY - earSize * 0.7);
-            ctx.lineTo(mouseX - earDistX + earSize * 0.35, mouseY - earDistY - earSize * 0.05);
-            ctx.closePath();
-            ctx.fill();
-
-            // 오른쪽 귀
-            ctx.fillStyle = '#ff6b81';
-            ctx.beginPath();
-            ctx.moveTo(mouseX + earDistX, mouseY - earDistY);
-            ctx.lineTo(mouseX + earDistX + earSize * 0.4, mouseY - earDistY - earSize);
-            ctx.lineTo(mouseX + earDistX - earSize * 0.6, mouseY - earDistY + earSize * 0.1);
-            ctx.closePath();
-            ctx.fill();
-            ctx.stroke();
-
-            // 오른쪽 귀 안쪽
-            ctx.fillStyle = '#ffb8b8';
-            ctx.beginPath();
-            ctx.moveTo(mouseX + earDistX + earSize * 0.05, mouseY - earDistY - earSize * 0.1);
-            ctx.lineTo(mouseX + earDistX + earSize * 0.25, mouseY - earDistY - earSize * 0.7);
-            ctx.lineTo(mouseX + earDistX - earSize * 0.35, mouseY - earDistY - earSize * 0.05);
-            ctx.closePath();
-            ctx.fill();
-
-            // 2. 고양이 코
-            ctx.fillStyle = '#ff4757';
-            ctx.beginPath();
-            ctx.moveTo(noseX - faceSize * 0.04, noseY);
-            ctx.lineTo(noseX + faceSize * 0.04, noseY);
-            ctx.lineTo(noseX, noseY + faceSize * 0.04);
-            ctx.closePath();
-            ctx.fill();
-
-            // 3. 고양이 수염
-            ctx.strokeStyle = '#000000';
-            ctx.lineWidth = Math.max(2, faceSize * 0.015);
-            
-            const whiskerLen = faceSize * 0.35;
-            // 왼쪽 수염 3개
-            ctx.beginPath();
-            ctx.moveTo(noseX - faceSize * 0.06, noseY + faceSize * 0.02);
-            ctx.lineTo(noseX - faceSize * 0.06 - whiskerLen, noseY - faceSize * 0.02);
-            ctx.moveTo(noseX - faceSize * 0.06, noseY + faceSize * 0.02);
-            ctx.lineTo(noseX - faceSize * 0.06 - whiskerLen, noseY + faceSize * 0.02);
-            ctx.moveTo(noseX - faceSize * 0.06, noseY + faceSize * 0.02);
-            ctx.lineTo(noseX - faceSize * 0.06 - whiskerLen, noseY + faceSize * 0.06);
-            
-            // 오른쪽 수염 3개
-            ctx.moveTo(noseX + faceSize * 0.06, noseY + faceSize * 0.02);
-            ctx.lineTo(noseX + faceSize * 0.06 + whiskerLen, noseY - faceSize * 0.02);
-            ctx.moveTo(noseX + faceSize * 0.06, noseY + faceSize * 0.02);
-            ctx.lineTo(noseX + faceSize * 0.06 + whiskerLen, noseY + faceSize * 0.02);
-            ctx.moveTo(noseX + faceSize * 0.06, noseY + faceSize * 0.02);
-            ctx.lineTo(noseX + faceSize * 0.06 + whiskerLen, noseY + faceSize * 0.06);
-            ctx.stroke();
-
-            ctx.restore();
-          }
-        }
-        else if (currentFilter === 'popart') {
-          // Pop Art 4-split Andy Warhol Style
-          const halfW = w / 2;
-          const halfH = h / 2;
-
-          ctx.save();
-          ctx.translate(w, 0);
-          ctx.scale(-1, 1);
-
-          // 1. Top-Left (Standard / High Contrast)
-          ctx.save();
-          ctx.filter = 'contrast(170%) saturate(180%)';
-          ctx.drawImage(video, halfW, 0, halfW, halfH, 0, 0, halfW, halfH);
-          ctx.restore();
-
-          // 2. Top-Right (Cyan/Blue Tint)
-          ctx.save();
-          ctx.filter = 'contrast(150%) saturate(200%) hue-rotate(90deg)';
-          ctx.drawImage(video, 0, 0, halfW, halfH, halfW, 0, halfW, halfH);
-          ctx.restore();
-
-          // 3. Bottom-Left (Magenta/Pink Tint)
-          ctx.save();
-          ctx.filter = 'contrast(150%) saturate(200%) hue-rotate(180deg)';
-          ctx.drawImage(video, halfW, halfH, halfW, halfH, 0, halfH, halfW, halfH);
-          ctx.restore();
-
-          // 4. Bottom-Right (Greenish Tint)
-          ctx.save();
-          ctx.filter = 'contrast(150%) saturate(200%) hue-rotate(270deg)';
-          ctx.drawImage(video, 0, halfH, halfW, halfH, halfW, halfH, halfW, halfH);
-          ctx.restore();
-
-          ctx.restore();
-        }
-        else if (currentFilter === 'mirror') {
-          // Mirror half-reflection effect
-          if (offscreen.width !== w || offscreen.height !== h) {
-            offscreen.width = w;
-            offscreen.height = h;
-          }
-          offscreenCtx.save();
-          offscreenCtx.translate(w, 0);
-          offscreenCtx.scale(-1, 1);
-          offscreenCtx.drawImage(video, 0, 0, w, h);
-          offscreenCtx.restore();
-
-          ctx.save();
-          // Draw left half normally
-          ctx.drawImage(offscreen, 0, 0, w / 2, h, 0, 0, w / 2, h);
-          // Mirror left half to the right half
-          ctx.translate(w, 0);
-          ctx.scale(-1, 1);
-          ctx.drawImage(offscreen, 0, 0, w / 2, h, 0, 0, w / 2, h);
-          ctx.restore();
-        }
-        else if (currentFilter === 'xray') {
-          // X-Ray blue invert style
-          ctx.save();
-          ctx.translate(w, 0);
-          ctx.scale(-1, 1);
-          ctx.filter = 'grayscale(100%) invert(100%) hue-rotate(180deg) saturate(200%)';
-          ctx.drawImage(video, 0, 0, w, h);
-          ctx.restore();
         }
         else {
           // Normal fallback
