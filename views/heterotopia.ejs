@@ -991,13 +991,7 @@
     function closeCreateModal() {
       createModal.classList.remove('active');
       isModalOpen = false;
-      if (trackerTask) {
-        trackerTask.stop();
-      }
-      if (loopId) {
-        cancelAnimationFrame(loopId);
-        loopId = null;
-      }
+      stopCamera();
     }
 
     // Webcam Elements
