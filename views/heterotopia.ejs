@@ -476,6 +476,8 @@
           <span style="opacity: 0.4;">/</span>
           <button class="filter-opt-btn" data-filter="dizzy">dizzy</button>
           <span style="opacity: 0.4;">/</span>
+          <button class="filter-opt-btn" data-filter="beauty">beauty</button>
+          <span style="opacity: 0.4;">/</span>
           <button class="filter-opt-btn" data-filter="normal">normal</button>
         </div>
       </div>
@@ -1418,6 +1420,25 @@
               ctx.restore();
             });
           }
+          ctx.restore();
+        }
+        else if (currentFilter === 'beauty') {
+          // 뽀샤시 (Beauty / Glow) 필터
+          // 1. 기본 비디오를 거울모드로 선명하게 그림
+          ctx.save();
+          ctx.translate(w, 0);
+          ctx.scale(-1, 1);
+          ctx.drawImage(video, 0, 0, w, h);
+          ctx.restore();
+
+          // 2. 그 위에 뽀얗고 밝은 블러 스크린 오버레이를 얹어서 뽀샤시 효과 구현 (하드웨어 가속 활용)
+          ctx.save();
+          ctx.translate(w, 0);
+          ctx.scale(-1, 1);
+          ctx.globalAlpha = 0.38; // 뽀샤시 오버레이 강도 (38%)
+          ctx.globalCompositeOperation = 'screen';
+          ctx.filter = 'blur(6px) brightness(125%) contrast(105%)';
+          ctx.drawImage(video, 0, 0, w, h);
           ctx.restore();
         }
         else {
