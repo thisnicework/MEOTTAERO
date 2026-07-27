@@ -1,705 +1,759 @@
 <%- include('partials/header') %>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/tracking.js/1.1.3/tracking-min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/tracking.js/1.1.3/data/face-min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/@mediapipe/camera_utils/camera_utils.js" crossorigin="anonymous"></script>
-<script src="https://cdn.jsdelivr.net/npm/@mediapipe/face_mesh/face_mesh.js" crossorigin="anonymous"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/tracking.js/1.1.3/tracking-min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/tracking.js/1.1.3/data/face-min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@mediapipe/camera_utils/camera_utils.js" crossorigin="anonymous"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@mediapipe/face_mesh/face_mesh.js" crossorigin="anonymous"></script>
 
-<style>
-  /* Base Layout & Reset for Heterotopia Canvas */
-  body {
-    overflow: hidden; /* Canvas controls scrolling */
-  }
-
-  .heterotopia-viewport {
-    position: relative;
-    width: 100%;
-    height: 100vh;
-    background-color: var(--color-bg);
-    overflow: hidden;
-    user-select: none;
-    cursor: grab;
-    border: none;
-  }
-  .heterotopia-viewport:active {
-    cursor: grabbing;
-  }
-
-  /* Grid Background Canvas World */
-  .heterotopia-world {
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 0;
-    height: 0;
-    transform-origin: 0 0;
-    will-change: transform;
-  }
-
-  /* Background Grid Pattern */
-  .grid-pattern {
-    position: absolute;
-    top: -1800px;
-    left: -2400px;
-    width: 4800px;
-    height: 3600px;
-    background-image: 
-      radial-gradient(circle, var(--color-mid) 1.2px, transparent 1.2px);
-    background-size: 30px 30px;
-    pointer-events: none;
-    opacity: 0.75;
-  }
-
-  /* World Map Boundary Frame */
-  .world-boundary {
-    position: absolute;
-    top: -1800px;
-    left: -2400px;
-    width: 4800px;
-    height: 3600px;
-    border: 2px dashed var(--color-high);
-    box-shadow: 0 0 0 5000px rgba(0, 0, 0, 0.07), inset 0 0 40px rgba(25, 111, 61, 0.08);
-    pointer-events: none;
-    box-sizing: border-box;
-  }
-  .world-boundary::before {
-    content: "// HETEROTOPIA BOUNDARY [4800 x 3600]";
-    position: absolute;
-    top: -24px;
-    left: 0;
-    font-size: 0.72rem;
-    font-family: monospace;
-    color: var(--color-high);
-    font-weight: bold;
-    letter-spacing: 1px;
-  }
-  .world-boundary::after {
-    content: "[OUT OF BOUNDS]";
-    position: absolute;
-    bottom: -24px;
-    right: 0;
-    font-size: 0.72rem;
-    font-family: monospace;
-    color: var(--color-high);
-    font-weight: bold;
-    opacity: 0.8;
-  }
-
-  /* Post-it Cards in Spatial View */
-  .guest-card {
-    position: absolute;
-    width: 260px;
-    background: #ffffff;
-    color: #000000;
-    border: 1px solid var(--color-fg);
-    box-shadow: 4px 4px 0px rgba(0, 0, 0, 0.9);
-    padding: 1rem;
-    cursor: pointer;
-    transition: box-shadow 0.15s ease, transform 0.15s ease;
-    transform-origin: center center;
-    font-family: inherit;
-  }
-  .guest-card:hover {
-    box-shadow: 7px 7px 0px var(--color-high);
-    z-index: 100 !important;
-  }
-  .guest-card.dragging {
-    cursor: grabbing;
-    box-shadow: 10px 10px 0px var(--color-high);
-    z-index: 200 !important;
-  }
-  .guest-card-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    border-bottom: 1px solid #000;
-    padding-bottom: 0.4rem;
-    margin-bottom: 0.75rem;
-    font-size: 0.75rem;
-    font-weight: bold;
-    letter-spacing: 0.05em;
-  }
-  .guest-card-author {
-    color: var(--color-high);
-    text-transform: uppercase;
-  }
-  .guest-card-date {
-    opacity: 0.6;
-    font-family: monospace;
-  }
-  .guest-card-photo {
-    width: 100%;
-    aspect-ratio: 4/3;
-    object-fit: cover;
-    border: 1px solid #000;
-    margin-bottom: 0.75rem;
-    display: block;
-    background: #000;
-  }
-  .guest-card-text {
-    font-size: 0.88rem;
-    line-height: 1.4;
-    word-break: break-word;
-    white-space: pre-wrap;
-    max-height: 120px;
-    overflow-y: auto;
-  }
-  .guest-card-footer {
-    margin-top: 0.75rem;
-    padding-top: 0.4rem;
-    border-top: 1px dashed #ccc;
-    font-size: 0.68rem;
-    color: #666;
-    display: flex;
-    justify-content: space-between;
-    font-family: monospace;
-  }
-
-  /* HUD Top Controls & Overlay */
-  .hud-top {
-    position: absolute;
-    top: 1rem;
-    left: 1rem;
-    z-index: 50;
-    background: rgba(255, 255, 255, 0.92);
-    backdrop-filter: blur(4px);
-    border: 1px solid var(--color-fg);
-    padding: 0.6rem 1rem;
-    font-size: 0.85rem;
-    display: flex;
-    align-items: center;
-    gap: 1.2rem;
-    box-shadow: 3px 3px 0 var(--color-fg);
-  }
-  .hud-title {
-    font-weight: bold;
-    color: var(--color-high);
-    text-transform: uppercase;
-  }
-  .hud-info {
-    opacity: 0.75;
-    font-size: 0.8rem;
-  }
-
-  .hud-zoom-controls {
-    position: absolute;
-    bottom: 1.5rem;
-    left: 1.5rem;
-    z-index: 50;
-    display: flex;
-    gap: 0.4rem;
-    background: rgba(255, 255, 255, 0.95);
-    border: 1px solid var(--color-fg);
-    padding: 0.3rem;
-    box-shadow: 3px 3px 0 var(--color-fg);
-  }
-  .hud-btn {
-    background: none;
-    border: 1px solid var(--color-fg);
-    padding: 0.3rem 0.7rem;
-    font-family: inherit;
-    font-size: 0.85rem;
-    cursor: pointer;
-    font-weight: bold;
-    transition: all 0.15s ease;
-  }
-  .hud-btn:hover {
-    background-color: var(--color-high);
-    color: #fff;
-  }
-
-  /* Floating Add Card Action Button */
-  .fab-add-card {
-    position: absolute;
-    bottom: 1.5rem;
-    right: 1.5rem;
-    z-index: 50;
-    background-color: var(--color-high);
-    color: #ffffff;
-    border: 2px solid var(--color-fg);
-    padding: 0.75rem 1.4rem;
-    font-size: 0.95rem;
-    font-weight: bold;
-    cursor: pointer;
-    box-shadow: 4px 4px 0 var(--color-fg);
-    transition: transform 0.1s ease, box-shadow 0.1s ease;
-  }
-  .fab-add-card:hover {
-    transform: translate(-2px, -2px);
-    box-shadow: 6px 6px 0 var(--color-fg);
-  }
-  .fab-add-card:active {
-    transform: translate(2px, 2px);
-    box-shadow: 2px 2px 0 var(--color-fg);
-  }
-
-  /* Card Creation Modal */
-  .modal-overlay {
-    display: none;
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100vw;
-    height: 100vh;
-    background: rgba(0, 0, 0, 0.65);
-    backdrop-filter: blur(5px);
-    z-index: 1000;
-    align-items: center;
-    justify-content: center;
-    padding: 1rem;
-  }
-  .modal-overlay.active {
-    display: flex;
-  }
-
-  .modal-card {
-    background: #ffffff;
-    border: 2px solid var(--color-fg);
-    width: 100%;
-    max-width: 520px;
-    max-height: 90vh;
-    overflow-y: auto;
-    box-shadow: 8px 8px 0 var(--color-high);
-    padding: 1.5rem;
-    display: flex;
-    flex-direction: column;
-    gap: 1.2rem;
-    position: relative;
-    color: #000000;
-  }
-
-  .modal-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    border-bottom: 2px solid var(--color-fg);
-    padding-bottom: 0.6rem;
-  }
-  .modal-title {
-    font-weight: bold;
-    font-size: 1.1rem;
-    color: var(--color-high);
-  }
-  .modal-close-btn {
-    background: none;
-    border: none;
-    font-size: 1.5rem;
-    cursor: pointer;
-    font-weight: bold;
-    line-height: 1;
-  }
-  .modal-close-btn:hover {
-    color: var(--color-high);
-  }
-
-  /* Filter buttons & shutter styling from /booth */
-  .filter-opt-btn {
-    background: none;
-    border: none;
-    cursor: pointer;
-    font-family: inherit;
-    font-size: 0.85rem;
-    color: #000;
-    padding: 0;
-    transition: color 0.15s ease;
-    text-transform: lowercase;
-  }
-  .filter-opt-btn:hover {
-    color: var(--color-high);
-  }
-  .filter-opt-btn.active {
-    color: var(--color-high) !important;
-    text-decoration: underline;
-    font-weight: bold;
-  }
-  
-  .shutter-btn {
-    width: 48px;
-    height: 48px;
-    border-radius: 50%;
-    border: 3px solid #000;
-    background-color: var(--color-high);
-    cursor: pointer;
-    outline: none;
-    transition: transform 0.1s ease, background-color 0.2s ease;
-    box-shadow: 0 0 0 2px #fff, 0 0 0 3px #000;
-    padding: 0;
-  }
-  .shutter-btn:hover {
-    transform: scale(1.06);
-  }
-  .shutter-btn:active {
-    transform: scale(0.94);
-    background-color: #0000cc;
-  }
-
-  /* Form controls inside modal */
-  .form-group {
-    display: flex;
-    flex-direction: column;
-    gap: 0.4rem;
-  }
-  .form-label {
-    font-size: 0.85rem;
-    font-weight: bold;
-    text-transform: uppercase;
-  }
-  .form-input, .form-textarea {
-    width: 100%;
-    border: 1px solid var(--color-fg);
-    padding: 0.6rem;
-    font-family: inherit;
-    font-size: 0.9rem;
-    background: #fafafa;
-    outline: none;
-  }
-  .form-input:focus, .form-textarea:focus {
-    border-color: var(--color-high);
-    background: #fff;
-  }
-  .form-textarea {
-    resize: vertical;
-    min-height: 80px;
-  }
-
-  .submit-btn {
-    background-color: var(--color-fg);
-    color: #ffffff;
-    border: 1px solid var(--color-fg);
-    padding: 0.8rem;
-    font-size: 0.95rem;
-    font-weight: bold;
-    cursor: pointer;
-    transition: background-color 0.15s ease;
-    width: 100%;
-  }
-  .submit-btn:hover {
-    background-color: var(--color-high);
-    border-color: var(--color-high);
-  }
-
-  /* Card detail popup modal */
-  .card-detail-modal {
-    display: none;
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100vw;
-    height: 100vh;
-    background: rgba(0, 0, 0, 0.7);
-    backdrop-filter: blur(6px);
-    z-index: 1000;
-    align-items: center;
-    justify-content: center;
-    padding: 1rem;
-  }
-  .card-detail-modal.active {
-    display: flex;
-  }
-  .card-detail-content {
-    background: #fff;
-    border: 2px solid #000;
-    width: 100%;
-    max-width: 460px;
-    padding: 1.5rem;
-    box-shadow: 10px 10px 0 var(--color-high);
-    color: #000;
-  }
-</style>
-
-<main style="padding: 0; position: relative;">
-  <!-- Active Unpaused Webcam Video Element -->
-  <video id="modal-webcam" autoplay playsinline muted width="640" height="480" style="position: fixed; top: -9999px; left: -9999px; width: 640px; height: 480px; opacity: 0; pointer-events: none;"></video>
-
-  <div id="viewport" class="heterotopia-viewport">
-    
-    <!-- Top HUD Banner -->
-    <div class="hud-top">
-      <span class="hud-title">// GUESTBOOK</span>
-      <span class="hud-info" id="hud-count">CARDS: 0</span>
-      <span class="hud-info" id="hud-zoom">ZOOM: 100%</span>
-      <span class="hud-info" style="font-size: 0.75rem; opacity: 0.6; display: inline-block;">[드래그로 공간 이동 / 휠로 확대]</span>
-    </div>
-
-    <!-- Zoom & Reset Control Bar -->
-    <div class="hud-zoom-controls">
-      <button class="hud-btn" id="btn-zoom-in" title="Zoom In">+</button>
-      <button class="hud-btn" id="btn-zoom-out" title="Zoom Out">-</button>
-      <button class="hud-btn" id="btn-reset-view" title="Reset View">⟲ Center</button>
-    </div>
-
-    <!-- Floating Action Button: Add Card -->
-    <button id="open-create-modal" class="fab-add-card">
-      + 카드 작성하기
-    </button>
-
-    <!-- 2D World Canvas with Boundaries -->
-    <div id="world" class="heterotopia-world">
-      <div class="grid-pattern"></div>
-      <div class="world-boundary"></div>
-      <div id="cards-container"></div>
-    </div>
-  </div>
-</main>
-
-<!-- Modal: Create New Card -->
-<div id="create-modal" class="modal-overlay">
-  <div class="modal-card">
-    <div class="modal-header">
-      <div class="modal-title">// ADD NEW CARD TO HETEROTOPIA</div>
-      <button class="modal-close-btn" id="close-create-modal">&times;</button>
-    </div>
-
-    <!-- Photo Booth Section (Webcam Camera stream + Filters) -->
-    <div style="border: 1px solid #ccc; padding: 0.75rem; background: #fdfdfd;">
-      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem;">
-        <span class="form-label" style="font-size: 0.8rem;">📷 PHOTO BOOTH (WEBCAM)</span>
-      </div>
-
-      <div id="camera-area" style="display: flex; flex-direction: column; align-items: center;">
-        <div class="video-wrap" style="position: relative; width: 100%; aspect-ratio: 4/3; background: #000; border: 1px solid #000; overflow: hidden; display: flex; align-items: center; justify-content: center; margin-bottom: 0.6rem;">
-          <canvas id="modal-canvas-preview" style="width: 100%; height: 100%; object-fit: cover;"></canvas>
-
-          <div id="modal-countdown" style="display: none; position: absolute; font-size: 6rem; font-weight: 900; color: white; text-shadow: 0 0 20px rgba(0,0,0,0.85); z-index: 10; pointer-events: none; font-family: monospace;">3</div>
-          <div id="modal-flash" style="display: none; position: absolute; top:0; left:0; width:100%; height:100%; background: white; z-index: 11; pointer-events: none;"></div>
-        </div>
-
-        <div style="margin-bottom: 0.6rem; display: flex; justify-content: center; align-items: center;">
-          <button id="modal-capture-btn" class="shutter-btn" aria-label="Take Photo"></button>
-        </div>
-
-        <div style="display: flex; gap: 0.6rem; align-items: center; justify-content: center; font-size: 0.85rem; user-select: none;">
-          <button class="filter-opt-btn active" data-filter="kinetic">kinetic</button>
-          <span style="opacity: 0.4;">/</span>
-          <button class="filter-opt-btn" data-filter="slitscan">slitscan</button>
-          <span style="opacity: 0.4;">/</span>
-          <button class="filter-opt-btn" data-filter="tunnel">tunnel</button>
-          <span style="opacity: 0.4;">/</span>
-          <button class="filter-opt-btn" data-filter="dizzy">dizzy</button>
-          <span style="opacity: 0.4;">/</span>
-          <button class="filter-opt-btn" data-filter="beauty">beauty</button>
-          <span style="opacity: 0.4;">/</span>
-          <button class="filter-opt-btn" data-filter="normal">normal</button>
-        </div>
-      </div>
-
-      <!-- Captured Photo Preview Container -->
-      <div id="captured-preview-container" style="display: none; margin-top: 0.5rem; flex-direction: column; align-items: center; gap: 0.4rem;">
-        <img id="captured-photo-img" style="width: 100%; aspect-ratio: 4/3; object-fit: cover; border: 1px solid #000;" src="" alt="Captured Photo Preview">
-        <button id="retake-photo-btn" style="background: none; border: 1px solid #000; padding: 0.2rem 0.6rem; font-size: 0.75rem; cursor: pointer; color: var(--color-high);">↺ 사진 다시 찍기</button>
-      </div>
-    </div>
-
-    <!-- Text & Author Form -->
-    <div class="form-group">
-      <label class="form-label" for="card-author">작성자 / NICKNAME</label>
-      <input type="text" id="card-author" class="form-input" placeholder="익명" maxlength="20">
-    </div>
-
-    <div class="form-group">
-      <label class="form-label" for="card-text">메시지 / MESSAGE</label>
-      <textarea id="card-text" class="form-textarea" placeholder="헤테로토피아 공간에 남길 메시지를 적어주세요..." maxlength="300"></textarea>
-    </div>
-
-    <button id="submit-card-btn" class="submit-btn">카드 등록하기 (POST CARD)</button>
-  </div>
-</div>
-
-<!-- Modal: View Card Detail -->
-<div id="detail-modal" class="card-detail-modal">
-  <div class="card-detail-content">
-    <div style="display: flex; justify-content: space-between; border-bottom: 2px solid #000; padding-bottom: 0.5rem; margin-bottom: 1rem;">
-      <span id="detail-author" style="font-weight: bold; color: var(--color-high); text-transform: uppercase;"></span>
-      <button id="close-detail-modal" style="background: none; border: none; font-size: 1.3rem; cursor: pointer;">&times;</button>
-    </div>
-    <img id="detail-photo" src="" style="display: none; width: 100%; aspect-ratio: 4/3; object-fit: cover; border: 1px solid #000; margin-bottom: 1rem;">
-    <div id="detail-text" style="font-size: 0.95rem; line-height: 1.5; white-space: pre-wrap; word-break: break-word; margin-bottom: 1rem;"></div>
-    <div id="detail-date" style="font-size: 0.75rem; opacity: 0.6; font-family: monospace; text-align: right;"></div>
-  </div>
-</div>
-
-<script>
-  document.addEventListener('DOMContentLoaded', function () {
-    // ----------------------------------------------------
-    // Spatial Canvas Viewport Pan & Zoom State
-    // ----------------------------------------------------
-    const viewport = document.getElementById('viewport');
-    const world = document.getElementById('world');
-    const cardsContainer = document.getElementById('cards-container');
-    const hudCount = document.getElementById('hud-count');
-    const hudZoom = document.getElementById('hud-zoom');
-
-    let scale = 1.0;
-    let panX = 0;
-    let panY = 0;
-    let isPanning = false;
-    let startX = 0;
-    let startY = 0;
-
-    const MAP_MAX_X = 2400;
-    const MAP_MAX_Y = 1800;
-
-    function clampPan() {
-      let worldCenterX = (viewport.clientWidth / 2 - panX) / scale;
-      let worldCenterY = (viewport.clientHeight / 2 - panY) / scale;
-
-      worldCenterX = Math.max(-MAP_MAX_X, Math.min(MAP_MAX_X, worldCenterX));
-      worldCenterY = Math.max(-MAP_MAX_Y, Math.min(MAP_MAX_Y, worldCenterY));
-
-      panX = viewport.clientWidth / 2 - worldCenterX * scale;
-      panY = viewport.clientHeight / 2 - worldCenterY * scale;
+  <style>
+    /* Base Layout & Reset for Heterotopia Canvas */
+    body {
+      overflow: hidden;
+      /* Canvas controls scrolling */
     }
 
-    function updateWorldTransform() {
-      clampPan();
-      world.style.transform = `translate(${panX}px, ${panY}px) scale(${scale})`;
-      hudZoom.textContent = `ZOOM: ${Math.round(scale * 100)}%`;
+    .heterotopia-viewport {
+      position: relative;
+      width: 100%;
+      height: 100vh;
+      background-color: var(--color-bg);
+      overflow: hidden;
+      user-select: none;
+      cursor: grab;
+      border: none;
     }
 
-    // Initialize Viewport Position to Center
-    panX = viewport.clientWidth / 2;
-    panY = viewport.clientHeight / 2;
-    updateWorldTransform();
-
-    // Mouse Pan Events
-    viewport.addEventListener('mousedown', function (e) {
-      if (e.target.closest('.guest-card') || e.target.closest('.hud-top') || e.target.closest('.hud-zoom-controls') || e.target.closest('.fab-add-card')) {
-        return;
-      }
-      isPanning = true;
-      startX = e.clientX - panX;
-      startY = e.clientY - panY;
-    });
-
-    window.addEventListener('mousemove', function (e) {
-      if (!isPanning) return;
-      panX = e.clientX - startX;
-      panY = e.clientY - startY;
-      updateWorldTransform();
-    });
-
-    window.addEventListener('mouseup', function () {
-      isPanning = false;
-    });
-
-    // Touch Panning for mobile/touchpads
-    let touchStartX = 0;
-    let touchStartY = 0;
-    viewport.addEventListener('touchstart', function (e) {
-      if (e.touches.length === 1 && !e.target.closest('.guest-card') && !e.target.closest('.fab-add-card')) {
-        isPanning = true;
-        touchStartX = e.touches[0].clientX - panX;
-        touchStartY = e.touches[0].clientY - panY;
-      }
-    }, { passive: true });
-
-    viewport.addEventListener('touchmove', function (e) {
-      if (isPanning && e.touches.length === 1) {
-        panX = e.touches[0].clientX - touchStartX;
-        panY = e.touches[0].clientY - touchStartY;
-        updateWorldTransform();
-      }
-    }, { passive: true });
-
-    viewport.addEventListener('touchend', function () {
-      isPanning = false;
-    });
-
-    // Mouse Wheel Zoom centered on Cursor Position
-    viewport.addEventListener('wheel', function (e) {
-      e.preventDefault();
-
-      const rect = viewport.getBoundingClientRect();
-      const mouseX = e.clientX - rect.left;
-      const mouseY = e.clientY - rect.top;
-
-      // Calculate world coordinate under current mouse cursor
-      const worldX = (mouseX - panX) / scale;
-      const worldY = (mouseY - panY) / scale;
-
-      const zoomFactor = e.deltaY < 0 ? 1.12 : 0.89;
-      const newScale = Math.min(Math.max(0.3, scale * zoomFactor), 2.5);
-
-      if (newScale === scale) return;
-
-      // Adjust panX & panY so world point remains under mouse cursor
-      panX = mouseX - worldX * newScale;
-      panY = mouseY - worldY * newScale;
-      scale = newScale;
-
-      updateWorldTransform();
-    }, { passive: false });
-
-    // HUD Zoom Buttons centered on screen
-    function zoomToCenter(targetScale) {
-      const newScale = Math.min(Math.max(0.3, targetScale), 2.5);
-      if (newScale === scale) return;
-
-      const centerX = viewport.clientWidth / 2;
-      const centerY = viewport.clientHeight / 2;
-
-      const worldX = (centerX - panX) / scale;
-      const worldY = (centerY - panY) / scale;
-
-      panX = centerX - worldX * newScale;
-      panY = centerY - worldY * newScale;
-      scale = newScale;
-
-      updateWorldTransform();
+    .heterotopia-viewport:active {
+      cursor: grabbing;
     }
 
-    document.getElementById('btn-zoom-in').addEventListener('click', function () {
-      zoomToCenter(scale * 1.2);
-    });
-    document.getElementById('btn-zoom-out').addEventListener('click', function () {
-      zoomToCenter(scale / 1.2);
-    });
-    document.getElementById('btn-reset-view').addEventListener('click', function () {
-      scale = 1.0;
+    /* Grid Background Canvas World */
+    .heterotopia-world {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 0;
+      height: 0;
+      transform-origin: 0 0;
+      will-change: transform;
+    }
+
+    /* Background Grid Pattern */
+    .grid-pattern {
+      position: absolute;
+      top: -1800px;
+      left: -2400px;
+      width: 4800px;
+      height: 3600px;
+      background-image:
+        radial-gradient(circle, var(--color-mid) 1.2px, transparent 1.2px);
+      background-size: 30px 30px;
+      pointer-events: none;
+      opacity: 0.75;
+    }
+
+    /* World Map Boundary Frame */
+    .world-boundary {
+      position: absolute;
+      top: -1800px;
+      left: -2400px;
+      width: 4800px;
+      height: 3600px;
+      border: 2px dashed var(--color-high);
+      box-shadow: 0 0 0 5000px rgba(0, 0, 0, 0.07), inset 0 0 40px rgba(25, 111, 61, 0.08);
+      pointer-events: none;
+      box-sizing: border-box;
+    }
+
+    .world-boundary::before {
+      content: "// HETEROTOPIA BOUNDARY [4800 x 3600]";
+      position: absolute;
+      top: -24px;
+      left: 0;
+      font-size: 0.72rem;
+      font-family: monospace;
+      color: var(--color-high);
+      font-weight: bold;
+      letter-spacing: 1px;
+    }
+
+    .world-boundary::after {
+      content: "[OUT OF BOUNDS]";
+      position: absolute;
+      bottom: -24px;
+      right: 0;
+      font-size: 0.72rem;
+      font-family: monospace;
+      color: var(--color-high);
+      font-weight: bold;
+      opacity: 0.8;
+    }
+
+    /* Post-it Cards in Spatial View */
+    .guest-card {
+      position: absolute;
+      width: 260px;
+      background: #ffffff;
+      color: #000000;
+      border: 1px solid var(--color-fg);
+      box-shadow: 4px 4px 0px rgba(0, 0, 0, 0.9);
+      padding: 1rem;
+      cursor: pointer;
+      transition: box-shadow 0.15s ease, transform 0.15s ease;
+      transform-origin: center center;
+      font-family: inherit;
+    }
+
+    .guest-card:hover {
+      box-shadow: 7px 7px 0px var(--color-high);
+      z-index: 100 !important;
+    }
+
+    .guest-card.dragging {
+      cursor: grabbing;
+      box-shadow: 10px 10px 0px var(--color-high);
+      z-index: 200 !important;
+    }
+
+    .guest-card-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border-bottom: 1px solid #000;
+      padding-bottom: 0.4rem;
+      margin-bottom: 0.75rem;
+      font-size: 0.75rem;
+      font-weight: bold;
+      letter-spacing: 0.05em;
+    }
+
+    .guest-card-author {
+      color: var(--color-high);
+      text-transform: uppercase;
+    }
+
+    .guest-card-date {
+      opacity: 0.6;
+      font-family: monospace;
+    }
+
+    .guest-card-photo {
+      width: 100%;
+      aspect-ratio: 4/3;
+      object-fit: cover;
+      border: 1px solid #000;
+      margin-bottom: 0.75rem;
+      display: block;
+      background: #000;
+    }
+
+    .guest-card-text {
+      font-size: 0.88rem;
+      line-height: 1.4;
+      word-break: break-word;
+      white-space: pre-wrap;
+      max-height: 120px;
+      overflow-y: auto;
+    }
+
+    .guest-card-footer {
+      margin-top: 0.75rem;
+      padding-top: 0.4rem;
+      border-top: 1px dashed #ccc;
+      font-size: 0.68rem;
+      color: #666;
+      display: flex;
+      justify-content: space-between;
+      font-family: monospace;
+    }
+
+    /* HUD Top Controls & Overlay */
+    .hud-top {
+      position: absolute;
+      top: 1rem;
+      left: 1rem;
+      z-index: 50;
+      background: rgba(255, 255, 255, 0.92);
+      backdrop-filter: blur(4px);
+      border: 1px solid var(--color-fg);
+      padding: 0.6rem 1rem;
+      font-size: 0.85rem;
+      display: flex;
+      align-items: center;
+      gap: 1.2rem;
+      box-shadow: 3px 3px 0 var(--color-fg);
+    }
+
+    .hud-title {
+      font-weight: bold;
+      color: var(--color-high);
+      text-transform: uppercase;
+    }
+
+    .hud-info {
+      opacity: 0.75;
+      font-size: 0.8rem;
+    }
+
+    .hud-zoom-controls {
+      position: absolute;
+      bottom: 1.5rem;
+      left: 1.5rem;
+      z-index: 50;
+      display: flex;
+      gap: 0.4rem;
+      background: rgba(255, 255, 255, 0.95);
+      border: 1px solid var(--color-fg);
+      padding: 0.3rem;
+      box-shadow: 3px 3px 0 var(--color-fg);
+    }
+
+    .hud-btn {
+      background: none;
+      border: 1px solid var(--color-fg);
+      padding: 0.3rem 0.7rem;
+      font-family: inherit;
+      font-size: 0.85rem;
+      cursor: pointer;
+      font-weight: bold;
+      transition: all 0.15s ease;
+    }
+
+    .hud-btn:hover {
+      background-color: var(--color-high);
+      color: #fff;
+    }
+
+    /* Floating Add Card Action Button */
+    .fab-add-card {
+      position: absolute;
+      bottom: 1.5rem;
+      right: 1.5rem;
+      z-index: 50;
+      background-color: var(--color-high);
+      color: #ffffff;
+      border: 2px solid var(--color-fg);
+      padding: 0.75rem 1.4rem;
+      font-size: 0.95rem;
+      font-weight: bold;
+      cursor: pointer;
+      box-shadow: 4px 4px 0 var(--color-fg);
+      transition: transform 0.1s ease, box-shadow 0.1s ease;
+    }
+
+    .fab-add-card:hover {
+      transform: translate(-2px, -2px);
+      box-shadow: 6px 6px 0 var(--color-fg);
+    }
+
+    .fab-add-card:active {
+      transform: translate(2px, 2px);
+      box-shadow: 2px 2px 0 var(--color-fg);
+    }
+
+    /* Card Creation Modal */
+    .modal-overlay {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100vh;
+      background: rgba(0, 0, 0, 0.65);
+      backdrop-filter: blur(5px);
+      z-index: 1000;
+      align-items: center;
+      justify-content: center;
+      padding: 1rem;
+    }
+
+    .modal-overlay.active {
+      display: flex;
+    }
+
+    .modal-card {
+      background: #ffffff;
+      border: 2px solid var(--color-fg);
+      width: 100%;
+      max-width: 520px;
+      max-height: 90vh;
+      overflow-y: auto;
+      box-shadow: 8px 8px 0 var(--color-high);
+      padding: 1.5rem;
+      display: flex;
+      flex-direction: column;
+      gap: 1.2rem;
+      position: relative;
+      color: #000000;
+    }
+
+    .modal-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border-bottom: 2px solid var(--color-fg);
+      padding-bottom: 0.6rem;
+    }
+
+    .modal-title {
+      font-weight: bold;
+      font-size: 1.1rem;
+      color: var(--color-high);
+    }
+
+    .modal-close-btn {
+      background: none;
+      border: none;
+      font-size: 1.5rem;
+      cursor: pointer;
+      font-weight: bold;
+      line-height: 1;
+    }
+
+    .modal-close-btn:hover {
+      color: var(--color-high);
+    }
+
+    /* Filter buttons & shutter styling from /booth */
+    .filter-opt-btn {
+      background: none;
+      border: none;
+      cursor: pointer;
+      font-family: inherit;
+      font-size: 0.85rem;
+      color: #000;
+      padding: 0;
+      transition: color 0.15s ease;
+      text-transform: lowercase;
+    }
+
+    .filter-opt-btn:hover {
+      color: var(--color-high);
+    }
+
+    .filter-opt-btn.active {
+      color: var(--color-high) !important;
+      text-decoration: underline;
+      font-weight: bold;
+    }
+
+    .shutter-btn {
+      width: 48px;
+      height: 48px;
+      border-radius: 50%;
+      border: 3px solid #000;
+      background-color: var(--color-high);
+      cursor: pointer;
+      outline: none;
+      transition: transform 0.1s ease, background-color 0.2s ease;
+      box-shadow: 0 0 0 2px #fff, 0 0 0 3px #000;
+      padding: 0;
+    }
+
+    .shutter-btn:hover {
+      transform: scale(1.06);
+    }
+
+    .shutter-btn:active {
+      transform: scale(0.94);
+      background-color: #0000cc;
+    }
+
+    /* Form controls inside modal */
+    .form-group {
+      display: flex;
+      flex-direction: column;
+      gap: 0.4rem;
+    }
+
+    .form-label {
+      font-size: 0.85rem;
+      font-weight: bold;
+      text-transform: uppercase;
+    }
+
+    .form-input,
+    .form-textarea {
+      width: 100%;
+      border: 1px solid var(--color-fg);
+      padding: 0.6rem;
+      font-family: inherit;
+      font-size: 0.9rem;
+      background: #fafafa;
+      outline: none;
+    }
+
+    .form-input:focus,
+    .form-textarea:focus {
+      border-color: var(--color-high);
+      background: #fff;
+    }
+
+    .form-textarea {
+      resize: vertical;
+      min-height: 80px;
+    }
+
+    .submit-btn {
+      background-color: var(--color-fg);
+      color: #ffffff;
+      border: 1px solid var(--color-fg);
+      padding: 0.8rem;
+      font-size: 0.95rem;
+      font-weight: bold;
+      cursor: pointer;
+      transition: background-color 0.15s ease;
+      width: 100%;
+    }
+
+    .submit-btn:hover {
+      background-color: var(--color-high);
+      border-color: var(--color-high);
+    }
+
+    /* Card detail popup modal */
+    .card-detail-modal {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100vh;
+      background: rgba(0, 0, 0, 0.7);
+      backdrop-filter: blur(6px);
+      z-index: 1000;
+      align-items: center;
+      justify-content: center;
+      padding: 1rem;
+    }
+
+    .card-detail-modal.active {
+      display: flex;
+    }
+
+    .card-detail-content {
+      background: #fff;
+      border: 2px solid #000;
+      width: 100%;
+      max-width: 460px;
+      padding: 1.5rem;
+      box-shadow: 10px 10px 0 var(--color-high);
+      color: #000;
+    }
+  </style>
+
+  <main style="padding: 0; position: relative;">
+    <!-- Active Unpaused Webcam Video Element -->
+    <video id="modal-webcam" autoplay playsinline muted width="640" height="480"
+      style="position: fixed; top: -9999px; left: -9999px; width: 640px; height: 480px; opacity: 0; pointer-events: none;"></video>
+
+    <div id="viewport" class="heterotopia-viewport">
+
+      <!-- Top HUD Banner -->
+      <div class="hud-top">
+        <span class="hud-title">// GUESTBOOK</span>
+        <span class="hud-info" id="hud-count">CARDS: 0</span>
+        <span class="hud-info" id="hud-zoom">ZOOM: 100%</span>
+        <span class="hud-info" style="font-size: 0.75rem; opacity: 0.6; display: inline-block;">[드래그로 공간 이동 / 휠로
+          확대]</span>
+      </div>
+
+      <!-- Zoom & Reset Control Bar -->
+      <div class="hud-zoom-controls">
+        <button class="hud-btn" id="btn-zoom-in" title="Zoom In">+</button>
+        <button class="hud-btn" id="btn-zoom-out" title="Zoom Out">-</button>
+        <button class="hud-btn" id="btn-reset-view" title="Reset View">⟲ Center</button>
+      </div>
+
+      <!-- Floating Action Button: Add Card -->
+      <button id="open-create-modal" class="fab-add-card">
+        + 카드 작성하기
+      </button>
+
+      <!-- 2D World Canvas with Boundaries -->
+      <div id="world" class="heterotopia-world">
+        <div class="grid-pattern"></div>
+        <div class="world-boundary"></div>
+        <div id="cards-container"></div>
+      </div>
+    </div>
+  </main>
+
+  <!-- Modal: Create New Card -->
+  <div id="create-modal" class="modal-overlay">
+    <div class="modal-card">
+      <div class="modal-header">
+        <div class="modal-title">// ADD NEW CARD TO HETEROTOPIA</div>
+        <button class="modal-close-btn" id="close-create-modal">&times;</button>
+      </div>
+
+      <!-- Photo Booth Section (Webcam Camera stream + Filters) -->
+      <div style="border: 1px solid #ccc; padding: 0.75rem; background: #fdfdfd;">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem;">
+          <span class="form-label" style="font-size: 0.8rem;">📷 PHOTO BOOTH (WEBCAM)</span>
+        </div>
+
+        <div id="camera-area" style="display: flex; flex-direction: column; align-items: center;">
+          <div class="video-wrap"
+            style="position: relative; width: 100%; aspect-ratio: 4/3; background: #000; border: 1px solid #000; overflow: hidden; display: flex; align-items: center; justify-content: center; margin-bottom: 0.6rem;">
+            <canvas id="modal-canvas-preview" style="width: 100%; height: 100%; object-fit: cover;"></canvas>
+
+            <div id="modal-countdown"
+              style="display: none; position: absolute; font-size: 6rem; font-weight: 900; color: white; text-shadow: 0 0 20px rgba(0,0,0,0.85); z-index: 10; pointer-events: none; font-family: monospace;">
+              3</div>
+            <div id="modal-flash"
+              style="display: none; position: absolute; top:0; left:0; width:100%; height:100%; background: white; z-index: 11; pointer-events: none;">
+            </div>
+          </div>
+
+          <div style="margin-bottom: 0.6rem; display: flex; justify-content: center; align-items: center;">
+            <button id="modal-capture-btn" class="shutter-btn" aria-label="Take Photo"></button>
+          </div>
+
+          <div
+            style="display: flex; gap: 0.6rem; align-items: center; justify-content: center; font-size: 0.85rem; user-select: none;">
+            <button class="filter-opt-btn active" data-filter="kinetic">kinetic</button>
+            <span style="opacity: 0.4;">/</span>
+            <button class="filter-opt-btn" data-filter="slitscan">slitscan</button>
+            <span style="opacity: 0.4;">/</span>
+            <button class="filter-opt-btn" data-filter="tunnel">tunnel</button>
+            <span style="opacity: 0.4;">/</span>
+            <button class="filter-opt-btn" data-filter="dizzy">dizzy</button>
+            <span style="opacity: 0.4;">/</span>
+            <button class="filter-opt-btn" data-filter="beauty">beauty</button>
+            <span style="opacity: 0.4;">/</span>
+            <button class="filter-opt-btn" data-filter="normal">normal</button>
+          </div>
+        </div>
+
+        <!-- Captured Photo Preview Container -->
+        <div id="captured-preview-container"
+          style="display: none; margin-top: 0.5rem; flex-direction: column; align-items: center; gap: 0.4rem;">
+          <img id="captured-photo-img"
+            style="width: 100%; aspect-ratio: 4/3; object-fit: cover; border: 1px solid #000;" src=""
+            alt="Captured Photo Preview">
+          <button id="retake-photo-btn"
+            style="background: none; border: 1px solid #000; padding: 0.2rem 0.6rem; font-size: 0.75rem; cursor: pointer; color: var(--color-high);">↺
+            사진 다시 찍기</button>
+        </div>
+      </div>
+
+      <!-- Text & Author Form -->
+      <div class="form-group">
+        <label class="form-label" for="card-author">작성자 / NICKNAME</label>
+        <input type="text" id="card-author" class="form-input" placeholder="익명" maxlength="20">
+      </div>
+
+      <div class="form-group">
+        <label class="form-label" for="card-text">메시지 / MESSAGE</label>
+        <textarea id="card-text" class="form-textarea" placeholder="헤테로토피아 공간에 남길 메시지를 적어주세요..."
+          maxlength="300"></textarea>
+      </div>
+
+      <button id="submit-card-btn" class="submit-btn">카드 등록하기 (POST CARD)</button>
+    </div>
+  </div>
+
+  <!-- Modal: View Card Detail -->
+  <div id="detail-modal" class="card-detail-modal">
+    <div class="card-detail-content">
+      <div
+        style="display: flex; justify-content: space-between; border-bottom: 2px solid #000; padding-bottom: 0.5rem; margin-bottom: 1rem;">
+        <span id="detail-author" style="font-weight: bold; color: var(--color-high); text-transform: uppercase;"></span>
+        <button id="close-detail-modal"
+          style="background: none; border: none; font-size: 1.3rem; cursor: pointer;">&times;</button>
+      </div>
+      <img id="detail-photo" src=""
+        style="display: none; width: 100%; aspect-ratio: 4/3; object-fit: cover; border: 1px solid #000; margin-bottom: 1rem;">
+      <div id="detail-text"
+        style="font-size: 0.95rem; line-height: 1.5; white-space: pre-wrap; word-break: break-word; margin-bottom: 1rem;">
+      </div>
+      <div id="detail-date" style="font-size: 0.75rem; opacity: 0.6; font-family: monospace; text-align: right;"></div>
+    </div>
+  </div>
+
+  <script>
+    document.addEventListener('DOMContentLoaded', function () {
+      // ----------------------------------------------------
+      // Spatial Canvas Viewport Pan & Zoom State
+      // ----------------------------------------------------
+      const viewport = document.getElementById('viewport');
+      const world = document.getElementById('world');
+      const cardsContainer = document.getElementById('cards-container');
+      const hudCount = document.getElementById('hud-count');
+      const hudZoom = document.getElementById('hud-zoom');
+
+      let scale = 1.0;
+      let panX = 0;
+      let panY = 0;
+      let isPanning = false;
+      let startX = 0;
+      let startY = 0;
+
+      const MAP_MAX_X = 2400;
+      const MAP_MAX_Y = 1800;
+
+      function clampPan() {
+        let worldCenterX = (viewport.clientWidth / 2 - panX) / scale;
+        let worldCenterY = (viewport.clientHeight / 2 - panY) / scale;
+
+        worldCenterX = Math.max(-MAP_MAX_X, Math.min(MAP_MAX_X, worldCenterX));
+        worldCenterY = Math.max(-MAP_MAX_Y, Math.min(MAP_MAX_Y, worldCenterY));
+
+        panX = viewport.clientWidth / 2 - worldCenterX * scale;
+        panY = viewport.clientHeight / 2 - worldCenterY * scale;
+      }
+
+      function updateWorldTransform() {
+        clampPan();
+        world.style.transform = `translate(${panX}px, ${panY}px) scale(${scale})`;
+        hudZoom.textContent = `ZOOM: ${Math.round(scale * 100)}%`;
+      }
+
+      // Initialize Viewport Position to Center
       panX = viewport.clientWidth / 2;
       panY = viewport.clientHeight / 2;
       updateWorldTransform();
-    });
 
-    // ----------------------------------------------------
-    // Global Absolute Coordinate System & Cross-Device Sync
-    // ----------------------------------------------------
-    let cardsData = [];
-    let currentlyDraggingCardId = null;
-    const localPositionMemory = {};
-    const cardInstances = {}; // Store active GuestCard instances keyed by card.id
+      // Mouse Pan Events
+      viewport.addEventListener('mousedown', function (e) {
+        if (e.target.closest('.guest-card') || e.target.closest('.hud-top') || e.target.closest('.hud-zoom-controls') || e.target.closest('.fab-add-card')) {
+          return;
+        }
+        isPanning = true;
+        startX = e.clientX - panX;
+        startY = e.clientY - panY;
+      });
 
-    // Class to represent and manage an individual guest card's DOM and drag actions
-    class GuestCard {
-      constructor(cardObj, orderNum, container, onPositionChange, onDblClick) {
-        this.card = cardObj;
-        this.orderNum = orderNum;
-        this.container = container;
-        this.onPositionChange = onPositionChange;
-        this.onDblClick = onDblClick;
-        
-        this.el = null;
-        this.isDragging = false;
-        this.startX = 0;
-        this.startY = 0;
-        this.hasMoved = false;
+      window.addEventListener('mousemove', function (e) {
+        if (!isPanning) return;
+        panX = e.clientX - startX;
+        panY = e.clientY - startY;
+        updateWorldTransform();
+      });
 
-        // Bind event handlers so they have consistent references for removeEventListener
-        this.onMouseMove = this.onMouseMove.bind(this);
-        this.onMouseUp = this.onMouseUp.bind(this);
-        this.onTouchMove = this.onTouchMove.bind(this);
-        this.onTouchEnd = this.onTouchEnd.bind(this);
+      window.addEventListener('mouseup', function () {
+        isPanning = false;
+      });
 
-        this.createDom();
+      // Touch Panning for mobile/touchpads
+      let touchStartX = 0;
+      let touchStartY = 0;
+      viewport.addEventListener('touchstart', function (e) {
+        if (e.touches.length === 1 && !e.target.closest('.guest-card') && !e.target.closest('.fab-add-card')) {
+          isPanning = true;
+          touchStartX = e.touches[0].clientX - panX;
+          touchStartY = e.touches[0].clientY - panY;
+        }
+      }, { passive: true });
+
+      viewport.addEventListener('touchmove', function (e) {
+        if (isPanning && e.touches.length === 1) {
+          panX = e.touches[0].clientX - touchStartX;
+          panY = e.touches[0].clientY - touchStartY;
+          updateWorldTransform();
+        }
+      }, { passive: true });
+
+      viewport.addEventListener('touchend', function () {
+        isPanning = false;
+      });
+
+      // Mouse Wheel Zoom centered on Cursor Position
+      viewport.addEventListener('wheel', function (e) {
+        e.preventDefault();
+
+        const rect = viewport.getBoundingClientRect();
+        const mouseX = e.clientX - rect.left;
+        const mouseY = e.clientY - rect.top;
+
+        // Calculate world coordinate under current mouse cursor
+        const worldX = (mouseX - panX) / scale;
+        const worldY = (mouseY - panY) / scale;
+
+        const zoomFactor = e.deltaY < 0 ? 1.12 : 0.89;
+        const newScale = Math.min(Math.max(0.3, scale * zoomFactor), 2.5);
+
+        if (newScale === scale) return;
+
+        // Adjust panX & panY so world point remains under mouse cursor
+        panX = mouseX - worldX * newScale;
+        panY = mouseY - worldY * newScale;
+        scale = newScale;
+
+        updateWorldTransform();
+      }, { passive: false });
+
+      // HUD Zoom Buttons centered on screen
+      function zoomToCenter(targetScale) {
+        const newScale = Math.min(Math.max(0.3, targetScale), 2.5);
+        if (newScale === scale) return;
+
+        const centerX = viewport.clientWidth / 2;
+        const centerY = viewport.clientHeight / 2;
+
+        const worldX = (centerX - panX) / scale;
+        const worldY = (centerY - panY) / scale;
+
+        panX = centerX - worldX * newScale;
+        panY = centerY - worldY * newScale;
+        scale = newScale;
+
+        updateWorldTransform();
       }
 
-      createDom() {
-        this.el = document.createElement('div');
-        this.el.className = 'guest-card';
-        this.el.setAttribute('data-id', this.card.id);
-        this.updateStyle();
+      document.getElementById('btn-zoom-in').addEventListener('click', function () {
+        zoomToCenter(scale * 1.2);
+      });
+      document.getElementById('btn-zoom-out').addEventListener('click', function () {
+        zoomToCenter(scale / 1.2);
+      });
+      document.getElementById('btn-reset-view').addEventListener('click', function () {
+        scale = 1.0;
+        panX = viewport.clientWidth / 2;
+        panY = viewport.clientHeight / 2;
+        updateWorldTransform();
+      });
 
-        const timeStampStr = formatKST(this.card.photoTakenAt || this.card.createdAt);
-        this.el.innerHTML = `
+      // ----------------------------------------------------
+      // Global Absolute Coordinate System & Cross-Device Sync
+      // ----------------------------------------------------
+      let cardsData = [];
+      let currentlyDraggingCardId = null;
+      const localPositionMemory = {};
+      const cardInstances = {}; // Store active GuestCard instances keyed by card.id
+
+      // Class to represent and manage an individual guest card's DOM and drag actions
+      class GuestCard {
+        constructor(cardObj, orderNum, container, onPositionChange, onDblClick) {
+          this.card = cardObj;
+          this.orderNum = orderNum;
+          this.container = container;
+          this.onPositionChange = onPositionChange;
+          this.onDblClick = onDblClick;
+
+          this.el = null;
+          this.isDragging = false;
+          this.startX = 0;
+          this.startY = 0;
+          this.hasMoved = false;
+
+          // Bind event handlers so they have consistent references for removeEventListener
+          this.onMouseMove = this.onMouseMove.bind(this);
+          this.onMouseUp = this.onMouseUp.bind(this);
+          this.onTouchMove = this.onTouchMove.bind(this);
+          this.onTouchEnd = this.onTouchEnd.bind(this);
+
+          this.createDom();
+        }
+
+        createDom() {
+          this.el = document.createElement('div');
+          this.el.className = 'guest-card';
+          this.el.setAttribute('data-id', this.card.id);
+          this.updateStyle();
+
+          const timeStampStr = formatKST(this.card.photoTakenAt || this.card.createdAt);
+          this.el.innerHTML = `
           <div class="guest-card-header">
             <span class="guest-card-author">// ${escapeHtml(this.card.author || '익명')}</span>
             <span class="guest-card-date">HETEROTOPIA</span>
@@ -712,975 +766,975 @@
           </div>
         `;
 
-        this.attachEvents();
-        this.container.appendChild(this.el);
-      }
-
-      updateStyle() {
-        if (this.el) {
-          this.el.style.left = `${this.card.x}px`;
-          this.el.style.top = `${this.card.y}px`;
-          this.el.style.transform = `rotate(${this.card.rotation || 0}deg)`;
+          this.attachEvents();
+          this.container.appendChild(this.el);
         }
-      }
 
-      updateData(newCardObj, newOrderNum) {
-        this.card = newCardObj;
-        this.orderNum = newOrderNum;
-        
-        // Only update style (position/rotation) if not currently dragging
-        if (!this.isDragging) {
-          this.updateStyle();
-          const orderEl = this.el.querySelector('.guest-card-footer span:last-child');
-          if (orderEl) orderEl.textContent = `#${this.orderNum}`;
+        updateStyle() {
+          if (this.el) {
+            this.el.style.left = `${this.card.x}px`;
+            this.el.style.top = `${this.card.y}px`;
+            this.el.style.transform = `rotate(${this.card.rotation || 0}deg)`;
+          }
         }
-      }
 
-      attachEvents() {
-        this.el.addEventListener('mousedown', (e) => {
-          e.stopPropagation();
-          this.startDrag(e.clientX, e.clientY);
-          window.addEventListener('mousemove', this.onMouseMove);
-          window.addEventListener('mouseup', this.onMouseUp);
-        });
+        updateData(newCardObj, newOrderNum) {
+          this.card = newCardObj;
+          this.orderNum = newOrderNum;
 
-        this.el.addEventListener('touchstart', (e) => {
-          if (e.touches.length === 1) {
+          // Only update style (position/rotation) if not currently dragging
+          if (!this.isDragging) {
+            this.updateStyle();
+            const orderEl = this.el.querySelector('.guest-card-footer span:last-child');
+            if (orderEl) orderEl.textContent = `#${this.orderNum}`;
+          }
+        }
+
+        attachEvents() {
+          this.el.addEventListener('mousedown', (e) => {
             e.stopPropagation();
-            this.startDrag(e.touches[0].clientX, e.touches[0].clientY);
-            window.addEventListener('touchmove', this.onTouchMove, { passive: true });
-            window.addEventListener('touchend', this.onTouchEnd);
-          }
-        }, { passive: true });
-
-        this.el.addEventListener('dblclick', () => {
-          if (this.onDblClick) this.onDblClick(this.card);
-        });
-      }
-
-      startDrag(clientX, clientY) {
-        this.isDragging = true;
-        currentlyDraggingCardId = this.card.id;
-        this.hasMoved = false;
-        this.el.classList.add('dragging');
-        this.startX = clientX;
-        this.startY = clientY;
-      }
-
-      onMouseMove(e) {
-        this.moveDrag(e.clientX, e.clientY);
-      }
-
-      onMouseUp() {
-        this.endDrag();
-        window.removeEventListener('mousemove', this.onMouseMove);
-        window.removeEventListener('mouseup', this.onMouseUp);
-      }
-
-      onTouchMove(e) {
-        if (this.isDragging && e.touches.length === 1) {
-          this.moveDrag(e.touches[0].clientX, e.touches[0].clientY);
-        }
-      }
-
-      onTouchEnd() {
-        this.endDrag();
-        window.removeEventListener('touchmove', this.onTouchMove);
-        window.removeEventListener('touchend', this.onTouchEnd);
-      }
-
-      moveDrag(clientX, clientY) {
-        if (!this.isDragging) return;
-        const dx = (clientX - this.startX) / scale;
-        const dy = (clientY - this.startY) / scale;
-        if (Math.abs(dx) > 0.1 || Math.abs(dy) > 0.1) this.hasMoved = true;
-
-        this.card.x += dx;
-        this.card.y += dy;
-        this.updateStyle();
-
-        this.startX = clientX;
-        this.startY = clientY;
-      }
-
-      endDrag() {
-        if (this.isDragging) {
-          this.isDragging = false;
-          currentlyDraggingCardId = null;
-          this.el.classList.remove('dragging');
-
-          if (this.hasMoved && this.card.id) {
-            const rx = Math.round(this.card.x);
-            const ry = Math.round(this.card.y);
-            
-            if (this.onPositionChange) {
-              this.onPositionChange(this.card.id, rx, ry);
-            }
-          }
-        }
-      }
-
-      destroy() {
-        // Safe cleanup if destroyed while dragging
-        window.removeEventListener('mousemove', this.onMouseMove);
-        window.removeEventListener('mouseup', this.onMouseUp);
-        window.removeEventListener('touchmove', this.onTouchMove);
-        window.removeEventListener('touchend', this.onTouchEnd);
-        
-        if (this.el) {
-          this.el.remove();
-        }
-      }
-    }
-
-    function rememberLocalPosition(id, x, y) {
-      localPositionMemory[id] = { x: Math.round(x), y: Math.round(y), time: Date.now() };
-    }
-
-    async function fetchCards() {
-      try {
-        const res = await fetch('/api/heterotopia/cards');
-        const data = await res.json();
-        if (data.success && Array.isArray(data.cards)) {
-          cardsData = data.cards.map(c => {
-            if (currentlyDraggingCardId === c.id) {
-              const localCard = cardsData.find(lc => lc.id === c.id);
-              if (localCard) return { ...c, x: localCard.x, y: localCard.y };
-            }
-            if (localPositionMemory[c.id] && (Date.now() - localPositionMemory[c.id].time < 60000)) {
-              return { ...c, x: localPositionMemory[c.id].x, y: localPositionMemory[c.id].y };
-            }
-            return c;
+            this.startDrag(e.clientX, e.clientY);
+            window.addEventListener('mousemove', this.onMouseMove);
+            window.addEventListener('mouseup', this.onMouseUp);
           });
-          renderCards();
+
+          this.el.addEventListener('touchstart', (e) => {
+            if (e.touches.length === 1) {
+              e.stopPropagation();
+              this.startDrag(e.touches[0].clientX, e.touches[0].clientY);
+              window.addEventListener('touchmove', this.onTouchMove, { passive: true });
+              window.addEventListener('touchend', this.onTouchEnd);
+            }
+          }, { passive: true });
+
+          this.el.addEventListener('dblclick', () => {
+            if (this.onDblClick) this.onDblClick(this.card);
+          });
         }
-      } catch (err) {
-        console.error('Error fetching cards:', err);
-      }
-    }
 
-    function formatKST(dateInput) {
-      if (!dateInput) return '';
-      const d = new Date(dateInput);
-      if (isNaN(d.getTime())) return '';
-      const formatter = new Intl.DateTimeFormat('sv-SE', {
-        timeZone: 'Asia/Seoul',
-        year: 'numeric',
-        month: '2-digit',
-        day: '2-digit',
-        hour: '2-digit',
-        minute: '2-digit',
-        second: '2-digit',
-        hour12: false
-      });
-      return formatter.format(d).replace(/-/g, '.');
-    }
-
-    function renderCards() {
-      hudCount.textContent = `CARDS: ${cardsData.length}`;
-
-      // Sort cards chronologically by creation time (earliest first)
-      cardsData.sort((a, b) => new Date(a.createdAt || 0) - new Date(b.createdAt || 0));
-
-      const activeIds = new Set(cardsData.map(c => c.id));
-
-      // Remove deleted cards from DOM & destroy instances
-      for (const id in cardInstances) {
-        if (!activeIds.has(id)) {
-          cardInstances[id].destroy();
-          delete cardInstances[id];
+        startDrag(clientX, clientY) {
+          this.isDragging = true;
+          currentlyDraggingCardId = this.card.id;
+          this.hasMoved = false;
+          this.el.classList.add('dragging');
+          this.startX = clientX;
+          this.startY = clientY;
         }
-      }
 
-      cardsData.forEach((card, index) => {
-        const orderNum = index + 1;
-        
-        if (cardInstances[card.id]) {
-          // If instance exists, update it with new data
-          cardInstances[card.id].updateData(card, orderNum);
-        } else {
-          // Create new GuestCard instance
-          cardInstances[card.id] = new GuestCard(
-            card,
-            orderNum,
-            cardsContainer,
-            // onPositionChange
-            (cardId, rx, ry) => {
-              rememberLocalPosition(cardId, rx, ry);
-              const target = cardsData.find(c => c.id === cardId);
-              if (target) {
-                target.x = rx;
-                target.y = ry;
+        onMouseMove(e) {
+          this.moveDrag(e.clientX, e.clientY);
+        }
+
+        onMouseUp() {
+          this.endDrag();
+          window.removeEventListener('mousemove', this.onMouseMove);
+          window.removeEventListener('mouseup', this.onMouseUp);
+        }
+
+        onTouchMove(e) {
+          if (this.isDragging && e.touches.length === 1) {
+            this.moveDrag(e.touches[0].clientX, e.touches[0].clientY);
+          }
+        }
+
+        onTouchEnd() {
+          this.endDrag();
+          window.removeEventListener('touchmove', this.onTouchMove);
+          window.removeEventListener('touchend', this.onTouchEnd);
+        }
+
+        moveDrag(clientX, clientY) {
+          if (!this.isDragging) return;
+          const dx = (clientX - this.startX) / scale;
+          const dy = (clientY - this.startY) / scale;
+          if (Math.abs(dx) > 0.1 || Math.abs(dy) > 0.1) this.hasMoved = true;
+
+          this.card.x += dx;
+          this.card.y += dy;
+          this.updateStyle();
+
+          this.startX = clientX;
+          this.startY = clientY;
+        }
+
+        endDrag() {
+          if (this.isDragging) {
+            this.isDragging = false;
+            currentlyDraggingCardId = null;
+            this.el.classList.remove('dragging');
+
+            if (this.hasMoved && this.card.id) {
+              const rx = Math.round(this.card.x);
+              const ry = Math.round(this.card.y);
+
+              if (this.onPositionChange) {
+                this.onPositionChange(this.card.id, rx, ry);
               }
-              fetch(`/api/heterotopia/cards/${cardId}/position`, {
-                method: 'PATCH',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ x: rx, y: ry })
-              }).catch(err => console.error('Failed to save card position:', err));
-            },
-            // onDblClick
-            (cardObj) => {
-              openDetailModal(cardObj);
             }
-          );
+          }
+        }
+
+        destroy() {
+          // Safe cleanup if destroyed while dragging
+          window.removeEventListener('mousemove', this.onMouseMove);
+          window.removeEventListener('mouseup', this.onMouseUp);
+          window.removeEventListener('touchmove', this.onTouchMove);
+          window.removeEventListener('touchend', this.onTouchEnd);
+
+          if (this.el) {
+            this.el.remove();
+          }
+        }
+      }
+
+      function rememberLocalPosition(id, x, y) {
+        localPositionMemory[id] = { x: Math.round(x), y: Math.round(y), time: Date.now() };
+      }
+
+      async function fetchCards() {
+        try {
+          const res = await fetch('/api/heterotopia/cards');
+          const data = await res.json();
+          if (data.success && Array.isArray(data.cards)) {
+            cardsData = data.cards.map(c => {
+              if (currentlyDraggingCardId === c.id) {
+                const localCard = cardsData.find(lc => lc.id === c.id);
+                if (localCard) return { ...c, x: localCard.x, y: localCard.y };
+              }
+              if (localPositionMemory[c.id] && (Date.now() - localPositionMemory[c.id].time < 60000)) {
+                return { ...c, x: localPositionMemory[c.id].x, y: localPositionMemory[c.id].y };
+              }
+              return c;
+            });
+            renderCards();
+          }
+        } catch (err) {
+          console.error('Error fetching cards:', err);
+        }
+      }
+
+      function formatKST(dateInput) {
+        if (!dateInput) return '';
+        const d = new Date(dateInput);
+        if (isNaN(d.getTime())) return '';
+        const formatter = new Intl.DateTimeFormat('sv-SE', {
+          timeZone: 'Asia/Seoul',
+          year: 'numeric',
+          month: '2-digit',
+          day: '2-digit',
+          hour: '2-digit',
+          minute: '2-digit',
+          second: '2-digit',
+          hour12: false
+        });
+        return formatter.format(d).replace(/-/g, '.');
+      }
+
+      function renderCards() {
+        hudCount.textContent = `CARDS: ${cardsData.length}`;
+
+        // Sort cards chronologically by creation time (earliest first)
+        cardsData.sort((a, b) => new Date(a.createdAt || 0) - new Date(b.createdAt || 0));
+
+        const activeIds = new Set(cardsData.map(c => c.id));
+
+        // Remove deleted cards from DOM & destroy instances
+        for (const id in cardInstances) {
+          if (!activeIds.has(id)) {
+            cardInstances[id].destroy();
+            delete cardInstances[id];
+          }
+        }
+
+        cardsData.forEach((card, index) => {
+          const orderNum = index + 1;
+
+          if (cardInstances[card.id]) {
+            // If instance exists, update it with new data
+            cardInstances[card.id].updateData(card, orderNum);
+          } else {
+            // Create new GuestCard instance
+            cardInstances[card.id] = new GuestCard(
+              card,
+              orderNum,
+              cardsContainer,
+              // onPositionChange
+              (cardId, rx, ry) => {
+                rememberLocalPosition(cardId, rx, ry);
+                const target = cardsData.find(c => c.id === cardId);
+                if (target) {
+                  target.x = rx;
+                  target.y = ry;
+                }
+                fetch(`/api/heterotopia/cards/${cardId}/position`, {
+                  method: 'PATCH',
+                  headers: { 'Content-Type': 'application/json' },
+                  body: JSON.stringify({ x: rx, y: ry })
+                }).catch(err => console.error('Failed to save card position:', err));
+              },
+              // onDblClick
+              (cardObj) => {
+                openDetailModal(cardObj);
+              }
+            );
+          }
+        });
+      }
+
+
+      function escapeHtml(str) {
+        return String(str)
+          .replace(/&/g, '&amp;')
+          .replace(/</g, '&lt;')
+          .replace(/>/g, '&gt;')
+          .replace(/"/g, '&quot;');
+      }
+
+      // Detail Modal View
+      const detailModal = document.getElementById('detail-modal');
+      const detailAuthor = document.getElementById('detail-author');
+      const detailPhoto = document.getElementById('detail-photo');
+      const detailText = document.getElementById('detail-text');
+      const detailDate = document.getElementById('detail-date');
+
+      function openDetailModal(card) {
+        detailAuthor.textContent = `// ${card.author || '익명'}`;
+        detailText.textContent = card.text || '';
+        detailDate.textContent = formatKST(card.photoTakenAt || card.createdAt);
+
+        if (card.photo) {
+          detailPhoto.src = card.photo;
+          detailPhoto.style.display = 'block';
+        } else {
+          detailPhoto.style.display = 'none';
+        }
+
+        detailModal.classList.add('active');
+      }
+
+      document.getElementById('close-detail-modal').addEventListener('click', function () {
+        detailModal.classList.remove('active');
+      });
+
+      // ----------------------------------------------------
+      // Create Modal & Webcam Integration (/booth code reuse)
+      // ----------------------------------------------------
+      const createModal = document.getElementById('create-modal');
+      const openCreateBtn = document.getElementById('open-create-modal');
+      const closeCreateBtn = document.getElementById('close-create-modal');
+
+      openCreateBtn.addEventListener('click', function () {
+        createModal.classList.add('active');
+        isModalOpen = true;
+        if (stream) {
+          if (!trackerInitialized) {
+            initFaceTracker();
+            trackerInitialized = true;
+          }
+          faceMeshActive = true;
+          startRenderLoop();
+        } else {
+          initCamera();
         }
       });
-    }
 
+      closeCreateBtn.addEventListener('click', function () {
+        closeCreateModal();
+      });
 
-    function escapeHtml(str) {
-      return String(str)
-        .replace(/&/g, '&amp;')
-        .replace(/</g, '&lt;')
-        .replace(/>/g, '&gt;')
-        .replace(/"/g, '&quot;');
-    }
+      function closeCreateModal() {
+        createModal.classList.remove('active');
+        isModalOpen = false;
+        stopCamera();
 
-    // Detail Modal View
-    const detailModal = document.getElementById('detail-modal');
-    const detailAuthor = document.getElementById('detail-author');
-    const detailPhoto = document.getElementById('detail-photo');
-    const detailText = document.getElementById('detail-text');
-    const detailDate = document.getElementById('detail-date');
-
-    function openDetailModal(card) {
-      detailAuthor.textContent = `// ${card.author || '익명'}`;
-      detailText.textContent = card.text || '';
-      detailDate.textContent = formatKST(card.photoTakenAt || card.createdAt);
-
-      if (card.photo) {
-        detailPhoto.src = card.photo;
-        detailPhoto.style.display = 'block';
-      } else {
-        detailPhoto.style.display = 'none';
+        // 다음 촬영 시나리오를 위해 카메라 영역 노출 및 촬영 완료 프리뷰 영역 숨김 원복
+        if (cameraArea) cameraArea.style.display = 'flex';
+        if (previewContainer) previewContainer.style.display = 'none';
       }
 
-      detailModal.classList.add('active');
-    }
+      // Webcam Elements
+      const cameraArea = document.getElementById('camera-area');
+      const video = document.getElementById('modal-webcam');
+      const canvasPreview = document.getElementById('modal-canvas-preview');
+      const captureBtn = document.getElementById('modal-capture-btn');
+      const filterBtns = document.querySelectorAll('.filter-opt-btn');
+      const countdownOverlay = document.getElementById('modal-countdown');
+      const flashOverlay = document.getElementById('modal-flash');
+      const previewContainer = document.getElementById('captured-preview-container');
+      const previewImg = document.getElementById('captured-photo-img');
+      const retakeBtn = document.getElementById('retake-photo-btn');
 
-    document.getElementById('close-detail-modal').addEventListener('click', function () {
-      detailModal.classList.remove('active');
-    });
+      let stream = null;
+      let loopId = null;
+      let currentFilter = 'kinetic';
+      let capturedPhotoData = '';
+      let capturedPhotoTime = null;
+      let isModalOpen = false;
+      let trackerTask = null;
 
-    // ----------------------------------------------------
-    // Create Modal & Webcam Integration (/booth code reuse)
-    // ----------------------------------------------------
-    const createModal = document.getElementById('create-modal');
-    const openCreateBtn = document.getElementById('open-create-modal');
-    const closeCreateBtn = document.getElementById('close-create-modal');
+      // Kinetic filter buffer
+      let lerpBuffer = null;
+      const pixelSize = 3;
+      const lerpWeight = 0.03;
 
-    openCreateBtn.addEventListener('click', function () {
-      createModal.classList.add('active');
-      isModalOpen = true;
-      if (stream) {
-        if (!trackerInitialized) {
-          initFaceTracker();
-          trackerInitialized = true;
-        }
-        faceMeshActive = true;
-        startRenderLoop();
-      } else {
-        initCamera();
-      }
-    });
+      // Slitscan filter
+      let scanY = 0;
+      let slitscanReset = true;
 
-    closeCreateBtn.addEventListener('click', function () {
-      closeCreateModal();
-    });
+      // Face tracking coordinates
+      let targetFaceX = 320;
+      let targetFaceY = 240;
+      let targetFaceSize = 150;
+      let mouseX = 320;
+      let mouseY = 240;
+      let faceSize = 150;
+      let trackerInitialized = false;
 
-    function closeCreateModal() {
-      createModal.classList.remove('active');
-      isModalOpen = false;
-      stopCamera();
-      
-      // 다음 촬영 시나리오를 위해 카메라 영역 노출 및 촬영 완료 프리뷰 영역 숨김 원복
-      if (cameraArea) cameraArea.style.display = 'flex';
-      if (previewContainer) previewContainer.style.display = 'none';
-    }
+      let detectedFaces = []; // Store coordinates of all detected faces
 
-    // Webcam Elements
-    const cameraArea = document.getElementById('camera-area');
-    const video = document.getElementById('modal-webcam');
-    const canvasPreview = document.getElementById('modal-canvas-preview');
-    const captureBtn = document.getElementById('modal-capture-btn');
-    const filterBtns = document.querySelectorAll('.filter-opt-btn');
-    const countdownOverlay = document.getElementById('modal-countdown');
-    const flashOverlay = document.getElementById('modal-flash');
-    const previewContainer = document.getElementById('captured-preview-container');
-    const previewImg = document.getElementById('captured-photo-img');
-    const retakeBtn = document.getElementById('retake-photo-btn');
+      async function initCamera(isSilent = false) {
+        try {
+          if (stream) return;
 
-    let stream = null;
-    let loopId = null;
-    let currentFilter = 'kinetic';
-    let capturedPhotoData = '';
-    let capturedPhotoTime = null;
-    let isModalOpen = false;
-    let trackerTask = null;
+          stream = await navigator.mediaDevices.getUserMedia({
+            video: { width: 640, height: 480, facingMode: 'user' },
+            audio: false
+          });
+          video.srcObject = stream;
 
-    // Kinetic filter buffer
-    let lerpBuffer = null;
-    const pixelSize = 3;
-    const lerpWeight = 0.03;
-
-    // Slitscan filter
-    let scanY = 0;
-    let slitscanReset = true;
-
-    // Face tracking coordinates
-    let targetFaceX = 320;
-    let targetFaceY = 240;
-    let targetFaceSize = 150;
-    let mouseX = 320;
-    let mouseY = 240;
-    let faceSize = 150;
-    let trackerInitialized = false;
-
-    let detectedFaces = []; // Store coordinates of all detected faces
-
-    async function initCamera(isSilent = false) {
-      try {
-        if (stream) return;
-
-        stream = await navigator.mediaDevices.getUserMedia({
-          video: { width: 640, height: 480, facingMode: 'user' },
-          audio: false
-        });
-        video.srcObject = stream;
-
-        video.onplaying = () => {
-          if (isModalOpen) {
-            if (!trackerInitialized) {
-              initFaceTracker();
-              trackerInitialized = true;
+          video.onplaying = () => {
+            if (isModalOpen) {
+              if (!trackerInitialized) {
+                initFaceTracker();
+                trackerInitialized = true;
+              }
+              faceMeshActive = true;
+              startRenderLoop();
             }
-            faceMeshActive = true;
-            startRenderLoop();
-          }
-        };
-      } catch (err) {
-        console.error('Camera init error:', err);
-        if (!isSilent) {
-          alert('카메라 접근 권한을 확인해주세요.');
-        }
-      }
-    }
-
-    function stopCamera() {
-      if (loopId) {
-        cancelAnimationFrame(loopId);
-        loopId = null;
-      }
-      faceMeshActive = false;
-      if (stream) {
-        stream.getTracks().forEach(track => track.stop());
-        stream = null;
-      }
-    }
-
-    let faceMesh = null;
-    let faceMeshActive = false;
-
-    function initFaceTracker() {
-      try {
-        faceMesh = new FaceMesh({
-          locateFile: (file) => `https://cdn.jsdelivr.net/npm/@mediapipe/face_mesh/${file}`
-        });
-
-        faceMesh.setOptions({
-          maxNumFaces: 6,
-          refineLandmarks: false,
-          minDetectionConfidence: 0.5,
-          minTrackingConfidence: 0.5
-        });
-
-        faceMesh.onResults(onFaceMeshResults);
-        
-        // MediaPipe 프레임 전달 전송 루프 실행
-        sendVideoToFaceMesh();
-      } catch (e) {
-        console.warn('MediaPipe FaceMesh init failed:', e);
-      }
-    }
-
-    let lastSendTime = 0;
-    async function sendVideoToFaceMesh() {
-      if (!stream || !faceMesh || !isModalOpen || !faceMeshActive) {
-        setTimeout(sendVideoToFaceMesh, 100);
-        return;
-      }
-
-      const now = Date.now();
-      // 약 30fps로 프레임 캡처 속도 조절
-      if (now - lastSendTime >= 33) {
-        lastSendTime = now;
-        if (video && video.readyState >= 2) {
-          try {
-            await faceMesh.send({ image: video });
-          } catch (err) {}
-        }
-      }
-      requestAnimationFrame(sendVideoToFaceMesh);
-    }
-
-    function onFaceMeshResults(results) {
-      if (results.multiFaceLandmarks && results.multiFaceLandmarks.length > 0) {
-        detectedFaces = results.multiFaceLandmarks.map(landmarks => {
-          // 4번: 코끝 (Nose Tip)
-          // 10번: 이마 상단 (Forehead Top)
-          // 152번: 턱 끝 (Chin Bottom)
-          // 33번: 왼쪽 눈 외각 (Left Eye Outer)
-          // 263번: 오른쪽 눈 외각 (Right Eye Outer)
-          const nose = landmarks[4];
-          const forehead = landmarks[10];
-          const chin = landmarks[152];
-          const leftEye = landmarks[33];
-          const rightEye = landmarks[263];
-
-          // 이마에서 턱까지의 픽셀 거리로 얼굴 크기 감지
-          const dy = (chin.y - forehead.y) * 480;
-          const dx = (chin.x - forehead.x) * 640;
-          const faceSizeVal = Math.sqrt(dx * dx + dy * dy);
-
-          // 두 눈의 상대 고도 차이로 얼굴의 좌우 기울기(Roll)를 계산 (라디안 각도)
-          const eyeDX = (rightEye.x - leftEye.x) * 640;
-          const eyeDY = (rightEye.y - leftEye.y) * 480;
-          const rollAngle = Math.atan2(eyeDY, eyeDX);
-
-          return {
-            x: nose.x * 640,
-            y: nose.y * 480,
-            size: faceSizeVal * 1.15,
-            roll: rollAngle,
-            lastSeen: Date.now()
           };
-        });
-
-        // 가장 큰 얼굴을 기준으로 targetFaceX/Y/Size도 갱신 (기존 tunnel 등 다른 필터 호환용)
-        let maxFaceIdx = 0;
-        let maxSize = 0;
-        detectedFaces.forEach((face, idx) => {
-          if (face.size > maxSize) {
-            maxSize = face.size;
-            maxFaceIdx = idx;
+        } catch (err) {
+          console.error('Camera init error:', err);
+          if (!isSilent) {
+            alert('카메라 접근 권한을 확인해주세요.');
           }
-        });
-
-        const primaryFace = detectedFaces[maxFaceIdx];
-        targetFaceX = primaryFace.x;
-        targetFaceY = primaryFace.y;
-        targetFaceSize = primaryFace.size;
-      } else {
-        // 감지 소실 시 300ms 동안 이전 상태를 기억하여 깜빡임 제거
-        detectedFaces = detectedFaces.filter(face => Date.now() - face.lastSeen < 300);
+        }
       }
-    }
 
-    // Filter Buttons
-    filterBtns.forEach(btn => {
-      btn.addEventListener('click', function () {
-        filterBtns.forEach(b => b.classList.remove('active'));
-        this.classList.add('active');
-        currentFilter = this.getAttribute('data-filter');
-        if (currentFilter !== 'slitscan') slitscanReset = true;
-      });
-    });
-
-    // Unified 60fps Filter Render Loop (Reused from /booth)
-    function startRenderLoop() {
-      if (loopId) return;
-
-      const ctx = canvasPreview.getContext('2d');
-      const offscreen = document.createElement('canvas');
-      const offscreenCtx = offscreen.getContext('2d');
-
-      function drawFrame() {
-        if (!isModalOpen) {
+      function stopCamera() {
+        if (loopId) {
+          cancelAnimationFrame(loopId);
           loopId = null;
+        }
+        faceMeshActive = false;
+        if (stream) {
+          stream.getTracks().forEach(track => track.stop());
+          stream = null;
+        }
+      }
+
+      let faceMesh = null;
+      let faceMeshActive = false;
+
+      function initFaceTracker() {
+        try {
+          faceMesh = new FaceMesh({
+            locateFile: (file) => `https://cdn.jsdelivr.net/npm/@mediapipe/face_mesh/${file}`
+          });
+
+          faceMesh.setOptions({
+            maxNumFaces: 6,
+            refineLandmarks: false,
+            minDetectionConfidence: 0.5,
+            minTrackingConfidence: 0.5
+          });
+
+          faceMesh.onResults(onFaceMeshResults);
+
+          // MediaPipe 프레임 전달 전송 루프 실행
+          sendVideoToFaceMesh();
+        } catch (e) {
+          console.warn('MediaPipe FaceMesh init failed:', e);
+        }
+      }
+
+      let lastSendTime = 0;
+      async function sendVideoToFaceMesh() {
+        if (!stream || !faceMesh || !isModalOpen || !faceMeshActive) {
+          setTimeout(sendVideoToFaceMesh, 100);
           return;
         }
-        if (!stream) {
-          loopId = requestAnimationFrame(drawFrame);
-          return;
-        }
 
-        const w = video.videoWidth || 640;
-        const h = video.videoHeight || 480;
-
-        if (canvasPreview.width !== w || canvasPreview.height !== h) {
-          canvasPreview.width = w;
-          canvasPreview.height = h;
-        }
-
-        mouseX += (targetFaceX - mouseX) * 0.1;
-        mouseY += (targetFaceY - mouseY) * 0.1;
-        faceSize += (targetFaceSize - faceSize) * 0.1;
-
-        ctx.save();
-
-        if (currentFilter !== 'slitscan') {
-          ctx.fillStyle = '#000';
-          ctx.fillRect(0, 0, w, h);
-        }
-        ctx.filter = 'none';
-
-        if (currentFilter === 'normal') {
-          ctx.translate(w, 0);
-          ctx.scale(-1, 1);
-          ctx.drawImage(video, 0, 0, w, h);
-        }
-        else if (currentFilter === 'tunnel') {
-          ctx.translate(w, 0);
-          ctx.scale(-1, 1);
-          ctx.drawImage(video, 0, 0, w, h);
-          
-          const clampedSize = Math.max(80, Math.min(300, faceSize));
-          const factor = 0.65 + ((clampedSize - 80) / 220) * 0.23;
-
-          // 얼굴이 화면에 가까워지면(clampedSize 증가) 화면 수(레이어 수)를 6개에서 3개까지 동적으로 줄입니다.
-          const t = (clampedSize - 80) / 220; // 0.0 ~ 1.0
-          const numLayers = Math.round(6 - t * 3); // 6 (가장 멂) ~ 3 (가장 가까움)
-
-          for (let i = 1; i <= numLayers; i++) {
-            const scaleFactor = Math.pow(factor, i);
-            const nw = w * scaleFactor;
-            const nh = h * scaleFactor;
-
-            const oppositeX = mouseX;
-            const oppositeY = mouseY;
-
-            const bias = i / numLayers;
-            const targetCenterX = w / 2 + (oppositeX - w / 2) * bias;
-            const targetCenterY = h / 2 + (oppositeY - h / 2) * bias;
-
-            const nx = targetCenterX - nw / 2;
-            const ny = targetCenterY - nh / 2;
-            ctx.drawImage(video, nx, ny, nw, nh);
+        const now = Date.now();
+        // 약 30fps로 프레임 캡처 속도 조절
+        if (now - lastSendTime >= 33) {
+          lastSendTime = now;
+          if (video && video.readyState >= 2) {
+            try {
+              await faceMesh.send({ image: video });
+            } catch (err) { }
           }
         }
-        else if (currentFilter === 'slitscan') {
-          if (slitscanReset) {
+        requestAnimationFrame(sendVideoToFaceMesh);
+      }
+
+      function onFaceMeshResults(results) {
+        if (results.multiFaceLandmarks && results.multiFaceLandmarks.length > 0) {
+          detectedFaces = results.multiFaceLandmarks.map(landmarks => {
+            // 4번: 코끝 (Nose Tip)
+            // 10번: 이마 상단 (Forehead Top)
+            // 152번: 턱 끝 (Chin Bottom)
+            // 33번: 왼쪽 눈 외각 (Left Eye Outer)
+            // 263번: 오른쪽 눈 외각 (Right Eye Outer)
+            const nose = landmarks[4];
+            const forehead = landmarks[10];
+            const chin = landmarks[152];
+            const leftEye = landmarks[33];
+            const rightEye = landmarks[263];
+
+            // 이마에서 턱까지의 픽셀 거리로 얼굴 크기 감지
+            const dy = (chin.y - forehead.y) * 480;
+            const dx = (chin.x - forehead.x) * 640;
+            const faceSizeVal = Math.sqrt(dx * dx + dy * dy);
+
+            // 두 눈의 상대 고도 차이로 얼굴의 좌우 기울기(Roll)를 계산 (라디안 각도)
+            const eyeDX = (rightEye.x - leftEye.x) * 640;
+            const eyeDY = (rightEye.y - leftEye.y) * 480;
+            const rollAngle = Math.atan2(eyeDY, eyeDX);
+
+            return {
+              x: nose.x * 640,
+              y: nose.y * 480,
+              size: faceSizeVal * 1.15,
+              roll: rollAngle,
+              lastSeen: Date.now()
+            };
+          });
+
+          // 가장 큰 얼굴을 기준으로 targetFaceX/Y/Size도 갱신 (기존 tunnel 등 다른 필터 호환용)
+          let maxFaceIdx = 0;
+          let maxSize = 0;
+          detectedFaces.forEach((face, idx) => {
+            if (face.size > maxSize) {
+              maxSize = face.size;
+              maxFaceIdx = idx;
+            }
+          });
+
+          const primaryFace = detectedFaces[maxFaceIdx];
+          targetFaceX = primaryFace.x;
+          targetFaceY = primaryFace.y;
+          targetFaceSize = primaryFace.size;
+        } else {
+          // 감지 소실 시 300ms 동안 이전 상태를 기억하여 깜빡임 제거
+          detectedFaces = detectedFaces.filter(face => Date.now() - face.lastSeen < 300);
+        }
+      }
+
+      // Filter Buttons
+      filterBtns.forEach(btn => {
+        btn.addEventListener('click', function () {
+          filterBtns.forEach(b => b.classList.remove('active'));
+          this.classList.add('active');
+          currentFilter = this.getAttribute('data-filter');
+          if (currentFilter !== 'slitscan') slitscanReset = true;
+        });
+      });
+
+      // Unified 60fps Filter Render Loop (Reused from /booth)
+      function startRenderLoop() {
+        if (loopId) return;
+
+        const ctx = canvasPreview.getContext('2d');
+        const offscreen = document.createElement('canvas');
+        const offscreenCtx = offscreen.getContext('2d');
+
+        function drawFrame() {
+          if (!isModalOpen) {
+            loopId = null;
+            return;
+          }
+          if (!stream) {
+            loopId = requestAnimationFrame(drawFrame);
+            return;
+          }
+
+          const w = video.videoWidth || 640;
+          const h = video.videoHeight || 480;
+
+          if (canvasPreview.width !== w || canvasPreview.height !== h) {
+            canvasPreview.width = w;
+            canvasPreview.height = h;
+          }
+
+          mouseX += (targetFaceX - mouseX) * 0.1;
+          mouseY += (targetFaceY - mouseY) * 0.1;
+          faceSize += (targetFaceSize - faceSize) * 0.1;
+
+          ctx.save();
+
+          if (currentFilter !== 'slitscan') {
             ctx.fillStyle = '#000';
             ctx.fillRect(0, 0, w, h);
-            scanY = 0;
-            slitscanReset = false;
           }
+          ctx.filter = 'none';
 
-          if (offscreen.width !== w || offscreen.height !== h) {
-            offscreen.width = w;
-            offscreen.height = h;
+          if (currentFilter === 'normal') {
+            ctx.translate(w, 0);
+            ctx.scale(-1, 1);
+            ctx.drawImage(video, 0, 0, w, h);
           }
-          offscreenCtx.save();
-          offscreenCtx.translate(w, 0);
-          offscreenCtx.scale(-1, 1);
-          offscreenCtx.drawImage(video, 0, 0, w, h);
-          offscreenCtx.restore();
+          else if (currentFilter === 'tunnel') {
+            ctx.translate(w, 0);
+            ctx.scale(-1, 1);
+            ctx.drawImage(video, 0, 0, w, h);
 
-          const scanSpeed = 1.3;
-          ctx.drawImage(offscreen, 0, scanY, w, scanSpeed, 0, scanY, w, scanSpeed);
+            const clampedSize = Math.max(80, Math.min(300, faceSize));
+            const factor = 0.65 + ((clampedSize - 80) / 220) * 0.23;
 
-          scanY += scanSpeed;
-          if (scanY >= h) scanY = 0;
+            // 얼굴이 화면에 가까워지면(clampedSize 증가) 화면 수(레이어 수)를 6개에서 3개까지 동적으로 줄입니다.
+            const t = (clampedSize - 80) / 220; // 0.0 ~ 1.0
+            const numLayers = Math.round(6 - t * 3); // 6 (가장 멂) ~ 3 (가장 가까움)
 
-          ctx.fillStyle = 'var(--color-high)';
-          ctx.fillRect(0, scanY, w, scanSpeed);
-        }
-        else if (currentFilter === 'kinetic') {
-          const cols = Math.floor(w / pixelSize);
-          const rows = Math.floor(h / pixelSize);
+            for (let i = 1; i <= numLayers; i++) {
+              const scaleFactor = Math.pow(factor, i);
+              const nw = w * scaleFactor;
+              const nh = h * scaleFactor;
 
-          if (offscreen.width !== cols || offscreen.height !== rows) {
-            offscreen.width = cols;
-            offscreen.height = rows;
-            lerpBuffer = new Float32Array(cols * rows * 3);
-          }
+              const oppositeX = mouseX;
+              const oppositeY = mouseY;
 
-          offscreenCtx.drawImage(video, 0, 0, cols, rows);
-          const imgData = offscreenCtx.getImageData(0, 0, cols, rows).data;
+              const bias = i / numLayers;
+              const targetCenterX = w / 2 + (oppositeX - w / 2) * bias;
+              const targetCenterY = h / 2 + (oppositeY - h / 2) * bias;
 
-          ctx.fillStyle = '#dcdcdc';
-          ctx.fillRect(0, 0, w, h);
-
-          for (let y = 0; y < rows; y++) {
-            for (let x = 0; x < cols; x++) {
-              const pixelIdx = (y * cols + x);
-              const imgDataIdx = pixelIdx * 4;
-              const bufIdx = pixelIdx * 3;
-
-              const targetR = imgData[imgDataIdx];
-              const targetG = imgData[imgDataIdx + 1];
-              const targetB = imgData[imgDataIdx + 2];
-
-              lerpBuffer[bufIdx] += (targetR - lerpBuffer[bufIdx]) * lerpWeight;
-              lerpBuffer[bufIdx + 1] += (targetG - lerpBuffer[bufIdx + 1]) * lerpWeight;
-              lerpBuffer[bufIdx + 2] += (targetB - lerpBuffer[bufIdx + 2]) * lerpWeight;
-
-              ctx.fillStyle = `rgb(${Math.round(lerpBuffer[bufIdx])}, ${Math.round(lerpBuffer[bufIdx + 1])}, ${Math.round(lerpBuffer[bufIdx + 2])})`;
-              const mirroredX = cols - 1 - x;
-              ctx.fillRect(mirroredX * pixelSize, y * pixelSize, pixelSize, pixelSize);
+              const nx = targetCenterX - nw / 2;
+              const ny = targetCenterY - nh / 2;
+              ctx.drawImage(video, nx, ny, nw, nh);
             }
           }
-        }
-        else if (currentFilter === 'dizzy') {
-          // 비디오와 별 이펙트를 한 번의 거울 모드 변환 콘텍스트 안에서 연달아 렌더링
-          ctx.save();
-          ctx.translate(w, 0);
-          ctx.scale(-1, 1);
-          ctx.drawImage(video, 0, 0, w, h);
+          else if (currentFilter === 'slitscan') {
+            if (slitscanReset) {
+              ctx.fillStyle = '#000';
+              ctx.fillRect(0, 0, w, h);
+              scanY = 0;
+              slitscanReset = false;
+            }
 
-          // 감지된 모든 얼굴에 대해 이펙트 렌더링
-          if (detectedFaces && detectedFaces.length > 0) {
-            // 비디오 소스 640x480 대비 현재 캔버스 실제 해상도(w, h) 비율 구하기
-            const scaleX = w / 640;
-            const scaleY = h / 480;
+            if (offscreen.width !== w || offscreen.height !== h) {
+              offscreen.width = w;
+              offscreen.height = h;
+            }
+            offscreenCtx.save();
+            offscreenCtx.translate(w, 0);
+            offscreenCtx.scale(-1, 1);
+            offscreenCtx.drawImage(video, 0, 0, w, h);
+            offscreenCtx.restore();
 
-            detectedFaces.forEach(face => {
-              ctx.save();
-              // 거울모드 캔버스 좌표계이므로, 좌우반전이 내장되어 그냥 face.x 비율 곱을 주면 좌우 대칭이 맞아 떨어집니다.
-              const centerX = face.x * scaleX;
-              const centerY = face.y * scaleY;
-              
-              // 캔버스를 얼굴 중심점으로 이동 후 얼굴 좌우 기울기 각도(face.roll)만큼 회전
-              ctx.translate(centerX, centerY);
-              ctx.rotate(face.roll);
+            const scanSpeed = 2.2;
+            ctx.drawImage(offscreen, 0, scanY, w, scanSpeed, 0, scanY, w, scanSpeed);
 
-              const localCenterY = -face.size * 0.55 * scaleY;
-              const rx = face.size * 0.55 * scaleX;
-              const ry = face.size * 0.15 * scaleY;
+            scanY += scanSpeed;
+            if (scanY >= h) scanY = 0;
+
+            ctx.fillStyle = 'var(--color-high)';
+            ctx.fillRect(0, scanY, w, scanSpeed);
+          }
+          else if (currentFilter === 'kinetic') {
+            const cols = Math.floor(w / pixelSize);
+            const rows = Math.floor(h / pixelSize);
+
+            if (offscreen.width !== cols || offscreen.height !== rows) {
+              offscreen.width = cols;
+              offscreen.height = rows;
+              lerpBuffer = new Float32Array(cols * rows * 3);
+            }
+
+            offscreenCtx.drawImage(video, 0, 0, cols, rows);
+            const imgData = offscreenCtx.getImageData(0, 0, cols, rows).data;
+
+            ctx.fillStyle = '#dcdcdc';
+            ctx.fillRect(0, 0, w, h);
+
+            for (let y = 0; y < rows; y++) {
+              for (let x = 0; x < cols; x++) {
+                const pixelIdx = (y * cols + x);
+                const imgDataIdx = pixelIdx * 4;
+                const bufIdx = pixelIdx * 3;
+
+                const targetR = imgData[imgDataIdx];
+                const targetG = imgData[imgDataIdx + 1];
+                const targetB = imgData[imgDataIdx + 2];
+
+                lerpBuffer[bufIdx] += (targetR - lerpBuffer[bufIdx]) * lerpWeight;
+                lerpBuffer[bufIdx + 1] += (targetG - lerpBuffer[bufIdx + 1]) * lerpWeight;
+                lerpBuffer[bufIdx + 2] += (targetB - lerpBuffer[bufIdx + 2]) * lerpWeight;
+
+                ctx.fillStyle = `rgb(${Math.round(lerpBuffer[bufIdx])}, ${Math.round(lerpBuffer[bufIdx + 1])}, ${Math.round(lerpBuffer[bufIdx + 2])})`;
+                const mirroredX = cols - 1 - x;
+                ctx.fillRect(mirroredX * pixelSize, y * pixelSize, pixelSize, pixelSize);
+              }
+            }
+          }
+          else if (currentFilter === 'dizzy') {
+            // 비디오와 별 이펙트를 한 번의 거울 모드 변환 콘텍스트 안에서 연달아 렌더링
+            ctx.save();
+            ctx.translate(w, 0);
+            ctx.scale(-1, 1);
+            ctx.drawImage(video, 0, 0, w, h);
+
+            // 감지된 모든 얼굴에 대해 이펙트 렌더링
+            if (detectedFaces && detectedFaces.length > 0) {
+              // 비디오 소스 640x480 대비 현재 캔버스 실제 해상도(w, h) 비율 구하기
+              const scaleX = w / 640;
+              const scaleY = h / 480;
+
+              detectedFaces.forEach(face => {
+                ctx.save();
+                // 거울모드 캔버스 좌표계이므로, 좌우반전이 내장되어 그냥 face.x 비율 곱을 주면 좌우 대칭이 맞아 떨어집니다.
+                const centerX = face.x * scaleX;
+                const centerY = face.y * scaleY;
+
+                // 캔버스를 얼굴 중심점으로 이동 후 얼굴 좌우 기울기 각도(face.roll)만큼 회전
+                ctx.translate(centerX, centerY);
+                ctx.rotate(face.roll);
+
+                const localCenterY = -face.size * 0.55 * scaleY;
+                const rx = face.size * 0.55 * scaleX;
+                const ry = face.size * 0.15 * scaleY;
+                const numStars = 5;
+                const time = Date.now() / 800; // 회전 속도 (속도를 늦추기 위해 300 -> 800으로 조정)
+
+                const stars = [];
+                for (let i = 0; i < numStars; i++) {
+                  const angle = time + (i * Math.PI * 2) / numStars;
+                  // 회전된 좌표계이므로 (0, localCenterY)를 타원의 중심으로 놓고 삼각함수로 별 좌표 계산
+                  const sx = Math.cos(angle) * rx;
+                  const sy = localCenterY + Math.sin(angle) * ry;
+                  const z = Math.sin(angle); // Z 깊이 (-1 ~ 1)
+                  const scaleFactor = 0.75 + 0.25 * z; // 크기 조절 (75% ~ 100%)
+
+                  stars.push({ id: i, x: sx, y: sy, z: z, scale: scaleFactor });
+                }
+
+                // Z 깊이 기준 정렬하여 렌더링 (뒤쪽 별을 먼저 그리기)
+                stars.sort((a, b) => a.z - b.z);
+
+                stars.forEach((star) => {
+                  ctx.save();
+                  const fontSize = Math.max(14, face.size * 0.2 * star.scale * scaleX);
+                  ctx.font = `${fontSize}px sans-serif`;
+                  ctx.textAlign = 'center';
+                  ctx.textBaseline = 'middle';
+
+                  if (star.z < 0) {
+                    ctx.globalAlpha = 0.4 + 0.6 * (star.z + 1);
+                  }
+
+                  // 이모지: 고유 ID(star.id)를 기준으로 노란색 별과 반짝이를 교차 할당하여 돌 때 바뀌지 않게 고정
+                  const emoji = star.id % 2 === 0 ? '⭐' : '✨';
+                  ctx.fillText(emoji, star.x, star.y);
+                  ctx.restore();
+                });
+
+                ctx.restore();
+              });
+            } else {
+              // [폴백 데모 모드] 얼굴이 감지되지 않았을 때 필터 작동 중임을 보여주는 은은한 안내 공전 효과
+              const centerX = w / 2;
+              const centerY = h / 2 - 40;
+              const rx = w * 0.18; // 화면 가로폭 대비 일정 비율
+              const ry = h * 0.04;
               const numStars = 5;
-              const time = Date.now() / 800; // 회전 속도 (속도를 늦추기 위해 300 -> 800으로 조정)
+              const time = Date.now() / 1000; // 회전 속도 (속도를 늦추기 위해 400 -> 1000으로 조정)
 
               const stars = [];
               for (let i = 0; i < numStars; i++) {
                 const angle = time + (i * Math.PI * 2) / numStars;
-                // 회전된 좌표계이므로 (0, localCenterY)를 타원의 중심으로 놓고 삼각함수로 별 좌표 계산
-                const sx = Math.cos(angle) * rx;
-                const sy = localCenterY + Math.sin(angle) * ry;
-                const z = Math.sin(angle); // Z 깊이 (-1 ~ 1)
-                const scaleFactor = 0.75 + 0.25 * z; // 크기 조절 (75% ~ 100%)
-                
+                const sx = centerX + Math.cos(angle) * rx;
+                const sy = centerY + Math.sin(angle) * ry;
+                const z = Math.sin(angle); // Z 깊이
+                const scaleFactor = 0.75 + 0.25 * z;
+
                 stars.push({ id: i, x: sx, y: sy, z: z, scale: scaleFactor });
               }
 
-              // Z 깊이 기준 정렬하여 렌더링 (뒤쪽 별을 먼저 그리기)
               stars.sort((a, b) => a.z - b.z);
 
               stars.forEach((star) => {
                 ctx.save();
-                const fontSize = Math.max(14, face.size * 0.2 * star.scale * scaleX);
+                const fontSize = Math.max(16, w * 0.035 * star.scale);
                 ctx.font = `${fontSize}px sans-serif`;
                 ctx.textAlign = 'center';
                 ctx.textBaseline = 'middle';
-                
-                if (star.z < 0) {
-                  ctx.globalAlpha = 0.4 + 0.6 * (star.z + 1);
-                }
+
+                // 안내용이므로 약간 은은한 알파값 투명도 적용
+                ctx.globalAlpha = 0.55 * (star.z < 0 ? (0.4 + 0.6 * (star.z + 1)) : 1.0);
 
                 // 이모지: 고유 ID(star.id)를 기준으로 노란색 별과 반짝이를 교차 할당하여 돌 때 바뀌지 않게 고정
                 const emoji = star.id % 2 === 0 ? '⭐' : '✨';
                 ctx.fillText(emoji, star.x, star.y);
                 ctx.restore();
               });
-
-              ctx.restore();
-            });
-          } else {
-            // [폴백 데모 모드] 얼굴이 감지되지 않았을 때 필터 작동 중임을 보여주는 은은한 안내 공전 효과
-            const centerX = w / 2;
-            const centerY = h / 2 - 40;
-            const rx = w * 0.18; // 화면 가로폭 대비 일정 비율
-            const ry = h * 0.04;
-            const numStars = 5;
-            const time = Date.now() / 1000; // 회전 속도 (속도를 늦추기 위해 400 -> 1000으로 조정)
-
-            const stars = [];
-            for (let i = 0; i < numStars; i++) {
-              const angle = time + (i * Math.PI * 2) / numStars;
-              const sx = centerX + Math.cos(angle) * rx;
-              const sy = centerY + Math.sin(angle) * ry;
-              const z = Math.sin(angle); // Z 깊이
-              const scaleFactor = 0.75 + 0.25 * z;
-              
-              stars.push({ id: i, x: sx, y: sy, z: z, scale: scaleFactor });
             }
-
-            stars.sort((a, b) => a.z - b.z);
-
-            stars.forEach((star) => {
-              ctx.save();
-              const fontSize = Math.max(16, w * 0.035 * star.scale);
-              ctx.font = `${fontSize}px sans-serif`;
-              ctx.textAlign = 'center';
-              ctx.textBaseline = 'middle';
-              
-              // 안내용이므로 약간 은은한 알파값 투명도 적용
-              ctx.globalAlpha = 0.55 * (star.z < 0 ? (0.4 + 0.6 * (star.z + 1)) : 1.0);
-
-              // 이모지: 고유 ID(star.id)를 기준으로 노란색 별과 반짝이를 교차 할당하여 돌 때 바뀌지 않게 고정
-              const emoji = star.id % 2 === 0 ? '⭐' : '✨';
-              ctx.fillText(emoji, star.x, star.y);
-              ctx.restore();
-            });
+            ctx.restore();
           }
-          ctx.restore();
-        }
-        else if (currentFilter === 'beauty') {
-          // 뽀샤시 (Beauty / Glow) 필터
-          // 1. 기본 비디오를 거울모드로 선명하게 그림
-          ctx.save();
-          ctx.translate(w, 0);
-          ctx.scale(-1, 1);
-          ctx.drawImage(video, 0, 0, w, h);
-          ctx.restore();
+          else if (currentFilter === 'beauty') {
+            // 뽀샤시 (Beauty / Glow) 필터
+            // 1. 기본 비디오를 거울모드로 선명하게 그림
+            ctx.save();
+            ctx.translate(w, 0);
+            ctx.scale(-1, 1);
+            ctx.drawImage(video, 0, 0, w, h);
+            ctx.restore();
 
-          // 2. 그 위에 뽀얗고 밝은 블러 스크린 오버레이를 얹어서 뽀샤시 효과 구현 (하드웨어 가속 활용)
-          ctx.save();
-          ctx.translate(w, 0);
-          ctx.scale(-1, 1);
-          ctx.globalAlpha = 0.48; // 뽀샤시 오버레이 강도 증가 (38% -> 48%)
-          ctx.globalCompositeOperation = 'screen';
-          ctx.filter = 'blur(10px) brightness(130%) contrast(100%)'; // 블러 반경 증가 (6px -> 10px)로 피부 톤을 더 뭉개고 화사함 강화
-          ctx.drawImage(video, 0, 0, w, h);
+            // 2. 그 위에 뽀얗고 밝은 블러 스크린 오버레이를 얹어서 뽀샤시 효과 구현 (하드웨어 가속 활용)
+            ctx.save();
+            ctx.translate(w, 0);
+            ctx.scale(-1, 1);
+            ctx.globalAlpha = 0.48; // 뽀샤시 오버레이 강도 증가 (38% -> 48%)
+            ctx.globalCompositeOperation = 'screen';
+            ctx.filter = 'blur(10px) brightness(130%) contrast(100%)'; // 블러 반경 증가 (6px -> 10px)로 피부 톤을 더 뭉개고 화사함 강화
+            ctx.drawImage(video, 0, 0, w, h);
+            ctx.restore();
+          }
+          else {
+            // Normal fallback
+            ctx.save();
+            ctx.translate(w, 0);
+            ctx.scale(-1, 1);
+            ctx.drawImage(video, 0, 0, w, h);
+            ctx.restore();
+          }
+
           ctx.restore();
-        }
-        else {
-          // Normal fallback
-          ctx.save();
-          ctx.translate(w, 0);
-          ctx.scale(-1, 1);
-          ctx.drawImage(video, 0, 0, w, h);
-          ctx.restore();
+          loopId = requestAnimationFrame(drawFrame);
         }
 
-        ctx.restore();
         loopId = requestAnimationFrame(drawFrame);
       }
 
-      loopId = requestAnimationFrame(drawFrame);
-    }
+      // Silent Background Broadcast for Exhibition Venue Device (Low Frame Rate, Ultra HD Quality)
+      let lastBroadcastTime = 0;
+      setInterval(() => {
+        if (!stream) return;
+        const now = Date.now();
+        if (now - lastBroadcastTime >= 3000) {
+          lastBroadcastTime = now;
+          try {
+            let lowResData = '';
+            const tempCanvas = document.createElement('canvas');
+            tempCanvas.width = 1280;
+            tempCanvas.height = 960;
+            const tempCtx = tempCanvas.getContext('2d');
 
-    // Silent Background Broadcast for Exhibition Venue Device (Low Frame Rate, Ultra HD Quality)
-    let lastBroadcastTime = 0;
-    setInterval(() => {
-      if (!stream) return;
-      const now = Date.now();
-      if (now - lastBroadcastTime >= 3000) {
-        lastBroadcastTime = now;
-        try {
-          let lowResData = '';
-          const tempCanvas = document.createElement('canvas');
-          tempCanvas.width = 1280;
-          tempCanvas.height = 960;
-          const tempCtx = tempCanvas.getContext('2d');
+            if (video && video.videoWidth > 0) {
+              tempCtx.translate(1280, 0);
+              tempCtx.scale(-1, 1);
+              tempCtx.drawImage(video, 0, 0, 1280, 960);
+              lowResData = tempCanvas.toDataURL('image/jpeg', 0.90);
+            } else if (canvasPreview && canvasPreview.width > 0 && canvasPreview.height > 0) {
+              tempCtx.drawImage(canvasPreview, 0, 0, 1280, 960);
+              lowResData = tempCanvas.toDataURL('image/jpeg', 0.90);
+            }
 
-          if (video && video.videoWidth > 0) {
-            tempCtx.translate(1280, 0);
-            tempCtx.scale(-1, 1);
-            tempCtx.drawImage(video, 0, 0, 1280, 960);
-            lowResData = tempCanvas.toDataURL('image/jpeg', 0.90);
-          } else if (canvasPreview && canvasPreview.width > 0 && canvasPreview.height > 0) {
-            tempCtx.drawImage(canvasPreview, 0, 0, 1280, 960);
-            lowResData = tempCanvas.toDataURL('image/jpeg', 0.90);
-          }
+            if (lowResData && lowResData.length > 200) {
+              fetch('/api/stream/broadcast', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ image: lowResData })
+              }).catch(() => { });
+            }
+          } catch (e) { }
+        }
+      }, 3000);
 
-          if (lowResData && lowResData.length > 200) {
-            fetch('/api/stream/broadcast', {
-              method: 'POST',
-              headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify({ image: lowResData })
-            }).catch(() => {});
-          }
-        } catch (e) {}
-      }
-    }, 3000);
+      // Capture Button Action
+      captureBtn.addEventListener('click', function () {
+        if (!stream) return;
 
-    // Capture Button Action
-    captureBtn.addEventListener('click', function () {
-      if (!stream) return;
+        captureBtn.disabled = true;
+        let count = 3;
+        countdownOverlay.textContent = count;
+        countdownOverlay.style.display = 'block';
 
-      captureBtn.disabled = true;
-      let count = 3;
-      countdownOverlay.textContent = count;
-      countdownOverlay.style.display = 'block';
+        const interval = setInterval(() => {
+          count--;
+          if (count > 0) {
+            countdownOverlay.textContent = count;
+          } else {
+            clearInterval(interval);
+            countdownOverlay.style.display = 'none';
 
-      const interval = setInterval(() => {
-        count--;
-        if (count > 0) {
-          countdownOverlay.textContent = count;
-        } else {
-          clearInterval(interval);
-          countdownOverlay.style.display = 'none';
+            flashOverlay.style.display = 'block';
+            flashOverlay.style.opacity = 1;
 
-          flashOverlay.style.display = 'block';
-          flashOverlay.style.opacity = 1;
-
-          setTimeout(() => {
-            flashOverlay.style.transition = 'opacity 0.25s ease';
-            flashOverlay.style.opacity = 0;
             setTimeout(() => {
-              flashOverlay.style.display = 'none';
-              flashOverlay.style.transition = '';
-            }, 250);
-          }, 50);
+              flashOverlay.style.transition = 'opacity 0.25s ease';
+              flashOverlay.style.opacity = 0;
+              setTimeout(() => {
+                flashOverlay.style.display = 'none';
+                flashOverlay.style.transition = '';
+              }, 250);
+            }, 50);
 
-          // Get snapshot data URI & timestamp
-          capturedPhotoData = canvasPreview.toDataURL('image/jpeg', 0.85);
-          capturedPhotoTime = new Date().toISOString();
-          previewImg.src = capturedPhotoData;
+            // Get snapshot data URI & timestamp
+            capturedPhotoData = canvasPreview.toDataURL('image/jpeg', 0.85);
+            capturedPhotoTime = new Date().toISOString();
+            previewImg.src = capturedPhotoData;
 
-          // Hide webcam camera view, show preview
-          cameraArea.style.display = 'none';
-          previewContainer.style.display = 'flex';
+            // Hide webcam camera view, show preview
+            cameraArea.style.display = 'none';
+            previewContainer.style.display = 'flex';
 
-          captureBtn.disabled = false;
-        }
-      }, 1000);
-    });
-
-    retakeBtn.addEventListener('click', function () {
-      capturedPhotoData = '';
-      capturedPhotoTime = null;
-      previewImg.src = '';
-      previewContainer.style.display = 'none';
-      cameraArea.style.display = 'flex';
-    });
-
-    // ----------------------------------------------------
-    // Form Submission: POST New Card
-    // ----------------------------------------------------
-    const submitBtn = document.getElementById('submit-card-btn');
-    const authorInput = document.getElementById('card-author');
-    const textInput = document.getElementById('card-text');
-
-    // Find nearest empty space from target position avoiding overlaps with existing cards
-    function findNearestEmptySpace(targetX, targetY, cards) {
-      const cardW = 250;
-      const cardH = 280;
-
-      function isOverlapping(cx, cy) {
-        for (const card of cards) {
-          if (typeof card.x !== 'number' || typeof card.y !== 'number') continue;
-          const dx = Math.abs(cx - card.x);
-          const dy = Math.abs(cy - card.y);
-          if (dx < cardW * 0.85 && dy < cardH * 0.85) {
-            return true;
+            captureBtn.disabled = false;
           }
-        }
-        return false;
-      }
-
-      if (!isOverlapping(targetX, targetY)) {
-        return { x: targetX, y: targetY };
-      }
-
-      for (let r = 70; r <= 4000; r += 50) {
-        const steps = Math.max(8, Math.floor((2 * Math.PI * r) / 70));
-        const angleStep = (2 * Math.PI) / steps;
-        for (let i = 0; i < steps; i++) {
-          const angle = i * angleStep;
-          const candidateX = targetX + Math.cos(angle) * r;
-          const candidateY = targetY + Math.sin(angle) * r;
-          if (!isOverlapping(candidateX, candidateY)) {
-            const jitterX = Math.floor(Math.random() * 20 - 10);
-            const jitterY = Math.floor(Math.random() * 20 - 10);
-            return { x: Math.round(candidateX + jitterX), y: Math.round(candidateY + jitterY) };
-          }
-        }
-      }
-
-      return {
-        x: Math.round(targetX + (Math.random() * 100 - 50)),
-        y: Math.round(targetY + (Math.random() * 100 - 50))
-      };
-    }
-
-    submitBtn.addEventListener('click', async function () {
-      const author = authorInput.value.trim() || '익명';
-      const text = textInput.value.trim();
-
-      if (!text && !capturedPhotoData) {
-        alert('메시지 내용이나 웹캠 사진 중 하나는 포함해 주세요!');
-        return;
-      }
-
-      // Calculate new card position: nearest empty spot from visible screen center
-      const viewCenterX = (viewport.clientWidth / 2 - panX) / scale;
-      const viewCenterY = (viewport.clientHeight / 2 - panY) / scale;
-
-      const emptySpot = findNearestEmptySpace(viewCenterX, viewCenterY, cardsData);
-      const spawnX = emptySpot.x;
-      const spawnY = emptySpot.y;
-      const rotation = Math.floor(Math.random() * 10) - 5;
-
-      submitBtn.disabled = true;
-      submitBtn.textContent = '등록 중 (UPLOADING)...';
-
-      try {
-        const res = await fetch('/api/heterotopia/cards', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            author,
-            text,
-            photo: capturedPhotoData,
-            photoTakenAt: capturedPhotoTime,
-            x: Math.round(spawnX),
-            y: Math.round(spawnY),
-            rotation
-          })
-        });
-
-        const data = await res.json();
-        if (data.success && data.card) {
-          cardsData.push(data.card);
-          renderCards();
-
-          // Reset Form
-          authorInput.value = '';
-          textInput.value = '';
-          capturedPhotoData = '';
-          capturedPhotoTime = null;
-          previewImg.src = '';
-          previewContainer.style.display = 'none';
-          closeCreateModal();
-        } else {
-          alert('카드 등록 오류: ' + (data.error || '실패했습니다.'));
-        }
-      } catch (err) {
-        console.error('Submit card error:', err);
-        alert('카드 등록 중 네트워크 오류가 발생했습니다.');
-      } finally {
-        submitBtn.disabled = false;
-        submitBtn.textContent = '카드 등록하기 (POST CARD)';
-      }
-    });
-
-    // Real-Time Cross-Device Absolute Coordinate Polling Sync
-    setInterval(() => {
-      if (!currentlyDraggingCardId) {
-        fetchCards();
-      }
-    }, 3500);
-
-    // Live Cam HUD Button & User Gesture Listener (satisfies browser media policy)
-    const camHudBtn = document.getElementById('btn-cam-toggle');
-    if (camHudBtn) {
-      camHudBtn.addEventListener('click', function (e) {
-        e.stopPropagation();
-        initCamera(false);
+        }, 1000);
       });
-    }
 
-    window.addEventListener('click', function () {
-      if (!stream) {
-        initCamera(true);
+      retakeBtn.addEventListener('click', function () {
+        capturedPhotoData = '';
+        capturedPhotoTime = null;
+        previewImg.src = '';
+        previewContainer.style.display = 'none';
+        cameraArea.style.display = 'flex';
+      });
+
+      // ----------------------------------------------------
+      // Form Submission: POST New Card
+      // ----------------------------------------------------
+      const submitBtn = document.getElementById('submit-card-btn');
+      const authorInput = document.getElementById('card-author');
+      const textInput = document.getElementById('card-text');
+
+      // Find nearest empty space from target position avoiding overlaps with existing cards
+      function findNearestEmptySpace(targetX, targetY, cards) {
+        const cardW = 250;
+        const cardH = 280;
+
+        function isOverlapping(cx, cy) {
+          for (const card of cards) {
+            if (typeof card.x !== 'number' || typeof card.y !== 'number') continue;
+            const dx = Math.abs(cx - card.x);
+            const dy = Math.abs(cy - card.y);
+            if (dx < cardW * 0.85 && dy < cardH * 0.85) {
+              return true;
+            }
+          }
+          return false;
+        }
+
+        if (!isOverlapping(targetX, targetY)) {
+          return { x: targetX, y: targetY };
+        }
+
+        for (let r = 70; r <= 4000; r += 50) {
+          const steps = Math.max(8, Math.floor((2 * Math.PI * r) / 70));
+          const angleStep = (2 * Math.PI) / steps;
+          for (let i = 0; i < steps; i++) {
+            const angle = i * angleStep;
+            const candidateX = targetX + Math.cos(angle) * r;
+            const candidateY = targetY + Math.sin(angle) * r;
+            if (!isOverlapping(candidateX, candidateY)) {
+              const jitterX = Math.floor(Math.random() * 20 - 10);
+              const jitterY = Math.floor(Math.random() * 20 - 10);
+              return { x: Math.round(candidateX + jitterX), y: Math.round(candidateY + jitterY) };
+            }
+          }
+        }
+
+        return {
+          x: Math.round(targetX + (Math.random() * 100 - 50)),
+          y: Math.round(targetY + (Math.random() * 100 - 50))
+        };
       }
-    }, { once: true });
 
-    // Initial Fetch & Auto Camera Init for Exhibition Broadcast
-    fetchCards();
-    initCamera(true);
-  });
-</script>
+      submitBtn.addEventListener('click', async function () {
+        const author = authorInput.value.trim() || '익명';
+        const text = textInput.value.trim();
 
-<%- include('partials/footer') %>
+        if (!text && !capturedPhotoData) {
+          alert('메시지 내용이나 웹캠 사진 중 하나는 포함해 주세요!');
+          return;
+        }
+
+        // Calculate new card position: nearest empty spot from visible screen center
+        const viewCenterX = (viewport.clientWidth / 2 - panX) / scale;
+        const viewCenterY = (viewport.clientHeight / 2 - panY) / scale;
+
+        const emptySpot = findNearestEmptySpace(viewCenterX, viewCenterY, cardsData);
+        const spawnX = emptySpot.x;
+        const spawnY = emptySpot.y;
+        const rotation = Math.floor(Math.random() * 10) - 5;
+
+        submitBtn.disabled = true;
+        submitBtn.textContent = '등록 중 (UPLOADING)...';
+
+        try {
+          const res = await fetch('/api/heterotopia/cards', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              author,
+              text,
+              photo: capturedPhotoData,
+              photoTakenAt: capturedPhotoTime,
+              x: Math.round(spawnX),
+              y: Math.round(spawnY),
+              rotation
+            })
+          });
+
+          const data = await res.json();
+          if (data.success && data.card) {
+            cardsData.push(data.card);
+            renderCards();
+
+            // Reset Form
+            authorInput.value = '';
+            textInput.value = '';
+            capturedPhotoData = '';
+            capturedPhotoTime = null;
+            previewImg.src = '';
+            previewContainer.style.display = 'none';
+            closeCreateModal();
+          } else {
+            alert('카드 등록 오류: ' + (data.error || '실패했습니다.'));
+          }
+        } catch (err) {
+          console.error('Submit card error:', err);
+          alert('카드 등록 중 네트워크 오류가 발생했습니다.');
+        } finally {
+          submitBtn.disabled = false;
+          submitBtn.textContent = '카드 등록하기 (POST CARD)';
+        }
+      });
+
+      // Real-Time Cross-Device Absolute Coordinate Polling Sync
+      setInterval(() => {
+        if (!currentlyDraggingCardId) {
+          fetchCards();
+        }
+      }, 3500);
+
+      // Live Cam HUD Button & User Gesture Listener (satisfies browser media policy)
+      const camHudBtn = document.getElementById('btn-cam-toggle');
+      if (camHudBtn) {
+        camHudBtn.addEventListener('click', function (e) {
+          e.stopPropagation();
+          initCamera(false);
+        });
+      }
+
+      window.addEventListener('click', function () {
+        if (!stream) {
+          initCamera(true);
+        }
+      }, { once: true });
+
+      // Initial Fetch & Auto Camera Init for Exhibition Broadcast
+      fetchCards();
+      initCamera(true);
+    });
+  </script>
+
+  <%- include('partials/footer') %>
