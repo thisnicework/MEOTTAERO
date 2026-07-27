@@ -1276,7 +1276,7 @@
           offscreenCtx.drawImage(video, 0, 0, w, h);
           offscreenCtx.restore();
 
-          const scanSpeed = 0.8;
+          const scanSpeed = 1.3;
           ctx.drawImage(offscreen, 0, scanY, w, scanSpeed, 0, scanY, w, scanSpeed);
 
           scanY += scanSpeed;
