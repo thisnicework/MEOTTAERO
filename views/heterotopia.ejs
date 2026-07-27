@@ -661,6 +661,172 @@
     let cardsData = [];
     let currentlyDraggingCardId = null;
     const localPositionMemory = {};
+    const cardInstances = {}; // Store active GuestCard instances keyed by card.id
+
+    // Class to represent and manage an individual guest card's DOM and drag actions
+    class GuestCard {
+      constructor(cardObj, orderNum, container, onPositionChange, onDblClick) {
+        this.card = cardObj;
+        this.orderNum = orderNum;
+        this.container = container;
+        this.onPositionChange = onPositionChange;
+        this.onDblClick = onDblClick;
+        
+        this.el = null;
+        this.isDragging = false;
+        this.startX = 0;
+        this.startY = 0;
+        this.hasMoved = false;
+
+        // Bind event handlers so they have consistent references for removeEventListener
+        this.onMouseMove = this.onMouseMove.bind(this);
+        this.onMouseUp = this.onMouseUp.bind(this);
+        this.onTouchMove = this.onTouchMove.bind(this);
+        this.onTouchEnd = this.onTouchEnd.bind(this);
+
+        this.createDom();
+      }
+
+      createDom() {
+        this.el = document.createElement('div');
+        this.el.className = 'guest-card';
+        this.el.setAttribute('data-id', this.card.id);
+        this.updateStyle();
+
+        const timeStampStr = formatKST(this.card.photoTakenAt || this.card.createdAt);
+        this.el.innerHTML = `
+          <div class="guest-card-header">
+            <span class="guest-card-author">// ${escapeHtml(this.card.author || '익명')}</span>
+            <span class="guest-card-date">HETEROTOPIA</span>
+          </div>
+          ${this.card.photo ? `<img class="guest-card-photo" src="${this.card.photo}" alt="Webcam Photo">` : ''}
+          ${this.card.text ? `<div class="guest-card-text">${escapeHtml(this.card.text)}</div>` : ''}
+          <div class="guest-card-footer">
+            <span>${timeStampStr}</span>
+            <span>#${this.orderNum}</span>
+          </div>
+        `;
+
+        this.attachEvents();
+        this.container.appendChild(this.el);
+      }
+
+      updateStyle() {
+        if (this.el) {
+          this.el.style.left = `${this.card.x}px`;
+          this.el.style.top = `${this.card.y}px`;
+          this.el.style.transform = `rotate(${this.card.rotation || 0}deg)`;
+        }
+      }
+
+      updateData(newCardObj, newOrderNum) {
+        this.card = newCardObj;
+        this.orderNum = newOrderNum;
+        
+        // Only update style (position/rotation) if not currently dragging
+        if (!this.isDragging) {
+          this.updateStyle();
+          const orderEl = this.el.querySelector('.guest-card-footer span:last-child');
+          if (orderEl) orderEl.textContent = `#${this.orderNum}`;
+        }
+      }
+
+      attachEvents() {
+        this.el.addEventListener('mousedown', (e) => {
+          e.stopPropagation();
+          this.startDrag(e.clientX, e.clientY);
+          window.addEventListener('mousemove', this.onMouseMove);
+          window.addEventListener('mouseup', this.onMouseUp);
+        });
+
+        this.el.addEventListener('touchstart', (e) => {
+          if (e.touches.length === 1) {
+            e.stopPropagation();
+            this.startDrag(e.touches[0].clientX, e.touches[0].clientY);
+            window.addEventListener('touchmove', this.onTouchMove, { passive: true });
+            window.addEventListener('touchend', this.onTouchEnd);
+          }
+        }, { passive: true });
+
+        this.el.addEventListener('dblclick', () => {
+          if (this.onDblClick) this.onDblClick(this.card);
+        });
+      }
+
+      startDrag(clientX, clientY) {
+        this.isDragging = true;
+        currentlyDraggingCardId = this.card.id;
+        this.hasMoved = false;
+        this.el.classList.add('dragging');
+        this.startX = clientX;
+        this.startY = clientY;
+      }
+
+      onMouseMove(e) {
+        this.moveDrag(e.clientX, e.clientY);
+      }
+
+      onMouseUp() {
+        this.endDrag();
+        window.removeEventListener('mousemove', this.onMouseMove);
+        window.removeEventListener('mouseup', this.onMouseUp);
+      }
+
+      onTouchMove(e) {
+        if (this.isDragging && e.touches.length === 1) {
+          this.moveDrag(e.touches[0].clientX, e.touches[0].clientY);
+        }
+      }
+
+      onTouchEnd() {
+        this.endDrag();
+        window.removeEventListener('touchmove', this.onTouchMove);
+        window.removeEventListener('touchend', this.onTouchEnd);
+      }
+
+      moveDrag(clientX, clientY) {
+        if (!this.isDragging) return;
+        const dx = (clientX - this.startX) / scale;
+        const dy = (clientY - this.startY) / scale;
+        if (Math.abs(dx) > 0.1 || Math.abs(dy) > 0.1) this.hasMoved = true;
+
+        this.card.x += dx;
+        this.card.y += dy;
+        this.updateStyle();
+
+        this.startX = clientX;
+        this.startY = clientY;
+      }
+
+      endDrag() {
+        if (this.isDragging) {
+          this.isDragging = false;
+          currentlyDraggingCardId = null;
+          this.el.classList.remove('dragging');
+
+          if (this.hasMoved && this.card.id) {
+            const rx = Math.round(this.card.x);
+            const ry = Math.round(this.card.y);
+            
+            if (this.onPositionChange) {
+              this.onPositionChange(this.card.id, rx, ry);
+            }
+          }
+        }
+      }
+
+      destroy() {
+        // Safe cleanup if destroyed while dragging
+        window.removeEventListener('mousemove', this.onMouseMove);
+        window.removeEventListener('mouseup', this.onMouseUp);
+        window.removeEventListener('touchmove', this.onTouchMove);
+        window.removeEventListener('touchend', this.onTouchEnd);
+        
+        if (this.el) {
+          this.el.remove();
+        }
+      }
+    }
 
     function rememberLocalPosition(id, x, y) {
       localPositionMemory[id] = { x: Math.round(x), y: Math.round(y), time: Date.now() };
@@ -706,134 +872,56 @@
     }
 
     function renderCards() {
-      cardsContainer.innerHTML = '';
       hudCount.textContent = `CARDS: ${cardsData.length}`;
 
       // Sort cards chronologically by creation time (earliest first)
       cardsData.sort((a, b) => new Date(a.createdAt || 0) - new Date(b.createdAt || 0));
 
+      const activeIds = new Set(cardsData.map(c => c.id));
+
+      // Remove deleted cards from DOM & destroy instances
+      for (const id in cardInstances) {
+        if (!activeIds.has(id)) {
+          cardInstances[id].destroy();
+          delete cardInstances[id];
+        }
+      }
+
       cardsData.forEach((card, index) => {
         const orderNum = index + 1;
-        const cardEl = document.createElement('div');
-        cardEl.className = 'guest-card';
-        cardEl.style.left = `${card.x}px`;
-        cardEl.style.top = `${card.y}px`;
-        cardEl.style.transform = `rotate(${card.rotation || 0}deg)`;
-        cardEl.setAttribute('data-id', card.id);
-
-        const timeStampStr = formatKST(card.photoTakenAt || card.createdAt);
-
-        cardEl.innerHTML = `
-          <div class="guest-card-header">
-            <span class="guest-card-author">// ${escapeHtml(card.author || '익명')}</span>
-            <span class="guest-card-date">HETEROTOPIA</span>
-          </div>
-          ${card.photo ? `<img class="guest-card-photo" src="${card.photo}" alt="Webcam Photo">` : ''}
-          ${card.text ? `<div class="guest-card-text">${escapeHtml(card.text)}</div>` : ''}
-          <div class="guest-card-footer">
-            <span>${timeStampStr}</span>
-            <span>#${orderNum}</span>
-          </div>
-        `;
-
-        // Card Dragging capability inside canvas
-        makeCardDraggable(cardEl, card);
-
-        // Click / Double click card to view detail
-        cardEl.addEventListener('dblclick', function () {
-          openDetailModal(card);
-        });
-
-        cardsContainer.appendChild(cardEl);
-      });
-    }
-
-    function makeCardDraggable(cardEl, cardObj) {
-      let isDraggingCard = false;
-      let cardStartX = 0;
-      let cardStartY = 0;
-      let hasMoved = false;
-
-      function startDrag(clientX, clientY) {
-        isDraggingCard = true;
-        currentlyDraggingCardId = cardObj.id;
-        hasMoved = false;
-        cardEl.classList.add('dragging');
-        cardStartX = clientX;
-        cardStartY = clientY;
-      }
-
-      function moveDrag(clientX, clientY) {
-        if (!isDraggingCard) return;
-        const dx = (clientX - cardStartX) / scale;
-        const dy = (clientY - cardStartY) / scale;
-        if (Math.abs(dx) > 0.1 || Math.abs(dy) > 0.1) hasMoved = true;
-
-        cardObj.x += dx;
-        cardObj.y += dy;
-        cardEl.style.left = `${cardObj.x}px`;
-        cardEl.style.top = `${cardObj.y}px`;
-
-        cardStartX = clientX;
-        cardStartY = clientY;
-      }
-
-      function endDrag() {
-        if (isDraggingCard) {
-          isDraggingCard = false;
-          currentlyDraggingCardId = null;
-          cardEl.classList.remove('dragging');
-
-          if (hasMoved && cardObj.id) {
-            const rx = Math.round(cardObj.x);
-            const ry = Math.round(cardObj.y);
-            rememberLocalPosition(cardObj.id, rx, ry);
-
-            const target = cardsData.find(c => c.id === cardObj.id);
-            if (target) {
-              target.x = rx;
-              target.y = ry;
+        
+        if (cardInstances[card.id]) {
+          // If instance exists, update it with new data
+          cardInstances[card.id].updateData(card, orderNum);
+        } else {
+          // Create new GuestCard instance
+          cardInstances[card.id] = new GuestCard(
+            card,
+            orderNum,
+            cardsContainer,
+            // onPositionChange
+            (cardId, rx, ry) => {
+              rememberLocalPosition(cardId, rx, ry);
+              const target = cardsData.find(c => c.id === cardId);
+              if (target) {
+                target.x = rx;
+                target.y = ry;
+              }
+              fetch(`/api/heterotopia/cards/${cardId}/position`, {
+                method: 'PATCH',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ x: rx, y: ry })
+              }).catch(err => console.error('Failed to save card position:', err));
+            },
+            // onDblClick
+            (cardObj) => {
+              openDetailModal(cardObj);
             }
-
-            fetch(`/api/heterotopia/cards/${cardObj.id}/position`, {
-              method: 'PATCH',
-              headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify({ x: rx, y: ry })
-            }).catch(err => console.error('Failed to save card position:', err));
-          }
+          );
         }
-      }
-
-      cardEl.addEventListener('mousedown', function (e) {
-        e.stopPropagation();
-        startDrag(e.clientX, e.clientY);
-      });
-
-      window.addEventListener('mousemove', function (e) {
-        moveDrag(e.clientX, e.clientY);
-      });
-
-      window.addEventListener('mouseup', function () {
-        endDrag();
-      });
-
-      cardEl.addEventListener('touchstart', function (e) {
-        if (e.touches.length === 1) {
-          e.stopPropagation();
-          startDrag(e.touches[0].clientX, e.touches[0].clientY);
-        }
-      }, { passive: true });
-
-      window.addEventListener('touchmove', function (e) {
-        if (isDraggingCard && e.touches.length === 1) {
-          moveDrag(e.touches[0].clientX, e.touches[0].clientY);
-        }
-      }, { passive: true });
-
-      window.addEventListener('touchend', function () {
-        endDrag();
       });
     }
+
 
     function escapeHtml(str) {
       return String(str)
