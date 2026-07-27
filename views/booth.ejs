@@ -88,10 +88,7 @@
       <button class="filter-opt-btn" data-filter="slitscan">slitscan</button>
       <span style="color: var(--color-mid); font-size: 0.85rem; opacity: 0.5;">/</span>
       <button class="filter-opt-btn" data-filter="tunnel">tunnel <span style="font-size: 0.6rem; opacity: 0.55; vertical-align: super;">beta</span></button>
-      <span style="color: var(--color-mid); font-size: 0.85rem; opacity: 0.5;">/</span>
-      <button class="filter-opt-btn" data-filter="dizzy">dizzy</button>
     </div>
-
   </div>
 
   <!-- Spacer below (takes 60% of vertical space) -->
@@ -131,9 +128,6 @@
     let mouseX = 320;
     let mouseY = 240;
     let faceSize = 150;
-
-    let detectedFaces = []; // Store coordinates of all detected faces
-
 
     // Initialize webcam
     let trackerInitialized = false;
@@ -175,16 +169,7 @@
 
         tracker.on('track', function (event) {
           if (event.data.length > 0) {
-            // Store all detected faces' center coordinates and sizes
-            detectedFaces = event.data.map(face => {
-              return {
-                x: face.x + face.width / 2,
-                y: face.y + face.height / 2,
-                size: face.width
-              };
-            });
-
-            // Find largest face box for single-face effects (like tunnel)
+            // Find largest face box
             let maxFace = event.data[0];
             for (let i = 1; i < event.data.length; i++) {
               if (event.data[i].width * event.data[i].height > maxFace.width * maxFace.height) {
@@ -196,8 +181,6 @@
             targetFaceX = maxFace.x + maxFace.width / 2;
             targetFaceY = maxFace.y + maxFace.height / 2;
             targetFaceSize = maxFace.width;
-          } else {
-            detectedFaces = [];
           }
         });
 
@@ -362,70 +345,6 @@
               ctx.fillRect(mirroredX * pixelSize, y * pixelSize, pixelSize, pixelSize);
             }
           }
-        }
-        else if (currentFilter === 'dizzy') {
-          // 비디오와 별 이펙트를 한 번의 거울 모드 변환 콘텍스트 안에서 연달아 렌더링
-          ctx.save();
-          ctx.translate(w, 0);
-          ctx.scale(-1, 1);
-          ctx.drawImage(video, 0, 0, w, h);
-
-          // 감지된 모든 얼굴에 대해 이펙트 렌더링
-          if (detectedFaces && detectedFaces.length > 0) {
-            // 비디오 소스 640x480 대비 현재 캔버스 실제 해상도(w, h) 비율 구하기
-            const scaleX = w / 640;
-            const scaleY = h / 480;
-
-            detectedFaces.forEach(face => {
-              // 거울모드 캔버스 좌표계이므로, 좌우반전이 내장되어 그냥 face.x 비율 곱을 주면 좌우 대칭이 맞아 떨어집니다.
-              const centerX = face.x * scaleX;
-              const centerY = (face.y - face.size * 0.55) * scaleY;
-              const rx = face.size * 0.55 * scaleX;
-              const ry = face.size * 0.15 * scaleY;
-              const numStars = 4;
-              const time = Date.now() / 300; // 회전 속도
-
-              const stars = [];
-              for (let i = 0; i < numStars; i++) {
-                const angle = time + (i * Math.PI * 2) / numStars;
-                const sx = centerX + Math.cos(angle) * rx;
-                const sy = centerY + Math.sin(angle) * ry;
-                const z = Math.sin(angle); // Z 깊이 (-1 ~ 1)
-                const scaleFactor = 0.75 + 0.25 * z; // 크기 조절 (75% ~ 100%)
-                
-                stars.push({ x: sx, y: sy, z: z, scale: scaleFactor });
-              }
-
-              // Z 깊이 기준 정렬하여 렌더링 (뒤쪽 별을 먼저 그리기)
-              stars.sort((a, b) => a.z - b.z);
-
-              stars.forEach((star, idx) => {
-                ctx.save();
-                const fontSize = Math.max(14, face.size * 0.2 * star.scale * scaleX);
-                ctx.font = `${fontSize}px sans-serif`;
-                ctx.textAlign = 'center';
-                ctx.textBaseline = 'middle';
-                
-                if (star.z < 0) {
-                  ctx.globalAlpha = 0.4 + 0.6 * (star.z + 1);
-                }
-
-                // 이모지: 노란색 별 '⭐' 과 반짝이 '✨' 교차 렌더링
-                const emoji = idx % 2 === 0 ? '⭐' : '✨';
-                ctx.fillText(emoji, star.x, star.y);
-                ctx.restore();
-              });
-            });
-          }
-          ctx.restore();
-        }
-        else {
-          // Normal fallback
-          ctx.save();
-          ctx.translate(w, 0);
-          ctx.scale(-1, 1);
-          ctx.drawImage(video, 0, 0, w, h);
-          ctx.restore();
         }
 
         ctx.restore();
