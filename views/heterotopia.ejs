@@ -1356,11 +1356,10 @@
               ctx.translate(centerX, centerY);
               ctx.rotate(face.roll);
 
-              // 회전된 좌표계 기준으로 머리 정수리 위쪽 위치 및 타원 반경 설정
               const localCenterY = -face.size * 0.55 * scaleY;
               const rx = face.size * 0.55 * scaleX;
               const ry = face.size * 0.15 * scaleY;
-              const numStars = 4;
+              const numStars = 5;
               const time = Date.now() / 800; // 회전 속도 (속도를 늦추기 위해 300 -> 800으로 조정)
 
               const stars = [];
@@ -1372,13 +1371,13 @@
                 const z = Math.sin(angle); // Z 깊이 (-1 ~ 1)
                 const scaleFactor = 0.75 + 0.25 * z; // 크기 조절 (75% ~ 100%)
                 
-                stars.push({ x: sx, y: sy, z: z, scale: scaleFactor });
+                stars.push({ id: i, x: sx, y: sy, z: z, scale: scaleFactor });
               }
 
               // Z 깊이 기준 정렬하여 렌더링 (뒤쪽 별을 먼저 그리기)
               stars.sort((a, b) => a.z - b.z);
 
-              stars.forEach((star, idx) => {
+              stars.forEach((star) => {
                 ctx.save();
                 const fontSize = Math.max(14, face.size * 0.2 * star.scale * scaleX);
                 ctx.font = `${fontSize}px sans-serif`;
@@ -1389,8 +1388,8 @@
                   ctx.globalAlpha = 0.4 + 0.6 * (star.z + 1);
                 }
 
-                // 이모지: 노란색 별 '⭐' 과 반짝이 '✨' 교차 렌더링
-                const emoji = idx % 2 === 0 ? '⭐' : '✨';
+                // 이모지: 고유 ID(star.id)를 기준으로 노란색 별과 반짝이를 교차 할당하여 돌 때 바뀌지 않게 고정
+                const emoji = star.id % 2 === 0 ? '⭐' : '✨';
                 ctx.fillText(emoji, star.x, star.y);
                 ctx.restore();
               });
@@ -1403,7 +1402,7 @@
             const centerY = h / 2 - 40;
             const rx = w * 0.18; // 화면 가로폭 대비 일정 비율
             const ry = h * 0.04;
-            const numStars = 4;
+            const numStars = 5;
             const time = Date.now() / 1000; // 회전 속도 (속도를 늦추기 위해 400 -> 1000으로 조정)
 
             const stars = [];
@@ -1414,12 +1413,12 @@
               const z = Math.sin(angle); // Z 깊이
               const scaleFactor = 0.75 + 0.25 * z;
               
-              stars.push({ x: sx, y: sy, z: z, scale: scaleFactor });
+              stars.push({ id: i, x: sx, y: sy, z: z, scale: scaleFactor });
             }
 
             stars.sort((a, b) => a.z - b.z);
 
-            stars.forEach((star, idx) => {
+            stars.forEach((star) => {
               ctx.save();
               const fontSize = Math.max(16, w * 0.035 * star.scale);
               ctx.font = `${fontSize}px sans-serif`;
@@ -1429,7 +1428,8 @@
               // 안내용이므로 약간 은은한 알파값 투명도 적용
               ctx.globalAlpha = 0.55 * (star.z < 0 ? (0.4 + 0.6 * (star.z + 1)) : 1.0);
 
-              const emoji = idx % 2 === 0 ? '⭐' : '✨';
+              // 이모지: 고유 ID(star.id)를 기준으로 노란색 별과 반짝이를 교차 할당하여 돌 때 바뀌지 않게 고정
+              const emoji = star.id % 2 === 0 ? '⭐' : '✨';
               ctx.fillText(emoji, star.x, star.y);
               ctx.restore();
             });
