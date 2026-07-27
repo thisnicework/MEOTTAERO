@@ -88,7 +88,14 @@
       <button class="filter-opt-btn" data-filter="slitscan">slitscan</button>
       <span style="color: var(--color-mid); font-size: 0.85rem; opacity: 0.5;">/</span>
       <button class="filter-opt-btn" data-filter="tunnel">tunnel <span style="font-size: 0.6rem; opacity: 0.55; vertical-align: super;">beta</span></button>
+      <span style="color: var(--color-mid); font-size: 0.85rem; opacity: 0.5;">/</span>
+      <button class="filter-opt-btn" data-filter="popart">pop art</button>
+      <span style="color: var(--color-mid); font-size: 0.85rem; opacity: 0.5;">/</span>
+      <button class="filter-opt-btn" data-filter="mirror">mirror</button>
+      <span style="color: var(--color-mid); font-size: 0.85rem; opacity: 0.5;">/</span>
+      <button class="filter-opt-btn" data-filter="xray">x-ray</button>
     </div>
+
   </div>
 
   <!-- Spacer below (takes 60% of vertical space) -->
@@ -345,6 +352,79 @@
               ctx.fillRect(mirroredX * pixelSize, y * pixelSize, pixelSize, pixelSize);
             }
           }
+        }
+        else if (currentFilter === 'popart') {
+          // Pop Art 4-split Andy Warhol Style
+          const halfW = w / 2;
+          const halfH = h / 2;
+
+          ctx.save();
+          ctx.translate(w, 0);
+          ctx.scale(-1, 1);
+
+          // 1. Top-Left (Standard / High Contrast)
+          ctx.save();
+          ctx.filter = 'contrast(170%) saturate(180%)';
+          ctx.drawImage(video, halfW, 0, halfW, halfH, 0, 0, halfW, halfH);
+          ctx.restore();
+
+          // 2. Top-Right (Cyan/Blue Tint)
+          ctx.save();
+          ctx.filter = 'contrast(150%) saturate(200%) hue-rotate(90deg)';
+          ctx.drawImage(video, 0, 0, halfW, halfH, halfW, 0, halfW, halfH);
+          ctx.restore();
+
+          // 3. Bottom-Left (Magenta/Pink Tint)
+          ctx.save();
+          ctx.filter = 'contrast(150%) saturate(200%) hue-rotate(180deg)';
+          ctx.drawImage(video, halfW, halfH, halfW, halfH, 0, halfH, halfW, halfH);
+          ctx.restore();
+
+          // 4. Bottom-Right (Greenish Tint)
+          ctx.save();
+          ctx.filter = 'contrast(150%) saturate(200%) hue-rotate(270deg)';
+          ctx.drawImage(video, 0, halfH, halfW, halfH, halfW, halfH, halfW, halfH);
+          ctx.restore();
+
+          ctx.restore();
+        }
+        else if (currentFilter === 'mirror') {
+          // Mirror half-reflection effect
+          if (offscreen.width !== w || offscreen.height !== h) {
+            offscreen.width = w;
+            offscreen.height = h;
+          }
+          offscreenCtx.save();
+          offscreenCtx.translate(w, 0);
+          offscreenCtx.scale(-1, 1);
+          offscreenCtx.drawImage(video, 0, 0, w, h);
+          offscreenCtx.restore();
+
+          ctx.save();
+          // Draw left half normally
+          ctx.drawImage(offscreen, 0, 0, w / 2, h, 0, 0, w / 2, h);
+          // Mirror left half to the right half
+          ctx.translate(w, 0);
+          ctx.scale(-1, 1);
+          ctx.drawImage(offscreen, 0, 0, w / 2, h, 0, 0, w / 2, h);
+          ctx.restore();
+        }
+        else if (currentFilter === 'xray') {
+          // X-Ray blue invert style
+          ctx.save();
+          ctx.translate(w, 0);
+          ctx.scale(-1, 1);
+          ctx.filter = 'grayscale(100%) invert(100%) hue-rotate(180deg) saturate(200%)';
+          ctx.drawImage(video, 0, 0, w, h);
+          ctx.restore();
+        }
+        else {
+          // Normal fallback
+          ctx.save();
+          ctx.translate(w, 0);
+          ctx.scale(-1, 1);
+          ctx.drawImage(video, 0, 0, w, h);
+          ctx.restore();
         }
 
         ctx.restore();
