@@ -132,6 +132,9 @@
     let mouseY = 240;
     let faceSize = 150;
 
+    let detectedFaces = []; // Store coordinates of all detected faces
+
+
     // Initialize webcam
     let trackerInitialized = false;
 
@@ -172,7 +175,16 @@
 
         tracker.on('track', function (event) {
           if (event.data.length > 0) {
-            // Find largest face box
+            // Store all detected faces' center coordinates and sizes
+            detectedFaces = event.data.map(face => {
+              return {
+                x: face.x + face.width / 2,
+                y: face.y + face.height / 2,
+                size: face.width
+              };
+            });
+
+            // Find largest face box for single-face effects (like tunnel)
             let maxFace = event.data[0];
             for (let i = 1; i < event.data.length; i++) {
               if (event.data[i].width * event.data[i].height > maxFace.width * maxFace.height) {
@@ -184,6 +196,8 @@
             targetFaceX = maxFace.x + maxFace.width / 2;
             targetFaceY = maxFace.y + maxFace.height / 2;
             targetFaceSize = maxFace.width;
+          } else {
+            detectedFaces = [];
           }
         });
 
@@ -357,54 +371,54 @@
           ctx.drawImage(video, 0, 0, w, h);
           ctx.restore();
 
-          // 얼굴이 인식된 상태인지 확인
-          if (faceSize > 10) {
-            ctx.save();
-            ctx.translate(w, 0);
-            ctx.scale(-1, 1);
-
-            const centerX = mouseX;
-            const centerY = mouseY - faceSize * 0.55; // 머리 바로 위
-            const rx = faceSize * 0.6; // 타원 X반경
-            const ry = faceSize * 0.18; // 타원 Y반경
-            const numBirds = 5;
-            const time = Date.now() / 400; // 회전 속도
-
-            // Z-index 시뮬레이션을 위한 새 객체 배열
-            const birds = [];
-            for (let i = 0; i < numBirds; i++) {
-              const angle = time + (i * Math.PI * 2) / numBirds;
-              const bx = centerX + Math.cos(angle) * rx;
-              const by = centerY + Math.sin(angle) * ry;
-              
-              // sin(angle)을 Z 깊이로 활용 (-1: 가장 뒤, 1: 가장 앞)
-              const z = Math.sin(angle); 
-              const scaleFactor = 0.75 + 0.25 * z; // 크기 변동 (75% ~ 100%)
-              
-              birds.push({ x: bx, y: by, z: z, scale: scaleFactor });
-            }
-
-            // 깊이(z값) 기준 오름차순 정렬하여 뒤에 있는 새부터 순서대로 렌더링
-            birds.sort((a, b) => a.z - b.z);
-
-            birds.forEach(bird => {
+          // 감지된 모든 얼굴에 대해 이펙트 렌더링
+          if (detectedFaces.length > 0) {
+            detectedFaces.forEach(face => {
               ctx.save();
-              const fontSize = Math.max(16, faceSize * 0.23 * bird.scale);
-              ctx.font = `${fontSize}px sans-serif`;
-              ctx.textAlign = 'center';
-              ctx.textBaseline = 'middle';
-              
-              // 머리 뒤로 도는 느낌(z < 0)을 강조하기 위해 반투명도 조절
-              if (bird.z < 0) {
-                ctx.globalAlpha = 0.45 + 0.55 * (bird.z + 1); // 0.45 ~ 1.0
+              // 거울 반전 모드로 비디오가 그려져 있으므로, 캔버스를 반전시킨 뒤 얼굴 중심 좌표 위에 오버레이를 그립니다.
+              ctx.translate(w, 0);
+              ctx.scale(-1, 1);
+
+              const centerX = face.x;
+              const centerY = face.y - face.size * 0.55; // 머리 바로 위
+              const rx = face.size * 0.55; // 타원 X반경
+              const ry = face.size * 0.15; // 타원 Y반경
+              const numStars = 4;
+              const time = Date.now() / 300; // 회전 속도
+
+              const stars = [];
+              for (let i = 0; i < numStars; i++) {
+                const angle = time + (i * Math.PI * 2) / numStars;
+                const sx = centerX + Math.cos(angle) * rx;
+                const sy = centerY + Math.sin(angle) * ry;
+                const z = Math.sin(angle); // Z 깊이 (-1 ~ 1)
+                const scaleFactor = 0.75 + 0.25 * z; // 크기 조절 (75% ~ 100%)
+                
+                stars.push({ x: sx, y: sy, z: z, scale: scaleFactor });
               }
 
-              // 파란 새 이모지 그리기
-              ctx.fillText('🐦', bird.x, bird.y);
+              // Z 깊이 기준 정렬하여 렌더링
+              stars.sort((a, b) => a.z - b.z);
+
+              stars.forEach((star, idx) => {
+                ctx.save();
+                const fontSize = Math.max(14, face.size * 0.2 * star.scale);
+                ctx.font = `${fontSize}px sans-serif`;
+                ctx.textAlign = 'center';
+                ctx.textBaseline = 'middle';
+                
+                if (star.z < 0) {
+                  ctx.globalAlpha = 0.4 + 0.6 * (star.z + 1);
+                }
+
+                // 이모지: 노란색 별 '⭐' 과 반짝이 '✨' 교차 렌더링
+                const emoji = idx % 2 === 0 ? '⭐' : '✨';
+                ctx.fillText(emoji, star.x, star.y);
+                ctx.restore();
+              });
+
               ctx.restore();
             });
-
-            ctx.restore();
           }
         }
         else {
