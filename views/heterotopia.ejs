@@ -1333,10 +1333,22 @@
             const scanSpeed = 2.2;
             
             // 소수점 픽셀 좌표 안티앨리어싱에 의한 미세한 가로 빗살 틈새(줄무늬)를 방지하기 위해 정수로 맞물림 연산
-            const drawY = Math.floor(scanY);
-            const drawH = Math.floor(scanY + scanSpeed) - drawY;
+            let drawY = Math.floor(scanY);
+            let drawH = Math.floor(scanY + scanSpeed) - drawY;
 
-            ctx.drawImage(offscreen, 0, drawY, w, drawH, 0, drawY, w, drawH);
+            // 소스 이미지 경계 초과로 인한 IndexSizeError 방지를 위해 높이 제한
+            if (drawY + drawH > h) {
+              drawH = h - drawY;
+            }
+
+            // 그리기 높이 및 범위가 유효할 때만 드로잉을 실행하여 크래시 방지
+            if (drawH > 0 && drawY >= 0 && drawY < h) {
+              try {
+                ctx.drawImage(offscreen, 0, drawY, w, drawH, 0, drawY, w, drawH);
+              } catch (e) {
+                console.warn('Slitscan draw error:', e);
+              }
+            }
 
             scanY += scanSpeed;
             if (scanY >= h) scanY = 0;
