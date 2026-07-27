@@ -1331,13 +1331,18 @@
             offscreenCtx.restore();
 
             const scanSpeed = 2.2;
-            ctx.drawImage(offscreen, 0, scanY, w, scanSpeed, 0, scanY, w, scanSpeed);
+            
+            // 소수점 픽셀 좌표 안티앨리어싱에 의한 미세한 가로 빗살 틈새(줄무늬)를 방지하기 위해 정수로 맞물림 연산
+            const drawY = Math.floor(scanY);
+            const drawH = Math.floor(scanY + scanSpeed) - drawY;
+
+            ctx.drawImage(offscreen, 0, drawY, w, drawH, 0, drawY, w, drawH);
 
             scanY += scanSpeed;
             if (scanY >= h) scanY = 0;
 
             ctx.fillStyle = 'var(--color-high)';
-            ctx.fillRect(0, scanY, w, scanSpeed);
+            ctx.fillRect(0, drawY, w, drawH);
           }
           else if (currentFilter === 'kinetic') {
             const cols = Math.floor(w / pixelSize);
