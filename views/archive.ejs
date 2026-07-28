@@ -14,10 +14,11 @@
   .archive-hud {
     display: flex;
     justify-content: space-between;
-    align-items: flex-end;
+    align-items: center;
     margin-bottom: 2.5rem;
     border-bottom: 2px solid var(--color-fg);
     padding-bottom: 1.2rem;
+    gap: 1rem;
   }
   .archive-title {
     font-size: 1.8rem;
@@ -25,6 +26,31 @@
     letter-spacing: -0.5px;
     color: var(--color-fg);
     margin: 0;
+  }
+
+  /* Sort Button */
+  .sort-btn {
+    background: #fff;
+    border: 2px solid var(--color-fg);
+    padding: 0.5rem 1rem;
+    font-family: inherit;
+    font-size: 0.85rem;
+    font-weight: bold;
+    cursor: pointer;
+    box-shadow: 4px 4px 0 rgba(0, 0, 0, 0.9);
+    transition: all 0.12s ease;
+    white-space: nowrap;
+    display: flex;
+    align-items: center;
+    gap: 0.3rem;
+  }
+  .sort-btn:hover {
+    box-shadow: 5px 5px 0 var(--color-high);
+    border-color: var(--color-high);
+  }
+  .sort-btn:active {
+    transform: translate(2px, 2px);
+    box-shadow: 2px 2px 0 var(--color-high);
   }
 
   /* Cards Grid Feed */
@@ -228,6 +254,9 @@
   <!-- Header HUD -->
   <div class="archive-hud">
     <h1 class="archive-title">// HETEROTOPIA ARCHIVE</h1>
+    <button id="sort-toggle-btn" class="sort-btn" data-sort="asc">
+      <span>오래된순</span> <span>↓</span>
+    </button>
   </div>
 
   <!-- Cards Grid Feed -->
@@ -260,8 +289,10 @@
     const photoModalAuthor = document.getElementById('photo-modal-author');
     const photoModalText = document.getElementById('photo-modal-text');
     const photoModalDate = document.getElementById('photo-modal-date');
+    const sortBtn = document.getElementById('sort-toggle-btn');
 
     let allCards = [];
+    let currentSort = 'asc'; // 기본값은 오래된순 (asc)
 
     function formatKST(dateInput) {
       if (!dateInput) return '';
@@ -307,11 +338,11 @@
       // We need chronological sort to determine correct overall order index (#1, #2...)
       const chronoOrdered = [...allCards].sort((a, b) => new Date(a.createdAt || 0) - new Date(b.createdAt || 0));
       
-      // Default to latest first
+      // Sort: asc (oldest first) or desc (latest first)
       const displayCards = [...allCards].sort((a, b) => {
         const timeA = new Date(a.createdAt || 0);
         const timeB = new Date(b.createdAt || 0);
-        return timeB - timeA;
+        return currentSort === 'desc' ? timeB - timeA : timeA - timeB;
       });
 
       grid.innerHTML = '';
@@ -347,6 +378,20 @@
         });
 
         grid.appendChild(cardEl);
+      });
+    }
+
+    // Bind Sort Toggle Button
+    if (sortBtn) {
+      sortBtn.addEventListener('click', function () {
+        if (currentSort === 'desc') {
+          currentSort = 'asc';
+          sortBtn.innerHTML = '<span>오래된순</span> <span>↓</span>';
+        } else {
+          currentSort = 'desc';
+          sortBtn.innerHTML = '<span>최신순</span> <span>↓</span>';
+        }
+        renderArchive();
       });
     }
 
