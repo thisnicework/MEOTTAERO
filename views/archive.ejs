@@ -7,39 +7,173 @@
   .archive-container {
     max-width: 1200px;
     margin: 0 auto;
-    padding: 2rem 1rem 4rem 1rem;
+    padding: 2rem 1.5rem 5rem 1.5rem;
   }
+
+  /* Title & Stats HUD Area */
+  .archive-hud {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-end;
+    margin-bottom: 2rem;
+    border-bottom: 2px solid var(--color-fg);
+    padding-bottom: 1.5rem;
+    gap: 1rem;
+  }
+  .archive-title {
+    font-size: 1.8rem;
+    font-weight: 900;
+    letter-spacing: -0.5px;
+    color: var(--color-fg);
+    margin: 0 0 0.4rem 0;
+  }
+  .archive-subtitle {
+    font-size: 0.88rem;
+    color: #666;
+    margin: 0;
+  }
+  .stats-badge {
+    background: var(--color-fg);
+    color: #fff;
+    border: 1px solid var(--color-fg);
+    padding: 0.5rem 1rem;
+    font-family: monospace;
+    font-size: 0.82rem;
+    box-shadow: 4px 4px 0 var(--color-high);
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    white-space: nowrap;
+  }
+  .stats-badge .divider {
+    opacity: 0.4;
+  }
+
+  /* Search & Controls Section */
+  .archive-controls {
+    display: flex;
+    gap: 1rem;
+    margin-bottom: 2.2rem;
+    align-items: center;
+  }
+  .search-wrap {
+    position: relative;
+    flex-grow: 1;
+  }
+  .search-icon {
+    position: absolute;
+    left: 0.8rem;
+    top: 50%;
+    transform: translateY(-50%);
+    opacity: 0.5;
+    font-size: 0.95rem;
+  }
+  #archive-search {
+    width: 100%;
+    padding: 0.7rem 1rem 0.7rem 2.2rem;
+    border: 2px solid var(--color-fg);
+    font-family: inherit;
+    font-size: 0.95rem;
+    outline: none;
+    box-shadow: 4px 4px 0 rgba(0, 0, 0, 0.9);
+    transition: all 0.12s ease;
+  }
+  #archive-search:focus {
+    border-color: var(--color-high);
+    box-shadow: 5px 5px 0 var(--color-high);
+  }
+  .sort-btn {
+    background: #fff;
+    border: 2px solid var(--color-fg);
+    padding: 0.65rem 1.2rem;
+    font-family: inherit;
+    font-size: 0.9rem;
+    font-weight: bold;
+    cursor: pointer;
+    box-shadow: 4px 4px 0 rgba(0, 0, 0, 0.9);
+    transition: all 0.12s ease;
+    white-space: nowrap;
+    display: flex;
+    align-items: center;
+    gap: 0.3rem;
+  }
+  .sort-btn:hover {
+    box-shadow: 5px 5px 0 var(--color-high);
+    border-color: var(--color-high);
+  }
+  .sort-btn:active {
+    transform: translate(2px, 2px);
+    box-shadow: 2px 2px 0 var(--color-high);
+  }
+
+  /* Cards Grid Feed */
   .archive-grid {
     display: grid;
     grid-template-columns: repeat(4, 1fr);
-    gap: 1.25rem;
+    gap: 1.5rem;
+  }
+
+  @media (max-width: 992px) {
+    .archive-grid {
+      grid-template-columns: repeat(3, 1fr);
+    }
   }
 
   @media (max-width: 768px) {
     .archive-container {
-      padding: 1rem 0.5rem 3rem 0.5rem;
+      padding: 1rem 0.75rem 4rem 0.75rem;
+    }
+    .archive-hud {
+      flex-direction: column;
+      align-items: flex-start;
+      padding-bottom: 1rem;
+      margin-bottom: 1.5rem;
+    }
+    .stats-badge {
+      width: 100%;
+      justify-content: center;
+    }
+    .archive-controls {
+      flex-direction: column;
+      gap: 0.75rem;
+      margin-bottom: 1.8rem;
+    }
+    .search-wrap {
+      width: 100%;
+    }
+    .sort-btn {
+      width: 100%;
+      justify-content: center;
     }
     .archive-grid {
       grid-template-columns: repeat(2, 1fr);
-      gap: 0.6rem;
+      gap: 0.8rem;
     }
     .archive-card {
-      padding: 0.5rem;
+      padding: 0.65rem;
       box-shadow: 3px 3px 0px rgba(0, 0, 0, 0.85);
     }
     .archive-card-header {
-      font-size: 0.68rem;
-      margin-bottom: 0.4rem;
-    }
-    .archive-card-text {
-      font-size: 0.78rem;
+      font-size: 0.7rem;
       margin-bottom: 0.5rem;
     }
+    .archive-card-text {
+      font-size: 0.8rem;
+      margin-bottom: 0.6rem;
+    }
     .archive-card-footer {
-      font-size: 0.62rem;
+      font-size: 0.65rem;
     }
   }
 
+  @media (max-width: 480px) {
+    .archive-grid {
+      grid-template-columns: 1fr;
+      gap: 1rem;
+    }
+  }
+
+  /* Card Component Styling */
   .archive-card {
     background: #ffffff;
     border: 2px solid #000000;
@@ -64,12 +198,14 @@
     padding-bottom: 0.4rem;
     margin-bottom: 0.6rem;
     font-family: monospace;
+    align-items: center;
   }
   .archive-card-badge {
     background: #000;
     color: #fff;
     padding: 0.15rem 0.4rem;
     border-radius: 2px;
+    font-size: 0.7rem;
   }
   .archive-card-photo {
     width: 100%;
@@ -78,6 +214,11 @@
     border: 1px solid #000;
     margin-bottom: 0.6rem;
     cursor: pointer;
+    background: #000;
+    transition: filter 0.15s ease;
+  }
+  .archive-card-photo:hover {
+    filter: brightness(0.9);
   }
   .archive-card-text {
     font-size: 0.85rem;
@@ -97,32 +238,121 @@
     padding-top: 0.4rem;
   }
 
-  /* Photo Modal */
+  /* Photo Detail Popup Modal (Lightbox) */
   .photo-modal {
     display: none;
     position: fixed;
     top: 0; left: 0;
     width: 100vw; height: 100vh;
-    background: rgba(0,0,0,0.85);
-    backdrop-filter: blur(4px);
+    background: rgba(0, 0, 0, 0.75);
+    backdrop-filter: blur(5px);
     z-index: 2000;
     align-items: center;
     justify-content: center;
     padding: 1rem;
   }
-  .photo-modal.active { display: flex; }
+  .photo-modal.active {
+    display: flex;
+  }
+  .photo-modal-content {
+    background: #ffffff;
+    border: 2px solid #000000;
+    padding: 1.5rem;
+    max-width: 580px;
+    width: 100%;
+    position: relative;
+    box-shadow: 10px 10px 0 var(--color-high);
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+    color: #000000;
+    animation: zoomIn 0.18s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  }
+  @keyframes zoomIn {
+    from { transform: scale(0.95); opacity: 0; }
+    to { transform: scale(1); opacity: 1; }
+  }
+  .photo-modal-close {
+    position: absolute;
+    top: 0.5rem;
+    right: 0.75rem;
+    background: none;
+    border: none;
+    font-size: 1.8rem;
+    cursor: pointer;
+    font-weight: bold;
+    color: #000000;
+    z-index: 10;
+    line-height: 1;
+  }
+  .photo-modal-close:hover {
+    color: var(--color-high);
+  }
   .photo-modal-img {
-    max-width: 90vw;
-    max-height: 85vh;
-    border: 2px solid #fff;
-    box-shadow: 0 0 20px rgba(0,0,0,0.8);
+    width: 100%;
+    aspect-ratio: 4/3;
+    object-fit: cover;
+    border: 1px solid #000000;
+    background: #000;
+  }
+  .photo-modal-info {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+  .photo-modal-author {
+    font-weight: bold;
+    font-size: 1.05rem;
+    color: var(--color-high);
+    border-bottom: 1px dashed #ccc;
+    padding-bottom: 0.4rem;
+  }
+  .photo-modal-text {
+    font-size: 0.95rem;
+    line-height: 1.5;
+    white-space: pre-wrap;
+    word-break: break-word;
+  }
+  .photo-modal-date {
+    font-size: 0.75rem;
+    font-family: monospace;
+    opacity: 0.6;
+    text-align: right;
   }
 </style>
 
 <div class="archive-container">
+  <!-- Header HUD -->
+  <div class="archive-hud">
+    <div class="hud-left">
+      <h1 class="archive-title">// HETEROTOPIA ARCHIVE</h1>
+      <p class="archive-subtitle">방주: 헤테로토피아 공간에 남겨진 기록들을 모아둔 아카이브입니다.</p>
+    </div>
+    <div class="hud-right">
+      <div class="stats-badge">
+        <span>CARDS:</span>
+        <strong id="archive-count-sub">0</strong>
+        <span class="divider">/</span>
+        <span>FILTERED:</span>
+        <strong id="archive-count">0</strong>
+      </div>
+    </div>
+  </div>
+
+  <!-- Search & Sort Controls -->
+  <div class="archive-controls">
+    <div class="search-wrap">
+      <span class="search-icon">🔍</span>
+      <input type="text" id="archive-search" placeholder="작성자 닉네임 또는 메시지 검색..." autocomplete="off">
+    </div>
+    <button id="sort-toggle-btn" class="sort-btn" data-sort="desc">
+      <span>최신순</span> <span>↓</span>
+    </button>
+  </div>
+
   <!-- Cards Grid Feed -->
   <div id="archive-grid" class="archive-grid">
-    <div style="grid-column: 1 / -1; text-align: center; padding: 3rem; font-family: monospace; opacity: 0.5;">
+    <div style="grid-column: 1 / -1; text-align: center; padding: 4rem; font-family: monospace; opacity: 0.5;">
       LOADING ARCHIVED CARDS...
     </div>
   </div>
@@ -130,7 +360,15 @@
 
 <!-- Photo Lightbox Modal -->
 <div id="photo-modal" class="photo-modal">
-  <img id="photo-modal-img" class="photo-modal-img" src="" alt="Enlarged Photo">
+  <div class="photo-modal-content" onclick="event.stopPropagation()">
+    <button id="photo-modal-close-btn" class="photo-modal-close">&times;</button>
+    <img id="photo-modal-img" class="photo-modal-img" src="" alt="Enlarged Photo">
+    <div class="photo-modal-info">
+      <div id="photo-modal-author" class="photo-modal-author"></div>
+      <div id="photo-modal-text" class="photo-modal-text"></div>
+      <div id="photo-modal-date" class="photo-modal-date"></div>
+    </div>
+  </div>
 </div>
 
 <script>
@@ -139,10 +377,17 @@
     const searchInput = document.getElementById('archive-search');
     const archiveCount = document.getElementById('archive-count');
     const archiveCountSub = document.getElementById('archive-count-sub');
+    
+    const sortBtn = document.getElementById('sort-toggle-btn');
     const photoModal = document.getElementById('photo-modal');
     const photoModalImg = document.getElementById('photo-modal-img');
+    const photoModalCloseBtn = document.getElementById('photo-modal-close-btn');
+    const photoModalAuthor = document.getElementById('photo-modal-author');
+    const photoModalText = document.getElementById('photo-modal-text');
+    const photoModalDate = document.getElementById('photo-modal-date');
 
     let allCards = [];
+    let currentSort = 'desc'; // 'desc' (latest first) or 'asc' (earliest first)
 
     function formatKST(dateInput) {
       if (!dateInput) return '';
@@ -170,18 +415,19 @@
         const res = await fetch('/api/heterotopia/cards');
         const data = await res.json();
         if (data.success && Array.isArray(data.cards)) {
-          // Sort chronologically (earliest first: #1, #2, #3...)
-          allCards = data.cards.sort((a, b) => new Date(a.createdAt || 0) - new Date(b.createdAt || 0));
+          allCards = data.cards;
           renderArchive();
         }
       } catch (err) {
         console.error('Error loading archive cards:', err);
-        grid.innerHTML = '<div style="grid-column: 1 / -1; text-align: center; padding: 2rem;">아카이브 카드를 불러오는 중 오류가 발생했습니다.</div>';
+        grid.innerHTML = '<div style="grid-column: 1 / -1; text-align: center; padding: 3rem; font-family: monospace; border: 1px dashed red;">아카이브 카드를 불러오는 중 오류가 발생했습니다.</div>';
       }
     }
 
     function renderArchive() {
       const query = searchInput ? searchInput.value.trim().toLowerCase() : '';
+      
+      // Filter first
       const filtered = allCards.filter(c => {
         if (!query) return true;
         const authorMatch = (c.author || '').toLowerCase().includes(query);
@@ -189,17 +435,28 @@
         return authorMatch || textMatch;
       });
 
+      // Sort next
+      // We need chronological sort to determine correct overall order index (#1, #2...)
+      const chronoOrdered = [...allCards].sort((a, b) => new Date(a.createdAt || 0) - new Date(b.createdAt || 0));
+      
+      const displayCards = [...filtered].sort((a, b) => {
+        const timeA = new Date(a.createdAt || 0);
+        const timeB = new Date(b.createdAt || 0);
+        return currentSort === 'desc' ? timeB - timeA : timeA - timeB;
+      });
+
       if (archiveCount) archiveCount.textContent = filtered.length;
       if (archiveCountSub) archiveCountSub.textContent = allCards.length;
 
-      if (filtered.length === 0) {
-        grid.innerHTML = '<div style="grid-column: 1 / -1; text-align: center; padding: 3rem; font-family: monospace; opacity: 0.5;">등록된 방명록 카드가 없습니다.</div>';
+      if (displayCards.length === 0) {
+        grid.innerHTML = '<div style="grid-column: 1 / -1; text-align: center; padding: 4rem; font-family: monospace; opacity: 0.5;">검색 결과와 일치하는 방명록 카드가 없습니다.</div>';
         return;
       }
 
       grid.innerHTML = '';
-      filtered.forEach((card, index) => {
-        const orderNum = allCards.indexOf(card) + 1;
+      displayCards.forEach((card) => {
+        // Find index from chronological sort
+        const orderNum = chronoOrdered.indexOf(card) + 1;
         const timeStr = formatKST(card.photoTakenAt || card.createdAt);
 
         const cardEl = document.createElement('div');
@@ -218,25 +475,49 @@
           </div>
         `;
 
-        const imgEl = cardEl.querySelector('.archive-card-photo');
-        if (imgEl) {
-          imgEl.addEventListener('click', function () {
-            photoModalImg.src = this.getAttribute('data-photo');
-            photoModal.classList.add('active');
-          });
-        }
+        // Click on photo OR card to view details
+        cardEl.addEventListener('click', function (e) {
+          photoModalImg.src = card.photo || '';
+          photoModalImg.style.display = card.photo ? 'block' : 'none';
+          photoModalAuthor.textContent = `// ${escapeHtml(card.author || '익명')}`;
+          photoModalText.textContent = card.text || '';
+          photoModalDate.textContent = timeStr;
+          photoModal.classList.add('active');
+        });
 
         grid.appendChild(cardEl);
       });
     }
 
+    // Bind Search Input
     if (searchInput) {
       searchInput.addEventListener('input', renderArchive);
     }
 
+    // Bind Sort Toggle Button
+    if (sortBtn) {
+      sortBtn.addEventListener('click', function () {
+        if (currentSort === 'desc') {
+          currentSort = 'asc';
+          sortBtn.innerHTML = '<span>과거순</span> <span>↑</span>';
+        } else {
+          currentSort = 'desc';
+          sortBtn.innerHTML = '<span>최신순</span> <span>↓</span>';
+        }
+        renderArchive();
+      });
+    }
+
+    // Close Modal Bindings
     photoModal.addEventListener('click', function () {
       photoModal.classList.remove('active');
     });
+
+    if (photoModalCloseBtn) {
+      photoModalCloseBtn.addEventListener('click', function () {
+        photoModal.classList.remove('active');
+      });
+    }
 
     loadArchive();
   });
