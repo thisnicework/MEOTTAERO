@@ -10,100 +10,21 @@
     padding: 2rem 1.5rem 5rem 1.5rem;
   }
 
-  /* Title & Stats HUD Area */
+  /* Title HUD Area */
   .archive-hud {
     display: flex;
     justify-content: space-between;
     align-items: flex-end;
-    margin-bottom: 2rem;
+    margin-bottom: 2.5rem;
     border-bottom: 2px solid var(--color-fg);
-    padding-bottom: 1.5rem;
-    gap: 1rem;
+    padding-bottom: 1.2rem;
   }
   .archive-title {
     font-size: 1.8rem;
     font-weight: 900;
     letter-spacing: -0.5px;
     color: var(--color-fg);
-    margin: 0 0 0.4rem 0;
-  }
-  .archive-subtitle {
-    font-size: 0.88rem;
-    color: #666;
     margin: 0;
-  }
-  .stats-badge {
-    background: var(--color-fg);
-    color: #fff;
-    border: 1px solid var(--color-fg);
-    padding: 0.5rem 1rem;
-    font-family: monospace;
-    font-size: 0.82rem;
-    box-shadow: 4px 4px 0 var(--color-high);
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
-    white-space: nowrap;
-  }
-  .stats-badge .divider {
-    opacity: 0.4;
-  }
-
-  /* Search & Controls Section */
-  .archive-controls {
-    display: flex;
-    gap: 1rem;
-    margin-bottom: 2.2rem;
-    align-items: center;
-  }
-  .search-wrap {
-    position: relative;
-    flex-grow: 1;
-  }
-  .search-icon {
-    position: absolute;
-    left: 0.8rem;
-    top: 50%;
-    transform: translateY(-50%);
-    opacity: 0.5;
-    font-size: 0.95rem;
-  }
-  #archive-search {
-    width: 100%;
-    padding: 0.7rem 1rem 0.7rem 2.2rem;
-    border: 2px solid var(--color-fg);
-    font-family: inherit;
-    font-size: 0.95rem;
-    outline: none;
-    box-shadow: 4px 4px 0 rgba(0, 0, 0, 0.9);
-    transition: all 0.12s ease;
-  }
-  #archive-search:focus {
-    border-color: var(--color-high);
-    box-shadow: 5px 5px 0 var(--color-high);
-  }
-  .sort-btn {
-    background: #fff;
-    border: 2px solid var(--color-fg);
-    padding: 0.65rem 1.2rem;
-    font-family: inherit;
-    font-size: 0.9rem;
-    font-weight: bold;
-    cursor: pointer;
-    box-shadow: 4px 4px 0 rgba(0, 0, 0, 0.9);
-    transition: all 0.12s ease;
-    white-space: nowrap;
-    display: flex;
-    align-items: center;
-    gap: 0.3rem;
-  }
-  .sort-btn:hover {
-    box-shadow: 5px 5px 0 var(--color-high);
-    border-color: var(--color-high);
-  }
-  .sort-btn:active {
-    transform: translate(2px, 2px);
-    box-shadow: 2px 2px 0 var(--color-high);
   }
 
   /* Cards Grid Feed */
@@ -124,26 +45,8 @@
       padding: 1rem 0.75rem 4rem 0.75rem;
     }
     .archive-hud {
-      flex-direction: column;
-      align-items: flex-start;
-      padding-bottom: 1rem;
-      margin-bottom: 1.5rem;
-    }
-    .stats-badge {
-      width: 100%;
-      justify-content: center;
-    }
-    .archive-controls {
-      flex-direction: column;
-      gap: 0.75rem;
       margin-bottom: 1.8rem;
-    }
-    .search-wrap {
-      width: 100%;
-    }
-    .sort-btn {
-      width: 100%;
-      justify-content: center;
+      padding-bottom: 0.8rem;
     }
     .archive-grid {
       grid-template-columns: repeat(2, 1fr);
@@ -324,30 +227,7 @@
 <div class="archive-container">
   <!-- Header HUD -->
   <div class="archive-hud">
-    <div class="hud-left">
-      <h1 class="archive-title">// HETEROTOPIA ARCHIVE</h1>
-      <p class="archive-subtitle">방주: 헤테로토피아 공간에 남겨진 기록들을 모아둔 아카이브입니다.</p>
-    </div>
-    <div class="hud-right">
-      <div class="stats-badge">
-        <span>CARDS:</span>
-        <strong id="archive-count-sub">0</strong>
-        <span class="divider">/</span>
-        <span>FILTERED:</span>
-        <strong id="archive-count">0</strong>
-      </div>
-    </div>
-  </div>
-
-  <!-- Search & Sort Controls -->
-  <div class="archive-controls">
-    <div class="search-wrap">
-      <span class="search-icon">🔍</span>
-      <input type="text" id="archive-search" placeholder="작성자 닉네임 또는 메시지 검색..." autocomplete="off">
-    </div>
-    <button id="sort-toggle-btn" class="sort-btn" data-sort="desc">
-      <span>최신순</span> <span>↓</span>
-    </button>
+    <h1 class="archive-title">// HETEROTOPIA ARCHIVE</h1>
   </div>
 
   <!-- Cards Grid Feed -->
@@ -374,11 +254,6 @@
 <script>
   document.addEventListener('DOMContentLoaded', function () {
     const grid = document.getElementById('archive-grid');
-    const searchInput = document.getElementById('archive-search');
-    const archiveCount = document.getElementById('archive-count');
-    const archiveCountSub = document.getElementById('archive-count-sub');
-    
-    const sortBtn = document.getElementById('sort-toggle-btn');
     const photoModal = document.getElementById('photo-modal');
     const photoModalImg = document.getElementById('photo-modal-img');
     const photoModalCloseBtn = document.getElementById('photo-modal-close-btn');
@@ -387,7 +262,6 @@
     const photoModalDate = document.getElementById('photo-modal-date');
 
     let allCards = [];
-    let currentSort = 'desc'; // 'desc' (latest first) or 'asc' (earliest first)
 
     function formatKST(dateInput) {
       if (!dateInput) return '';
@@ -425,33 +299,20 @@
     }
 
     function renderArchive() {
-      const query = searchInput ? searchInput.value.trim().toLowerCase() : '';
-      
-      // Filter first
-      const filtered = allCards.filter(c => {
-        if (!query) return true;
-        const authorMatch = (c.author || '').toLowerCase().includes(query);
-        const textMatch = (c.text || '').toLowerCase().includes(query);
-        return authorMatch || textMatch;
-      });
+      if (allCards.length === 0) {
+        grid.innerHTML = '<div style="grid-column: 1 / -1; text-align: center; padding: 4rem; font-family: monospace; opacity: 0.5;">등록된 방명록 카드가 없습니다.</div>';
+        return;
+      }
 
-      // Sort next
       // We need chronological sort to determine correct overall order index (#1, #2...)
       const chronoOrdered = [...allCards].sort((a, b) => new Date(a.createdAt || 0) - new Date(b.createdAt || 0));
       
-      const displayCards = [...filtered].sort((a, b) => {
+      // Default to latest first
+      const displayCards = [...allCards].sort((a, b) => {
         const timeA = new Date(a.createdAt || 0);
         const timeB = new Date(b.createdAt || 0);
-        return currentSort === 'desc' ? timeB - timeA : timeA - timeB;
+        return timeB - timeA;
       });
-
-      if (archiveCount) archiveCount.textContent = filtered.length;
-      if (archiveCountSub) archiveCountSub.textContent = allCards.length;
-
-      if (displayCards.length === 0) {
-        grid.innerHTML = '<div style="grid-column: 1 / -1; text-align: center; padding: 4rem; font-family: monospace; opacity: 0.5;">검색 결과와 일치하는 방명록 카드가 없습니다.</div>';
-        return;
-      }
 
       grid.innerHTML = '';
       displayCards.forEach((card) => {
@@ -486,25 +347,6 @@
         });
 
         grid.appendChild(cardEl);
-      });
-    }
-
-    // Bind Search Input
-    if (searchInput) {
-      searchInput.addEventListener('input', renderArchive);
-    }
-
-    // Bind Sort Toggle Button
-    if (sortBtn) {
-      sortBtn.addEventListener('click', function () {
-        if (currentSort === 'desc') {
-          currentSort = 'asc';
-          sortBtn.innerHTML = '<span>과거순</span> <span>↑</span>';
-        } else {
-          currentSort = 'desc';
-          sortBtn.innerHTML = '<span>최신순</span> <span>↓</span>';
-        }
-        renderArchive();
       });
     }
 
