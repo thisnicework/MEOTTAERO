@@ -81,7 +81,7 @@ app.get('/projects/:semester_id', async (req, res) => {
 
   let isSoldOut = false;
   try {
-    const capacities = db.getCapacities();
+    const capacities = await db.getCapacities();
     const bookings = await db.getBookings();
 
     if (semesterId === 'the-sia-vol-2') {
@@ -375,7 +375,7 @@ app.post('/projects/:semesterId/book', async (req, res) => {
   const { semesterId } = req.params;
 
   try {
-    const capacities = db.getCapacities();
+    const capacities = await db.getCapacities();
     const bookings = await db.getBookings();
 
     if (semesterId === 'the-sia-vol-2') {
@@ -488,7 +488,7 @@ app.get('/admin', requireAdminAuth, async (req, res) => {
     // Filter out bookings that belong to inactive/ended events
     bookings = bookings.filter(b => b.eventId === 'the-sia-vol-2' || b.eventId === '다놀다농');
 
-    const capacities = db.getCapacities();
+    const capacities = await db.getCapacities();
     res.render('bookings', {
       title: '// MEOTTAERO — Admin Dashboard',
       activeMenu: 'admin',
@@ -592,13 +592,13 @@ app.post('/admin/update-status', requireAdminAuth, async (req, res) => {
 });
 
 // Route: Update Booking Capacity Settings (Admin Action)
-app.post('/admin/update-capacity', requireAdminAuth, (req, res) => {
+app.post('/admin/update-capacity', requireAdminAuth, async (req, res) => {
   const { capacities } = req.body;
   if (!capacities || typeof capacities !== 'object') {
     return res.status(400).json({ error: '올바른 설정 데이터가 필요합니다.' });
   }
   try {
-    db.saveCapacities(capacities);
+    await db.saveCapacities(capacities);
     res.json({ success: true });
   } catch (error) {
     console.error('Error in POST /admin/update-capacity:', error);

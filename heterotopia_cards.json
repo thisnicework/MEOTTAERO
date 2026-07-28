@@ -1,1 +1,1232 @@
-[]
+[
+  {
+    "id": "card_1784953135997_920",
+    "author": "개발자입니다",
+    "text": "방명록 서비스 많은 이용 바랍니다",
+    "photo": "https://pysxtikwokpcyfjstdyv.supabase.co/storage/v1/object/public/booth/heterotopia_1784953135598_894.jpg",
+    "x": 0,
+    "y": 0,
+    "rotation": -4,
+    "createdAt": "2026-07-25T04:18:55.997+00:00"
+  },
+  {
+    "id": "card_1784953763552_9374",
+    "author": "이원희",
+    "text": "섹션 1 많은 관람 부탁드립니다 처음부터 보면 좋아요(자연장면)",
+    "photo": "https://pysxtikwokpcyfjstdyv.supabase.co/storage/v1/object/public/booth/heterotopia_1784953762573_722.jpg",
+    "x": 0,
+    "y": 0,
+    "rotation": -4,
+    "createdAt": "2026-07-25T04:29:23.552+00:00"
+  },
+  {
+    "id": "card_1784953927190_8457",
+    "author": "익명",
+    "text": "이런식으로 찍어보세요",
+    "photo": "https://pysxtikwokpcyfjstdyv.supabase.co/storage/v1/object/public/booth/heterotopia_1784953926737_611.jpg",
+    "x": 0,
+    "y": 0,
+    "rotation": -1,
+    "createdAt": "2026-07-25T04:32:07.19+00:00"
+  },
+  {
+    "id": "card_1784957262754_3278",
+    "author": "민지오 + 바자회 사장님",
+    "text": "바자회 사장님이 만드신 방주에 탑승완료",
+    "photo": "https://pysxtikwokpcyfjstdyv.supabase.co/storage/v1/object/public/booth/heterotopia_1784957262182_727.jpg",
+    "x": 68,
+    "y": -74,
+    "rotation": -5,
+    "createdAt": "2026-07-25T05:27:42.754+00:00"
+  },
+  {
+    "id": "card_1784958499061_4906",
+    "author": "ㅈㅇㅈㅇ",
+    "text": "안녕하세요 헤테로토피아 이주민 입니다.",
+    "photo": "https://pysxtikwokpcyfjstdyv.supabase.co/storage/v1/object/public/booth/heterotopia_1784958498571_873.jpg",
+    "x": -151,
+    "y": 31,
+    "rotation": 0,
+    "createdAt": "2026-07-25T05:48:19.061+00:00"
+  },
+  {
+    "id": "card_1784960268652_1098",
+    "author": "엠투둥이의 오빛",
+    "text": "감동이언제까지남을련지...",
+    "photo": "https://pysxtikwokpcyfjstdyv.supabase.co/storage/v1/object/public/booth/heterotopia_1784960268265_664.jpg",
+    "x": 370,
+    "y": -4,
+    "rotation": 2,
+    "createdAt": "2026-07-25T06:17:48.652+00:00"
+  },
+  {
+    "id": "card_1784960317511_5253",
+    "author": "유진",
+    "text": "한나의 헤테로토피아로.....",
+    "photo": "https://pysxtikwokpcyfjstdyv.supabase.co/storage/v1/object/public/booth/heterotopia_1784960317081_897.jpg",
+    "x": 158,
+    "y": 247,
+    "rotation": 2,
+    "createdAt": "2026-07-25T06:18:37.511+00:00"
+  },
+  {
+    "id": "card_1784960742497_8138",
+    "author": "ㅊㅇㅅ",
+    "text": "마치 디아페를 보는 듯한 느낌...",
+    "photo": "https://pysxtikwokpcyfjstdyv.supabase.co/storage/v1/object/public/booth/heterotopia_1784960742131_651.jpg",
+    "x": -193,
+    "y": 292,
+    "rotation": -2,
+    "createdAt": "2026-07-25T06:25:42.497+00:00"
+  },
+  {
+    "id": "card_1784962010669_2975",
+    "author": "128BPM",
+    "text": "잘보고 갑니다\n-기획팀 일동-",
+    "photo": "",
+    "x": -159,
+    "y": -37,
+    "rotation": -5,
+    "createdAt": "2026-07-25T06:46:50.669+00:00"
+  },
+  {
+    "id": "card_1784962110778_2412",
+    "author": "정시율",
+    "text": "한나야 사랑해",
+    "photo": "",
+    "x": -180,
+    "y": 27,
+    "rotation": -5,
+    "createdAt": "2026-07-25T06:48:30.778+00:00"
+  },
+  {
+    "id": "card_1784962154888_3200",
+    "author": "한나여친",
+    "text": "내여친 능력 말이 안 됨",
+    "photo": "https://pysxtikwokpcyfjstdyv.supabase.co/storage/v1/object/public/booth/heterotopia_1784962154498_188.jpg",
+    "x": -298,
+    "y": 300,
+    "rotation": 3,
+    "createdAt": "2026-07-25T06:49:14.888+00:00"
+  },
+  {
+    "id": "card_1784962315468_7380",
+    "author": "이마라",
+    "text": "여긴 어뒤 나는 뉘기......",
+    "photo": "https://pysxtikwokpcyfjstdyv.supabase.co/storage/v1/object/public/booth/heterotopia_1784962314503_990.jpg",
+    "x": -282,
+    "y": 286,
+    "rotation": -4,
+    "createdAt": "2026-07-25T06:51:55.468+00:00"
+  },
+  {
+    "id": "card_1784962372152_7772",
+    "author": "이마라",
+    "text": "여긴 어뒤.. 나는 뉘기",
+    "photo": "",
+    "x": -282,
+    "y": 292,
+    "rotation": 2,
+    "createdAt": "2026-07-25T06:52:52.158+00:00"
+  },
+  {
+    "id": "card_1784962432546_7397",
+    "author": "예술2길 8",
+    "text": "선배님 너무 멋있어요",
+    "photo": "https://pysxtikwokpcyfjstdyv.supabase.co/storage/v1/object/public/booth/heterotopia_1784962432144_264.jpg",
+    "x": -293,
+    "y": 302,
+    "rotation": -5,
+    "createdAt": "2026-07-25T06:53:52.546+00:00"
+  },
+  {
+    "id": "card_1784963304394_5158",
+    "author": "온",
+    "text": "신비롭고 새로운 세계 잘 보고 갑니다잉",
+    "photo": "https://pysxtikwokpcyfjstdyv.supabase.co/storage/v1/object/public/booth/heterotopia_1784963304046_955.jpg",
+    "x": 66,
+    "y": -235,
+    "rotation": 0,
+    "createdAt": "2026-07-25T07:08:24.394+00:00"
+  },
+  {
+    "id": "card_1784963715896_2988",
+    "author": "팀 시온은진",
+    "text": "헤테로토피아가 존재한다면 이런 느낌일까? '이브'의 질문에 나는 아직 답을 내리지 못했지만 이브들의 움직임을 통해 왠지 모를 평안함을 느꼈다. 방주 위에서, 믿고 그 자리에 올라 타는 마음으로.",
+    "photo": "https://pysxtikwokpcyfjstdyv.supabase.co/storage/v1/object/public/booth/heterotopia_1784963715388_692.jpg",
+    "x": 53,
+    "y": -517,
+    "rotation": -1,
+    "createdAt": "2026-07-25T07:15:15.896+00:00"
+  },
+  {
+    "id": "card_1784963756069_345",
+    "author": "정은진",
+    "text": "한나! 고생많았어요 전시 최고>_<",
+    "photo": "",
+    "x": 62,
+    "y": -247,
+    "rotation": 2,
+    "createdAt": "2026-07-25T07:15:56.069+00:00"
+  },
+  {
+    "id": "card_1784964031979_4707",
+    "author": "씨씨씨 일동",
+    "text": "박차니, 이예진 이브 잘 보고 갑니다앙~~",
+    "photo": "https://pysxtikwokpcyfjstdyv.supabase.co/storage/v1/object/public/booth/heterotopia_1784964031656_366.jpg",
+    "x": 399,
+    "y": 350,
+    "rotation": 1,
+    "createdAt": "2026-07-25T07:20:31.979+00:00"
+  },
+  {
+    "id": "card_1784966081573_4923",
+    "author": "준영&혜원",
+    "text": "예경, 대의원 선배들 화잇팅!!",
+    "photo": "https://pysxtikwokpcyfjstdyv.supabase.co/storage/v1/object/public/booth/heterotopia_1784966081210_369.jpg",
+    "x": 1076,
+    "y": 579,
+    "rotation": -1,
+    "createdAt": "2026-07-25T07:54:41.573+00:00"
+  },
+  {
+    "id": "card_1784966930130_6777",
+    "author": "판둥이",
+    "text": "내가 어딘가로 갈 수 있다면, 그곳에서 내가 아닌 '나'가 될 수 있다면",
+    "photo": "",
+    "x": 173,
+    "y": 476,
+    "rotation": 1,
+    "createdAt": "2026-07-25T08:08:50.13+00:00"
+  },
+  {
+    "id": "card_1784966963466_3674",
+    "author": "판둥이",
+    "text": "승은 훈부님 늘 감사합니다.",
+    "photo": "",
+    "x": 581,
+    "y": 30,
+    "rotation": -5,
+    "createdAt": "2026-07-25T08:09:23.466+00:00"
+  },
+  {
+    "id": "card_1784967049916_9340",
+    "author": "ㄷㅇ",
+    "text": "^^7",
+    "photo": "https://pysxtikwokpcyfjstdyv.supabase.co/storage/v1/object/public/booth/heterotopia_1784967049550_650.jpg",
+    "x": -293,
+    "y": 584,
+    "rotation": 4,
+    "createdAt": "2026-07-25T08:10:49.916+00:00"
+  },
+  {
+    "id": "card_1784967965190_6277",
+    "author": "케이케이와 친구들",
+    "text": "이원희안현준참멋있다",
+    "photo": "https://pysxtikwokpcyfjstdyv.supabase.co/storage/v1/object/public/booth/heterotopia_1784967964155_865.jpg",
+    "x": 32,
+    "y": -544,
+    "rotation": 0,
+    "createdAt": "2026-07-25T08:26:05.19+00:00"
+  },
+  {
+    "id": "card_1784968024039_5446",
+    "author": "정원연우",
+    "text": "앙기모띠예쁜여자들",
+    "photo": "",
+    "x": 46,
+    "y": -551,
+    "rotation": 1,
+    "createdAt": "2026-07-25T08:27:04.039+00:00"
+  },
+  {
+    "id": "card_1784968086549_5330",
+    "author": "정원연우",
+    "text": "수고많아요. 이쁜 이. 들",
+    "photo": "https://pysxtikwokpcyfjstdyv.supabase.co/storage/v1/object/public/booth/heterotopia_1784968086191_911.jpg",
+    "x": 525,
+    "y": -295,
+    "rotation": -4,
+    "createdAt": "2026-07-25T08:28:06.549+00:00"
+  },
+  {
+    "id": "card_1784968381871_4428",
+    "author": "ㅎㅎ",
+    "text": "한나야사랑해",
+    "photo": "",
+    "x": -282,
+    "y": 545,
+    "rotation": 3,
+    "createdAt": "2026-07-25T08:33:01.871+00:00"
+  },
+  {
+    "id": "card_1784968874836_2013",
+    "author": "동미단",
+    "text": "단우 \n멋짐",
+    "photo": "",
+    "x": 327,
+    "y": -544,
+    "rotation": 1,
+    "createdAt": "2026-07-25T08:41:14.836+00:00"
+  },
+  {
+    "id": "card_1784968934097_5828",
+    "author": "미정&동일",
+    "text": "단우야 고생했디 !!!",
+    "photo": "",
+    "x": 682,
+    "y": 306,
+    "rotation": -3,
+    "createdAt": "2026-07-25T08:42:14.097+00:00"
+  },
+  {
+    "id": "card_1784969023882_2022",
+    "author": "효",
+    "text": "선배가 초대해준 전시 너무 좋은시간 보내고가요!",
+    "photo": "https://pysxtikwokpcyfjstdyv.supabase.co/storage/v1/object/public/booth/heterotopia_1784969023480_49.jpg",
+    "x": 392,
+    "y": 606,
+    "rotation": 1,
+    "createdAt": "2026-07-25T08:43:43.882+00:00"
+  },
+  {
+    "id": "card_1784969478837_114",
+    "author": "오늘의 전시",
+    "text": "수진아! 너의 선택으로 만들어가는 세계를 응원해\n그것이 누군가 보기에는 오류일지라도.\n우리는 너의 세계를 사랑해!",
+    "photo": "",
+    "x": -524,
+    "y": 272,
+    "rotation": -5,
+    "createdAt": "2026-07-25T08:51:18.837+00:00"
+  },
+  {
+    "id": "card_1784969724779_1954",
+    "author": "변준석",
+    "text": "최근 인생의 선택의 순간들에서 많은 고민과 방황에 지쳐갈 때, 이 전시를 보게되어서 너무 감사하다. 내가 그동안 무엇을 바라며 달려왔는지 다시 돌아보는 시간이었다. 남은 전시도 파이팅!!",
+    "photo": "https://pysxtikwokpcyfjstdyv.supabase.co/storage/v1/object/public/booth/heterotopia_1784969723864_412.jpg",
+    "x": -531,
+    "y": 275,
+    "rotation": -3,
+    "createdAt": "2026-07-25T08:55:24.779+00:00"
+  },
+  {
+    "id": "card_1784969901769_6062",
+    "author": "익명",
+    "text": "조명의 제왕 김효민 화이팅 언니 우리ㅣ 싸우지 말고 잘 지내자 늘 응원해!",
+    "photo": "",
+    "x": -517,
+    "y": 550,
+    "rotation": -5,
+    "createdAt": "2026-07-25T08:58:21.769+00:00"
+  },
+  {
+    "id": "card_1784971003372_6403",
+    "author": "박정빈",
+    "text": "미디어아트랑 춤이라니 신기해요..",
+    "photo": "",
+    "x": -742,
+    "y": 363,
+    "rotation": 0,
+    "createdAt": "2026-07-25T09:16:43.372+00:00"
+  },
+  {
+    "id": "card_1784971202316_2255",
+    "author": "외계인",
+    "text": "",
+    "photo": "https://pysxtikwokpcyfjstdyv.supabase.co/storage/v1/object/public/booth/heterotopia_1784971201228_290.jpg",
+    "x": 15,
+    "y": 779,
+    "rotation": -2,
+    "createdAt": "2026-07-25T09:20:02.316+00:00"
+  },
+  {
+    "id": "card_1784971618421_9099",
+    "author": "이원희 섹시하다 (하트)",
+    "text": "지구 탈출!",
+    "photo": "https://pysxtikwokpcyfjstdyv.supabase.co/storage/v1/object/public/booth/heterotopia_1784971618057_0.jpg",
+    "x": 403,
+    "y": 585,
+    "rotation": -2,
+    "createdAt": "2026-07-25T09:26:58.421+00:00"
+  },
+  {
+    "id": "card_1784972325117_8854",
+    "author": "중안부 정병",
+    "text": "",
+    "photo": "https://pysxtikwokpcyfjstdyv.supabase.co/storage/v1/object/public/booth/heterotopia_1784972324763_66.jpg",
+    "x": 396,
+    "y": 598,
+    "rotation": -1,
+    "createdAt": "2026-07-25T09:38:45.117+00:00"
+  },
+  {
+    "id": "card_1784972468537_1118",
+    "author": "띠우리",
+    "text": "헤테로토피아로 오세요...",
+    "photo": "",
+    "x": 160,
+    "y": 807,
+    "rotation": 4,
+    "createdAt": "2026-07-25T09:41:08.537+00:00"
+  },
+  {
+    "id": "card_1784973185606_8200",
+    "author": "이브들",
+    "text": "우리의 세계. 오신 것을 환영.합니.다.",
+    "photo": "https://pysxtikwokpcyfjstdyv.supabase.co/storage/v1/object/public/booth/heterotopia_1784973185252_174.jpg",
+    "x": 397,
+    "y": 838,
+    "rotation": 3,
+    "createdAt": "2026-07-25T09:53:05.606+00:00"
+  },
+  {
+    "id": "card_1784973549916_3562",
+    "author": "익명",
+    "text": "역시 기깔난다.",
+    "photo": "https://pysxtikwokpcyfjstdyv.supabase.co/storage/v1/object/public/booth/heterotopia_1784973549559_518.jpg",
+    "x": 52,
+    "y": 16,
+    "rotation": -4,
+    "createdAt": "2026-07-25T09:59:09.917+00:00"
+  },
+  {
+    "id": "card_1784974082243_5774",
+    "author": "음?",
+    "text": "공간이 너무 멋있네요 디아도 파이팅",
+    "photo": "https://pysxtikwokpcyfjstdyv.supabase.co/storage/v1/object/public/booth/heterotopia_1784974081854_675.jpg",
+    "x": 921,
+    "y": 203,
+    "rotation": -3,
+    "createdAt": "2026-07-25T10:08:02.243+00:00"
+  },
+  {
+    "id": "card_1784974151018_6818",
+    "author": "음?",
+    "text": "헤테로토피아파이팅",
+    "photo": "https://pysxtikwokpcyfjstdyv.supabase.co/storage/v1/object/public/booth/heterotopia_1784974150193_751.jpg",
+    "x": 924,
+    "y": 214,
+    "rotation": 1,
+    "createdAt": "2026-07-25T10:09:11.018+00:00"
+  },
+  {
+    "id": "card_1784974236277_8136",
+    "author": "음/.",
+    "text": "근데 여긴 사람 없을 때 진짜 디스토피아 같아요 밤에 더 간지날 듯 저녁 공연도 보러 올게요",
+    "photo": "https://pysxtikwokpcyfjstdyv.supabase.co/storage/v1/object/public/booth/heterotopia_1784974235929_804.jpg",
+    "x": 906,
+    "y": 215,
+    "rotation": -1,
+    "createdAt": "2026-07-25T10:10:36.277+00:00"
+  },
+  {
+    "id": "card_1784975862322_3953",
+    "author": "유니유니",
+    "text": "방주 ... 참 좋은 곳이다",
+    "photo": "https://pysxtikwokpcyfjstdyv.supabase.co/storage/v1/object/public/booth/heterotopia_1784975861761_554.jpg",
+    "x": 431,
+    "y": 24,
+    "rotation": -2,
+    "createdAt": "2026-07-25T10:37:42.322+00:00"
+  },
+  {
+    "id": "card_1784977191400_623",
+    "author": "익명",
+    "text": "예림몬과 아이들 수고했다 (하트)",
+    "photo": "https://pysxtikwokpcyfjstdyv.supabase.co/storage/v1/object/public/booth/heterotopia_1784977190865_26.jpg",
+    "x": 628,
+    "y": 604,
+    "rotation": 0,
+    "createdAt": "2026-07-25T10:59:51.4+00:00"
+  },
+  {
+    "id": "card_1785039539021_5780",
+    "author": "이브의 엄마들",
+    "text": "이브님들 오늘도 화이팅 엄마들은 일하러 간다",
+    "photo": "https://pysxtikwokpcyfjstdyv.supabase.co/storage/v1/object/public/booth/heterotopia_1785039538651_337.jpg",
+    "x": 646,
+    "y": 844,
+    "rotation": 2,
+    "createdAt": "2026-07-26T04:18:59.021+00:00"
+  },
+  {
+    "id": "card_1785048292932_2513",
+    "author": "익명",
+    "text": "잘 보고 갑니다",
+    "photo": "https://pysxtikwokpcyfjstdyv.supabase.co/storage/v1/object/public/booth/heterotopia_1785048292532_879.jpg",
+    "x": 2046,
+    "y": 1241,
+    "rotation": -2,
+    "createdAt": "2026-07-26T06:44:52.932+00:00"
+  },
+  {
+    "id": "card_1785048946480_7766",
+    "author": "박명수",
+    "text": "애들아 멋있다 은우야 내 센서 돌려줘",
+    "photo": "",
+    "x": 911,
+    "y": 484,
+    "rotation": -4,
+    "createdAt": "2026-07-26T06:55:46.48+00:00"
+  },
+  {
+    "id": "card_1785049094752_4729",
+    "author": "박명수와 없는대",
+    "text": "25 무용 멋있다 은우야 내 센서 왜 \n뺏어갔어...?  \n대기실에만 잇지 말고 빠딱빠딱 나와라",
+    "photo": "https://pysxtikwokpcyfjstdyv.supabase.co/storage/v1/object/public/booth/heterotopia_1785049094356_810.jpg",
+    "x": -228,
+    "y": 35,
+    "rotation": -3,
+    "createdAt": "2026-07-26T06:58:14.752+00:00"
+  },
+  {
+    "id": "card_1785049170908_8061",
+    "author": "전지현",
+    "text": "방주",
+    "photo": "https://pysxtikwokpcyfjstdyv.supabase.co/storage/v1/object/public/booth/heterotopia_1785049170567_48.jpg",
+    "x": 893,
+    "y": 739,
+    "rotation": 1,
+    "createdAt": "2026-07-26T06:59:30.908+00:00"
+  },
+  {
+    "id": "card_1785049266001_6350",
+    "author": "서지니",
+    "text": "귀엽다~~~~~ 헤테로 모임",
+    "photo": "https://pysxtikwokpcyfjstdyv.supabase.co/storage/v1/object/public/booth/heterotopia_1785049265655_606.jpg",
+    "x": -438,
+    "y": -279,
+    "rotation": 0,
+    "createdAt": "2026-07-26T07:01:06.001+00:00"
+  },
+  {
+    "id": "card_1785049654266_72",
+    "author": "이예진동생",
+    "text": "이예진 잘보고 갑니다\n재밋어요 굳굳\n퍼포먼스형 전시는 처음이라 인상깊고 좋네요 파이팅",
+    "photo": "https://pysxtikwokpcyfjstdyv.supabase.co/storage/v1/object/public/booth/heterotopia_1785049653923_803.jpg",
+    "x": 1118,
+    "y": 272,
+    "rotation": 2,
+    "createdAt": "2026-07-26T07:07:34.266+00:00"
+  },
+  {
+    "id": "card_1785049775576_6712",
+    "author": "room",
+    "text": "너무 멋있다.. .. ..",
+    "photo": "https://pysxtikwokpcyfjstdyv.supabase.co/storage/v1/object/public/booth/heterotopia_1785049775166_736.jpg",
+    "x": 1137,
+    "y": 244,
+    "rotation": -2,
+    "createdAt": "2026-07-26T07:09:35.576+00:00"
+  },
+  {
+    "id": "card_1785049847212_8600",
+    "author": "디아26",
+    "text": "디지털아트 선배님들 화이팅 !!!",
+    "photo": "",
+    "x": 744,
+    "y": -365,
+    "rotation": -5,
+    "createdAt": "2026-07-26T07:10:47.212+00:00"
+  },
+  {
+    "id": "card_1785049879116_5197",
+    "author": "판톹스",
+    "text": "이승은 훈련부장님 멋있어요 !!",
+    "photo": "",
+    "x": 1166,
+    "y": 491,
+    "rotation": -4,
+    "createdAt": "2026-07-26T07:11:19.116+00:00"
+  },
+  {
+    "id": "card_1785049994855_4635",
+    "author": "주형 누나, 지오 왔다감",
+    "text": "흠냐 흠냐 이쁘군여",
+    "photo": "https://pysxtikwokpcyfjstdyv.supabase.co/storage/v1/object/public/booth/heterotopia_1785049994442_241.jpg",
+    "x": 507,
+    "y": 1082,
+    "rotation": -4,
+    "createdAt": "2026-07-26T07:13:14.855+00:00"
+  },
+  {
+    "id": "card_1785051448179_5190",
+    "author": "앙서끼냥",
+    "text": "방영 최고 아웃풋 방주 홍보영상 권민기 군을 원주캡틴과 명륜동빵칼이 응원합니다",
+    "photo": "https://pysxtikwokpcyfjstdyv.supabase.co/storage/v1/object/public/booth/heterotopia_1785051447781_176.jpg",
+    "x": 993,
+    "y": -337,
+    "rotation": -5,
+    "createdAt": "2026-07-26T07:37:28.179+00:00"
+  },
+  {
+    "id": "card_1785051763759_9826",
+    "author": "에단 기획팀",
+    "text": "유토피아보다 헤테로토피아",
+    "photo": "https://pysxtikwokpcyfjstdyv.supabase.co/storage/v1/object/public/booth/heterotopia_1785051763397_878.jpg",
+    "x": 1250,
+    "y": -32,
+    "rotation": 0,
+    "createdAt": "2026-07-26T07:42:43.759+00:00"
+  },
+  {
+    "id": "card_1785052328798_8869",
+    "author": "기왝장입니다",
+    "text": "헤테로 대표입니다 감사합니다",
+    "photo": "https://pysxtikwokpcyfjstdyv.supabase.co/storage/v1/object/public/booth/heterotopia_1785052328229_943.jpg",
+    "x": 581,
+    "y": -605,
+    "rotation": 0,
+    "createdAt": "2026-07-26T07:52:08.798+00:00"
+  },
+  {
+    "id": "card_1785053321586_9388",
+    "author": "강민서",
+    "text": "인건아 고생했어~! 전시 멋있다",
+    "photo": "https://pysxtikwokpcyfjstdyv.supabase.co/storage/v1/object/public/booth/heterotopia_1785053321061_765.jpg",
+    "x": 808,
+    "y": -620,
+    "rotation": 4,
+    "createdAt": "2026-07-26T08:08:41.586+00:00"
+  },
+  {
+    "id": "card_1785053743735_3700",
+    "author": "정희원",
+    "text": "좋은 공연 감사합니다 !!!!!! 더운 여름 고생하셨습니다!!!!",
+    "photo": "https://pysxtikwokpcyfjstdyv.supabase.co/storage/v1/object/public/booth/heterotopia_1785053743390_470.jpg",
+    "x": 1200,
+    "y": -352,
+    "rotation": -1,
+    "createdAt": "2026-07-26T08:15:43.735+00:00"
+  },
+  {
+    "id": "card_1785053827494_9319",
+    "author": "강해욱",
+    "text": "재밌게 잘 보고 갑니다!! 고생하셨습니다 호호!",
+    "photo": "https://pysxtikwokpcyfjstdyv.supabase.co/storage/v1/object/public/booth/heterotopia_1785053826703_120.jpg",
+    "x": 1403,
+    "y": 253,
+    "rotation": -5,
+    "createdAt": "2026-07-26T08:17:07.494+00:00"
+  },
+  {
+    "id": "card_1785053907655_5375",
+    "author": "휴학생",
+    "text": "내 여자들이 왜 이렇게 잘해?\n최고 기획장 한나. 그리고 짱슐.",
+    "photo": "https://pysxtikwokpcyfjstdyv.supabase.co/storage/v1/object/public/booth/heterotopia_1785053905718_896.jpg",
+    "x": 1118,
+    "y": 739,
+    "rotation": 2,
+    "createdAt": "2026-07-26T08:18:27.655+00:00"
+  },
+  {
+    "id": "card_1785054125440_4269",
+    "author": "훈부님 내일봬요",
+    "text": "훈부님 짱 너무 머싯어용 ! ^^ bb :) ~ <3",
+    "photo": "https://pysxtikwokpcyfjstdyv.supabase.co/storage/v1/object/public/booth/heterotopia_1785054124523_125.jpg",
+    "x": 1018,
+    "y": -637,
+    "rotation": -2,
+    "createdAt": "2026-07-26T08:22:05.44+00:00"
+  },
+  {
+    "id": "card_1785054368856_7380",
+    "author": "coco",
+    "text": "",
+    "photo": "https://pysxtikwokpcyfjstdyv.supabase.co/storage/v1/object/public/booth/heterotopia_1785054368457_241.jpg",
+    "x": 1293,
+    "y": 1179,
+    "rotation": 4,
+    "createdAt": "2026-07-26T08:26:08.856+00:00"
+  },
+  {
+    "id": "card_1785054542097_5130",
+    "author": "HyeMin",
+    "text": "gg gksrmfdl dks Tjwudy",
+    "photo": "https://pysxtikwokpcyfjstdyv.supabase.co/storage/v1/object/public/booth/heterotopia_1785054539448_784.jpg",
+    "x": 899,
+    "y": 975,
+    "rotation": 0,
+    "createdAt": "2026-07-26T08:29:02.097+00:00"
+  },
+  {
+    "id": "card_1785055122730_1687",
+    "author": "안씨형제&피스&획장언냐",
+    "text": "음.......... 멋있네요~ 현준, 한나 고생했어요..... 최고... 이제 2일 남았나..?아,,, 하루 남았네~ 남은 하루도 화이탱~!!!",
+    "photo": "https://pysxtikwokpcyfjstdyv.supabase.co/storage/v1/object/public/booth/heterotopia_1785055122357_774.jpg",
+    "x": 1139,
+    "y": 991,
+    "rotation": -1,
+    "createdAt": "2026-07-26T08:38:42.73+00:00"
+  },
+  {
+    "id": "card_1785056303319_706",
+    "author": "아콘리버",
+    "text": "이상에 다다를 수없다면 현실은 이데아가 될 수 없습니다.",
+    "photo": "https://pysxtikwokpcyfjstdyv.supabase.co/storage/v1/object/public/booth/heterotopia_1785056302967_574.jpg",
+    "x": 262,
+    "y": 1128,
+    "rotation": -2,
+    "createdAt": "2026-07-26T08:58:23.319+00:00"
+  },
+  {
+    "id": "card_1785056396251_8815",
+    "author": "아콘리버",
+    "text": "이상에 다다를 수 없다면 현실은 지옥일까요? 아콘리버를 검색해보세요",
+    "photo": "https://pysxtikwokpcyfjstdyv.supabase.co/storage/v1/object/public/booth/heterotopia_1785056395810_4.jpg",
+    "x": 15,
+    "y": 1067,
+    "rotation": -5,
+    "createdAt": "2026-07-26T08:59:56.251+00:00"
+  },
+  {
+    "id": "card_1785056475749_1303",
+    "author": "미녁",
+    "text": "ㅎㅇㅎㅇ",
+    "photo": "https://pysxtikwokpcyfjstdyv.supabase.co/storage/v1/object/public/booth/heterotopia_1785056474473_916.jpg",
+    "x": 1753,
+    "y": 1003,
+    "rotation": -2,
+    "createdAt": "2026-07-26T09:01:15.749+00:00"
+  },
+  {
+    "id": "card_1785056831351_1645",
+    "author": "폼폼",
+    "text": "헤테로토피아덕에 초 럭키한 하루-",
+    "photo": "https://pysxtikwokpcyfjstdyv.supabase.co/storage/v1/object/public/booth/heterotopia_1785056831018_259.jpg",
+    "x": -618,
+    "y": -31,
+    "rotation": -2,
+    "createdAt": "2026-07-26T09:07:11.351+00:00"
+  },
+  {
+    "id": "card_1785057610335_3576",
+    "author": "한주",
+    "text": "아 평화롭고 아름답고 좋다~!",
+    "photo": "https://pysxtikwokpcyfjstdyv.supabase.co/storage/v1/object/public/booth/heterotopia_1785057609410_747.jpg",
+    "x": 1639,
+    "y": 661,
+    "rotation": -1,
+    "createdAt": "2026-07-26T09:20:10.335+00:00"
+  },
+  {
+    "id": "card_1785059391302_9671",
+    "author": "익명",
+    "text": "전시대박나게해쥬세여....",
+    "photo": "https://pysxtikwokpcyfjstdyv.supabase.co/storage/v1/object/public/booth/heterotopia_1785059390940_222.jpg",
+    "x": 1362,
+    "y": 827,
+    "rotation": -3,
+    "createdAt": "2026-07-26T09:49:51.302+00:00"
+  },
+  {
+    "id": "card_1785059578449_8065",
+    "author": "세얼간이",
+    "text": "즐겁게 잘 즐기고갑니다. 감사합니다. 퍼포먼스 연출이 참 멋졌어요. 퍼포머들도 정말 멋있었어요",
+    "photo": "https://pysxtikwokpcyfjstdyv.supabase.co/storage/v1/object/public/booth/heterotopia_1785059578112_515.jpg",
+    "x": -296,
+    "y": -687,
+    "rotation": 4,
+    "createdAt": "2026-07-26T09:52:58.449+00:00"
+  },
+  {
+    "id": "card_1785059934478_179",
+    "author": "익명",
+    "text": "노래가 참 조아요",
+    "photo": "https://pysxtikwokpcyfjstdyv.supabase.co/storage/v1/object/public/booth/heterotopia_1785059933549_13.jpg",
+    "x": 211,
+    "y": -794,
+    "rotation": -5,
+    "createdAt": "2026-07-26T09:58:54.478+00:00"
+  },
+  {
+    "id": "card_1785060168731_3855",
+    "author": "익명",
+    "text": "",
+    "photo": "https://pysxtikwokpcyfjstdyv.supabase.co/storage/v1/object/public/booth/heterotopia_1785060168031_53.jpg",
+    "x": -661,
+    "y": -281,
+    "rotation": -2,
+    "createdAt": "2026-07-26T10:02:48.731+00:00"
+  },
+  {
+    "id": "card_1785060216983_6350",
+    "author": "아아아아아악",
+    "text": "으아아아ㅏ아아아악",
+    "photo": "https://pysxtikwokpcyfjstdyv.supabase.co/storage/v1/object/public/booth/heterotopia_1785060216645_393.jpg",
+    "x": 880,
+    "y": 1227,
+    "rotation": 4,
+    "createdAt": "2026-07-26T10:03:36.983+00:00"
+  },
+  {
+    "id": "card_1785060301782_8498",
+    "author": "차력거인",
+    "text": "",
+    "photo": "https://pysxtikwokpcyfjstdyv.supabase.co/storage/v1/object/public/booth/heterotopia_1785060300745_245.jpg",
+    "x": 635,
+    "y": 1355,
+    "rotation": 2,
+    "createdAt": "2026-07-26T10:05:01.782+00:00"
+  },
+  {
+    "id": "card_1785062371756_246",
+    "author": "eve",
+    "text": "welcome to heterotopia",
+    "photo": "https://pysxtikwokpcyfjstdyv.supabase.co/storage/v1/object/public/booth/heterotopia_1785062371390_506.jpg",
+    "x": 2044,
+    "y": 997,
+    "rotation": 2,
+    "createdAt": "2026-07-26T10:39:31.756+00:00"
+  },
+  {
+    "id": "card_1785068456809_7713",
+    "author": "오도민",
+    "text": "울랄랄라랄랄라울ㄹ랄",
+    "photo": "https://pysxtikwokpcyfjstdyv.supabase.co/storage/v1/object/public/booth/heterotopia_1785068455812_702.jpg",
+    "x": -538,
+    "y": 595,
+    "rotation": -4,
+    "createdAt": "2026-07-26T12:20:56.809+00:00"
+  },
+  {
+    "id": "card_1785128311283_2524",
+    "author": "심령사진",
+    "text": "",
+    "photo": "https://pysxtikwokpcyfjstdyv.supabase.co/storage/v1/object/public/booth/heterotopia_1785128310925_766.jpg",
+    "x": 290,
+    "y": -366,
+    "rotation": 4,
+    "createdAt": "2026-07-27T04:58:31.283+00:00"
+  },
+  {
+    "id": "card_1785128412471_2718",
+    "author": "또옴",
+    "text": "죽지도 않고 또왔음",
+    "photo": "https://pysxtikwokpcyfjstdyv.supabase.co/storage/v1/object/public/booth/heterotopia_1785128411657_760.jpg",
+    "x": 1477,
+    "y": -73,
+    "rotation": -2,
+    "createdAt": "2026-07-27T05:00:12.471+00:00"
+  },
+  {
+    "id": "card_1785128545036_7113",
+    "author": "누국개",
+    "text": "어제 저는 김치찜을먹었답니다 ㅎㅎ",
+    "photo": "https://pysxtikwokpcyfjstdyv.supabase.co/storage/v1/object/public/booth/heterotopia_1785128544705_10.jpg",
+    "x": 408,
+    "y": 1405,
+    "rotation": -4,
+    "createdAt": "2026-07-27T05:02:25.036+00:00"
+  },
+  {
+    "id": "card_1785128927385_788",
+    "author": "이브맘",
+    "text": "헤테로토피아로 오셍7..",
+    "photo": "",
+    "x": 1433,
+    "y": 1202,
+    "rotation": 4,
+    "createdAt": "2026-07-27T05:08:47.385+00:00"
+  },
+  {
+    "id": "card_1785130826924_1233",
+    "author": "연주와 아이들",
+    "text": "티셔츠 야르렁",
+    "photo": "https://pysxtikwokpcyfjstdyv.supabase.co/storage/v1/object/public/booth/heterotopia_1785130826571_989.jpg",
+    "x": 733,
+    "y": -95,
+    "rotation": -1,
+    "createdAt": "2026-07-27T05:40:26.924+00:00"
+  },
+  {
+    "id": "card_1785134526200_8733",
+    "author": "경&다원",
+    "text": "부푼마음소묘된 이곳이 우리의 유토피아!!!",
+    "photo": "https://pysxtikwokpcyfjstdyv.supabase.co/storage/v1/object/public/booth/heterotopia_1785134525837_461.jpg",
+    "x": -542,
+    "y": -529,
+    "rotation": -1,
+    "createdAt": "2026-07-27T06:42:06.2+00:00"
+  },
+  {
+    "id": "card_1785135071798_7855",
+    "author": "김하연",
+    "text": "우리 한나 최고 멋있다아아 잘 보고 갑니당",
+    "photo": "",
+    "x": 952,
+    "y": 1464,
+    "rotation": 3,
+    "createdAt": "2026-07-27T06:51:11.798+00:00"
+  },
+  {
+    "id": "card_1785135145251_7249",
+    "author": "김하연",
+    "text": "한나야 알라뷰",
+    "photo": "https://pysxtikwokpcyfjstdyv.supabase.co/storage/v1/object/public/booth/heterotopia_1785135144770_382.jpg",
+    "x": -63,
+    "y": -812,
+    "rotation": 3,
+    "createdAt": "2026-07-27T06:52:25.251+00:00"
+  },
+  {
+    "id": "card_1785135253618_3083",
+    "author": "앙앙앙앙",
+    "text": "아텍이 국현미가 되는 기적을 보았다...\n고생햇어요...",
+    "photo": "https://pysxtikwokpcyfjstdyv.supabase.co/storage/v1/object/public/booth/heterotopia_1785135252680_888.jpg",
+    "x": -858,
+    "y": 67,
+    "rotation": 4,
+    "createdAt": "2026-07-27T06:54:13.618+00:00"
+  },
+  {
+    "id": "card_1785135583855_7041",
+    "author": "익명",
+    "text": "시을아 넘 좋았어 행복 하네",
+    "photo": "https://pysxtikwokpcyfjstdyv.supabase.co/storage/v1/object/public/booth/heterotopia_1785135583496_477.jpg",
+    "x": 241,
+    "y": 610,
+    "rotation": -4,
+    "createdAt": "2026-07-27T06:59:43.855+00:00"
+  },
+  {
+    "id": "card_1785135841317_1330",
+    "author": "정은성",
+    "text": "잘. 보고. 갑니다.",
+    "photo": "",
+    "x": -542,
+    "y": 812,
+    "rotation": 3,
+    "createdAt": "2026-07-27T07:04:01.317+00:00"
+  },
+  {
+    "id": "card_1785136692545_1803",
+    "author": "하치",
+    "text": "이시헌 첫 전시 축하해!!! 앞으로 더 멋진 전시 기대할겡",
+    "photo": "https://pysxtikwokpcyfjstdyv.supabase.co/storage/v1/object/public/booth/heterotopia_1785136690551_111.jpg",
+    "x": -134,
+    "y": -325,
+    "rotation": 3,
+    "createdAt": "2026-07-27T07:18:12.545+00:00"
+  },
+  {
+    "id": "card_1785137907863_6449",
+    "author": "우리들의 일그러진 사운드팀",
+    "text": "병지야애프터파티화이탱><",
+    "photo": "https://pysxtikwokpcyfjstdyv.supabase.co/storage/v1/object/public/booth/heterotopia_1785137907502_416.jpg",
+    "x": -786,
+    "y": -535,
+    "rotation": -1,
+    "createdAt": "2026-07-27T07:38:27.863+00:00"
+  },
+  {
+    "id": "card_1785139810348_5102",
+    "author": "팀디아(여자)",
+    "text": "인간여짜",
+    "photo": "",
+    "x": 677,
+    "y": 1205,
+    "rotation": -3,
+    "createdAt": "2026-07-27T08:10:10.348+00:00"
+  },
+  {
+    "id": "card_1785139935676_723",
+    "author": "인간여짜",
+    "text": "끝~~~ 다들 수고햇다 ㅠㅠㅠ",
+    "photo": "https://pysxtikwokpcyfjstdyv.supabase.co/storage/v1/object/public/booth/heterotopia_1785139935312_963.jpg",
+    "x": 154,
+    "y": -189,
+    "rotation": -5,
+    "createdAt": "2026-07-27T08:12:15.676+00:00"
+  },
+  {
+    "id": "card_1785140331223_5012",
+    "author": "test",
+    "text": "",
+    "photo": "https://pysxtikwokpcyfjstdyv.supabase.co/storage/v1/object/public/booth/heterotopia_1785140330900_191.jpg",
+    "x": -234,
+    "y": 1040,
+    "rotation": 4,
+    "createdAt": "2026-07-27T08:18:51.223+00:00"
+  },
+  {
+    "id": "card_1785140974203_156",
+    "author": "장세윤",
+    "text": "나 등장",
+    "photo": "https://pysxtikwokpcyfjstdyv.supabase.co/storage/v1/object/public/booth/heterotopia_1785140973172_426.jpg",
+    "x": -546,
+    "y": -809,
+    "rotation": -5,
+    "createdAt": "2026-07-27T08:29:34.203+00:00"
+  },
+  {
+    "id": "card_1785141063266_3028",
+    "author": "디지털아트노동협동조합",
+    "text": "디지털아트를 석방하라 #freeDIA",
+    "photo": "https://pysxtikwokpcyfjstdyv.supabase.co/storage/v1/object/public/booth/heterotopia_1785141062899_86.jpg",
+    "x": 788,
+    "y": 401,
+    "rotation": 4,
+    "createdAt": "2026-07-27T08:31:03.266+00:00"
+  },
+  {
+    "id": "card_1785141159396_5493",
+    "author": "?",
+    "text": "?",
+    "photo": "https://pysxtikwokpcyfjstdyv.supabase.co/storage/v1/object/public/booth/heterotopia_1785141158083_152.jpg",
+    "x": 476,
+    "y": -856,
+    "rotation": -3,
+    "createdAt": "2026-07-27T08:32:39.396+00:00"
+  },
+  {
+    "id": "card_1785141211074_2513",
+    "author": "헤테로",
+    "text": "헤테로파이팅",
+    "photo": "https://pysxtikwokpcyfjstdyv.supabase.co/storage/v1/object/public/booth/heterotopia_1785141210680_519.jpg",
+    "x": 720,
+    "y": -879,
+    "rotation": -4,
+    "createdAt": "2026-07-27T08:33:31.074+00:00"
+  },
+  {
+    "id": "card_1785141444925_7815",
+    "author": "null",
+    "text": "im fine thank you",
+    "photo": "https://pysxtikwokpcyfjstdyv.supabase.co/storage/v1/object/public/booth/heterotopia_1785141443971_723.jpg",
+    "x": 667,
+    "y": 237,
+    "rotation": -4,
+    "createdAt": "2026-07-27T08:37:24.925+00:00"
+  },
+  {
+    "id": "card_1785141687917_40",
+    "author": "hello",
+    "text": "i really enjoyed this moment and space.",
+    "photo": "https://pysxtikwokpcyfjstdyv.supabase.co/storage/v1/object/public/booth/heterotopia_1785141687542_612.jpg",
+    "x": 1667,
+    "y": 407,
+    "rotation": -1,
+    "createdAt": "2026-07-27T08:41:27.917+00:00"
+  },
+  {
+    "id": "card_1785142164578_3043",
+    "author": "장담모한다",
+    "text": "헤테로토피아 진지?? #daily",
+    "photo": "https://pysxtikwokpcyfjstdyv.supabase.co/storage/v1/object/public/booth/heterotopia_1785142164243_108.jpg",
+    "x": 1624,
+    "y": -408,
+    "rotation": 4,
+    "createdAt": "2026-07-27T08:49:24.578+00:00"
+  },
+  {
+    "id": "card_1785142322882_675",
+    "author": "cycy",
+    "text": "멋있아요!! 잘 관람하고 갑니다!!",
+    "photo": "https://pysxtikwokpcyfjstdyv.supabase.co/storage/v1/object/public/booth/heterotopia_1785142322516_882.jpg",
+    "x": 1691,
+    "y": 8,
+    "rotation": -5,
+    "createdAt": "2026-07-27T08:52:02.882+00:00"
+  },
+  {
+    "id": "card_1785142971601_5881",
+    "author": "디아에게 자유를",
+    "text": "#freedia",
+    "photo": "https://pysxtikwokpcyfjstdyv.supabase.co/storage/v1/object/public/booth/heterotopia_1785142971278_612.jpg",
+    "x": 1265,
+    "y": -636,
+    "rotation": 0,
+    "createdAt": "2026-07-27T09:02:51.601+00:00"
+  },
+  {
+    "id": "card_1785143619791_5860",
+    "author": "연극이들",
+    "text": "동랑이 끝난 후^^",
+    "photo": "https://pysxtikwokpcyfjstdyv.supabase.co/storage/v1/object/public/booth/heterotopia_1785143619269_48.jpg",
+    "x": 177,
+    "y": 1410,
+    "rotation": 3,
+    "createdAt": "2026-07-27T09:13:39.791+00:00"
+  },
+  {
+    "id": "card_1785143917013_2994",
+    "author": "숭이와미녀 ㅋ",
+    "text": "",
+    "photo": "https://pysxtikwokpcyfjstdyv.supabase.co/storage/v1/object/public/booth/heterotopia_1785143916659_319.jpg",
+    "x": -792,
+    "y": 628,
+    "rotation": 2,
+    "createdAt": "2026-07-27T09:18:37.013+00:00"
+  },
+  {
+    "id": "card_1785144764882_1140",
+    "author": "이시옹채",
+    "text": "잘 보고 갑니다잉",
+    "photo": "https://pysxtikwokpcyfjstdyv.supabase.co/storage/v1/object/public/booth/heterotopia_1785144764532_904.jpg",
+    "x": -71,
+    "y": 1345,
+    "rotation": -1,
+    "createdAt": "2026-07-27T09:32:44.882+00:00"
+  },
+  {
+    "id": "card_1785145239665_6492",
+    "author": "니은",
+    "text": "최고 기획 예경 선배님들 짱\n헤테로토피아 어시라 행복햇습니다",
+    "photo": "https://pysxtikwokpcyfjstdyv.supabase.co/storage/v1/object/public/booth/heterotopia_1785145239297_775.jpg",
+    "x": 1207,
+    "y": 1278,
+    "rotation": -3,
+    "createdAt": "2026-07-27T09:40:39.665+00:00"
+  },
+  {
+    "id": "card_1785145455925_8397",
+    "author": "익명",
+    "text": "",
+    "photo": "https://pysxtikwokpcyfjstdyv.supabase.co/storage/v1/object/public/booth/heterotopia_1785145454984_160.jpg",
+    "x": -453,
+    "y": 1045,
+    "rotation": -2,
+    "createdAt": "2026-07-27T09:44:15.925+00:00"
+  },
+  {
+    "id": "card_1785145555555_8720",
+    "author": "효은과 송민",
+    "text": "뜨하하하 끝났다. 응아니야",
+    "photo": "https://pysxtikwokpcyfjstdyv.supabase.co/storage/v1/object/public/booth/heterotopia_1785145554964_671.jpg",
+    "x": -345,
+    "y": 1326,
+    "rotation": -3,
+    "createdAt": "2026-07-27T09:45:55.555+00:00"
+  },
+  {
+    "id": "card_1785145973900_8585",
+    "author": "작품명 사슴",
+    "text": "사슴.",
+    "photo": "https://pysxtikwokpcyfjstdyv.supabase.co/storage/v1/object/public/booth/heterotopia_1785145973539_745.jpg",
+    "x": -978,
+    "y": 348,
+    "rotation": -3,
+    "createdAt": "2026-07-27T09:52:53.9+00:00"
+  },
+  {
+    "id": "card_1785146011861_2562",
+    "author": "그래 좋아",
+    "text": "착하게 살자",
+    "photo": "https://pysxtikwokpcyfjstdyv.supabase.co/storage/v1/object/public/booth/heterotopia_1785146011517_412.jpg",
+    "x": -1083,
+    "y": 95,
+    "rotation": 0,
+    "createdAt": "2026-07-27T09:53:31.861+00:00"
+  },
+  {
+    "id": "card_1785146068527_2049",
+    "author": "윤소진",
+    "text": "예경짱 은수 파이팅",
+    "photo": "https://pysxtikwokpcyfjstdyv.supabase.co/storage/v1/object/public/booth/heterotopia_1785146068163_837.jpg",
+    "x": -762,
+    "y": 943,
+    "rotation": -3,
+    "createdAt": "2026-07-27T09:54:28.527+00:00"
+  },
+  {
+    "id": "card_1785146251759_2624",
+    "author": "강서경",
+    "text": "이브들 너무 고생했어용!!! 사랑해요!!!",
+    "photo": "https://pysxtikwokpcyfjstdyv.supabase.co/storage/v1/object/public/booth/heterotopia_1785146251398_656.jpg",
+    "x": -248,
+    "y": 803,
+    "rotation": -1,
+    "createdAt": "2026-07-27T09:57:31.759+00:00"
+  },
+  {
+    "id": "card_1785146733048_333",
+    "author": "지연 / 완규",
+    "text": "한나언니..은수야... 시율언니도 수고수고수많았어요\n\n은수와 모든 분들 고생 많으셨습니다. 예경 최고~!",
+    "photo": "https://pysxtikwokpcyfjstdyv.supabase.co/storage/v1/object/public/booth/heterotopia_1785146732722_998.jpg",
+    "x": 1979,
+    "y": 435,
+    "rotation": -5,
+    "createdAt": "2026-07-27T10:05:33.048+00:00"
+  },
+  {
+    "id": "card_1785147284860_3289",
+    "author": "지연한나",
+    "text": "야호끝낫다 \nㄴ지짜멋지다.....",
+    "photo": "https://pysxtikwokpcyfjstdyv.supabase.co/storage/v1/object/public/booth/heterotopia_1785147284355_724.jpg",
+    "x": 995,
+    "y": -32,
+    "rotation": 2,
+    "createdAt": "2026-07-27T10:14:44.86+00:00"
+  },
+  {
+    "id": "card_1785148439223_2008",
+    "author": "헤테로전시에바이등장",
+    "text": "",
+    "photo": "https://pysxtikwokpcyfjstdyv.supabase.co/storage/v1/object/public/booth/heterotopia_1785148438892_3.jpg",
+    "x": 1643,
+    "y": 1428,
+    "rotation": 2,
+    "createdAt": "2026-07-27T10:33:59.223+00:00"
+  },
+  {
+    "id": "card_1785150414755_3649",
+    "author": "좋구나",
+    "text": "",
+    "photo": "https://pysxtikwokpcyfjstdyv.supabase.co/storage/v1/object/public/booth/heterotopia_1785150413974_460.jpg",
+    "x": -291,
+    "y": -981,
+    "rotation": -4,
+    "createdAt": "2026-07-27T11:06:54.755+00:00"
+  },
+  {
+    "id": "card_1785150650143_291",
+    "author": "조명제왕과함께",
+    "text": "야호끝낫다",
+    "photo": "https://pysxtikwokpcyfjstdyv.supabase.co/storage/v1/object/public/booth/heterotopia_1785150649770_514.jpg",
+    "x": -1008,
+    "y": 715,
+    "rotation": 4,
+    "createdAt": "2026-07-27T11:10:50.143+00:00"
+  },
+  {
+    "id": "card_1785150791837_6240",
+    "author": "메가마인드와 지구인들",
+    "text": "#FreeDia",
+    "photo": "https://pysxtikwokpcyfjstdyv.supabase.co/storage/v1/object/public/booth/heterotopia_1785150790882_721.jpg",
+    "x": -76,
+    "y": -1074,
+    "rotation": 3,
+    "createdAt": "2026-07-27T11:13:11.837+00:00"
+  },
+  {
+    "id": "card_1785151343461_8769",
+    "author": "시을",
+    "text": "사랑해 my eve..",
+    "photo": "https://pysxtikwokpcyfjstdyv.supabase.co/storage/v1/object/public/booth/heterotopia_1785151342480_20.jpg",
+    "x": -34,
+    "y": 637,
+    "rotation": 3,
+    "createdAt": "2026-07-27T11:22:23.461+00:00"
+  },
+  {
+    "id": "card_1785151460515_917",
+    "author": "퇴근요정들",
+    "text": "퇴근 원해요",
+    "photo": "https://pysxtikwokpcyfjstdyv.supabase.co/storage/v1/object/public/booth/heterotopia_1785151460028_250.jpg",
+    "x": 1388,
+    "y": 515,
+    "rotation": -1,
+    "createdAt": "2026-07-27T11:24:20.515+00:00"
+  },
+  {
+    "id": "card_1785151577766_4270",
+    "author": "휘휘",
+    "text": "방..주...love...",
+    "photo": "https://pysxtikwokpcyfjstdyv.supabase.co/storage/v1/object/public/booth/heterotopia_1785151577417_75.jpg",
+    "x": -580,
+    "y": 1336,
+    "rotation": 2,
+    "createdAt": "2026-07-27T11:26:17.766+00:00"
+  }
+]

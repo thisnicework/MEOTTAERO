@@ -127,9 +127,9 @@ function loadSemesters() {
             
             <p class="bold" style="color: var(--color-high);">⚑ ENTRY FEE</p>
             <p style="margin-bottom: 1rem; line-height: 1.5;">
-              • 얼리버드예매 (07.19 ~ 07.28)<br>
+              • 얼리버드예매 (07.20 ~ 07.30)<br>
               &nbsp;&nbsp;참가비 30,000₩ / 관람비 25,000₩<br>
-              • 일반예매 (07.28 ~ 08.26)<br>
+              • 일반예매 (07.30 ~ 08.26)<br>
               &nbsp;&nbsp;참가비 35,000₩ / 관람비 30,000₩
             </p>
 
@@ -266,7 +266,8 @@ export async function getBookings() {
         .order('created_at', { ascending: false });
 
       if (!error && data) {
-        return data.map(b => {
+        const filteredData = data.filter(b => b.code !== '__SYSTEM_CONFIG_CAPACITIES__');
+        return filteredData.map(b => {
           let paymentConfirmed = b.payment_confirmed || false;
           let smsSent = b.sms_sent || false;
           let studentId = b.student_id || '';
@@ -304,7 +305,8 @@ export async function getBookings() {
     fs.writeFileSync(BOOKINGS_FILE, JSON.stringify([], null, 2), 'utf8');
   }
   try {
-    return JSON.parse(fs.readFileSync(BOOKINGS_FILE, 'utf8'));
+    const localBookings = JSON.parse(fs.readFileSync(BOOKINGS_FILE, 'utf8'));
+    return localBookings.filter(b => b.code !== '__SYSTEM_CONFIG_CAPACITIES__');
   } catch (e) {
     return [];
   }
@@ -443,7 +445,28 @@ export async function updateBookingStatus(code, updates) {
   return false;
 }
 
-export function getCapacities() {
+export async function getCapacities() {
+  // 1. Try to load from Supabase
+  if (supabase) {
+    try {
+      const { data, error } = await supabase
+        .from('bookings')
+        .select('*')
+        .eq('code', '__SYSTEM_CONFIG_CAPACITIES__');
+      
+      if (!error && data && data.length > 0) {
+        try {
+          return JSON.parse(data[0].student_id);
+        } catch (parseErr) {
+          console.error('Failed to parse capacities JSON from Supabase:', parseErr);
+        }
+      }
+    } catch (e) {
+      console.error('Failed to load capacities from Supabase:', e);
+    }
+  }
+
+  // 2. Fallback to local config file
   const filePath = path.resolve(__dirname, 'capacity_config.json');
   if (!fs.existsSync(filePath)) {
     const defaults = {
@@ -468,7 +491,46 @@ export function getCapacities() {
   }
 }
 
-export function saveCapacities(capacities) {
+export async function saveCapacities(capacities) {
+  // 1. Try to save to Supabase using a special row in bookings
+  if (supabase) {
+    try {
+      const { data: existing, error: selectErr } = await supabase
+        .from('bookings')
+        .select('code')
+        .eq('code', '__SYSTEM_CONFIG_CAPACITIES__');
+      
+      if (!selectErr) {
+        if (existing && existing.length > 0) {
+          // Update
+          await supabase
+            .from('bookings')
+            .update({
+              student_id: JSON.stringify(capacities),
+              name: 'THE SIA & 다놀다농 Capacities',
+              phone: '000-0000-0000',
+              tickets: 0
+            })
+            .eq('code', '__SYSTEM_CONFIG_CAPACITIES__');
+        } else {
+          // Insert
+          await supabase
+            .from('bookings')
+            .insert([{
+              code: '__SYSTEM_CONFIG_CAPACITIES__',
+              name: 'THE SIA & 다놀다농 Capacities',
+              student_id: JSON.stringify(capacities),
+              phone: '000-0000-0000',
+              tickets: 0
+            }]);
+        }
+      }
+    } catch (e) {
+      console.error('Error saving capacities to Supabase:', e);
+    }
+  }
+
+  // 2. Also save to local JSON file as a cache/fallback
   const filePath = path.resolve(__dirname, 'capacity_config.json');
   try {
     fs.writeFileSync(filePath, JSON.stringify(capacities, null, 2), 'utf8');
