@@ -367,57 +367,44 @@
                                 style="max-width: 480px; width: 100%; height: auto; display: block; margin-top: 1.5rem; margin-bottom: 1.5rem;">
                               <% } %>
 
+                                <style>
+                                  /* 기본 컨트롤바에서 재생버튼, 탐색바, 전체화면 버튼 등을 숨기고 음량/음소거 제어만 남김 */
+                                  .archive-video::-webkit-media-controls-play-button,
+                                  .archive-video::-webkit-media-controls-start-playback-button,
+                                  .archive-video::-webkit-media-controls-timeline,
+                                  .archive-video::-webkit-media-controls-current-time-display,
+                                  .archive-video::-webkit-media-controls-time-remaining-display,
+                                  .archive-video::-webkit-media-controls-fullscreen-button,
+                                  .archive-video::-webkit-media-controls-overflow-button,
+                                  .archive-video::-webkit-media-controls-toggle-closed-captions-button {
+                                    display: none !important;
+                                  }
+                                  .archive-video::-webkit-media-controls-volume-control-container,
+                                  .archive-video::-webkit-media-controls-mute-button,
+                                  .archive-video::-webkit-media-controls-volume-slider {
+                                    display: flex !important;
+                                  }
+                                </style>
+
                                 <% if (activeSemester.id==='춤출자유vol-2' ) { %>
                                   <hr>
-                                  <div class="video-archive-wrapper" style="position: relative; max-width: 480px; width: 100%; border: none; margin-top: 1rem;">
-                                    <video class="archive-video" autoplay loop muted playsinline preload="auto" style="width: 100%; height: auto; display: block; border: none;">
-                                      <source
-                                        src="https://pysxtikwokpcyfjstdyv.supabase.co/storage/v1/object/public/videos/DancefreedomVol2.mp4"
-                                        type="video/mp4">
-                                    </video>
-                                    <button type="button" class="sound-toggle-btn bold" onclick="toggleArchiveSound(this)" style="position: absolute; bottom: 12px; right: 12px; background: rgba(0, 0, 0, 0.7); color: #ffffff; border: 1px solid rgba(255, 255, 255, 0.3); padding: 6px 12px; font-size: 0.75rem; border-radius: 20px; cursor: pointer; backdrop-filter: blur(6px); display: flex; align-items: center; gap: 6px; z-index: 5; transition: all 0.2s ease;">
-                                      <span class="sound-icon">🔇</span>
-                                      <span class="sound-text">SOUND OFF</span>
-                                    </button>
-                                  </div>
+                                  <video class="archive-video" autoplay loop muted playsinline preload="auto" controls controlsList="nodownload nofullscreen noremoteplayback"
+                                    style="max-width: 480px; width: 100%; border: none;">
+                                    <source
+                                      src="https://pysxtikwokpcyfjstdyv.supabase.co/storage/v1/object/public/videos/DancefreedomVol2.mp4"
+                                      type="video/mp4">
+                                  </video>
                                   <% } %>
 
                                     <% if (activeSemester.id==='춤출자유vol-1' ) { %>
                                       <hr>
-                                      <div class="video-archive-wrapper" style="position: relative; max-width: 480px; width: 100%; border: none; margin-top: 1rem;">
-                                        <video class="archive-video" autoplay loop muted playsinline preload="auto" style="width: 100%; height: auto; display: block; border: none;">
-                                          <source
-                                            src="https://pysxtikwokpcyfjstdyv.supabase.co/storage/v1/object/public/videos/meottearo.mp4#t=30"
-                                            type="video/mp4">
-                                        </video>
-                                        <button type="button" class="sound-toggle-btn bold" onclick="toggleArchiveSound(this)" style="position: absolute; bottom: 12px; right: 12px; background: rgba(0, 0, 0, 0.7); color: #ffffff; border: 1px solid rgba(255, 255, 255, 0.3); padding: 6px 12px; font-size: 0.75rem; border-radius: 20px; cursor: pointer; backdrop-filter: blur(6px); display: flex; align-items: center; gap: 6px; z-index: 5; transition: all 0.2s ease;">
-                                          <span class="sound-icon">🔇</span>
-                                          <span class="sound-text">SOUND OFF</span>
-                                        </button>
-                                      </div>
+                                      <video class="archive-video" autoplay loop muted playsinline preload="auto" controls controlsList="nodownload nofullscreen noremoteplayback"
+                                        style="max-width: 480px; width: 100%; border: none;">
+                                        <source
+                                          src="https://pysxtikwokpcyfjstdyv.supabase.co/storage/v1/object/public/videos/meottearo.mp4#t=30"
+                                          type="video/mp4">
+                                      </video>
                                       <% } %>
-
-                                      <script>
-                                        function toggleArchiveSound(btn) {
-                                          const wrapper = btn.closest('.video-archive-wrapper');
-                                          const video = wrapper ? wrapper.querySelector('video') : null;
-                                          if (!video) return;
-
-                                          video.muted = !video.muted;
-                                          const icon = btn.querySelector('.sound-icon');
-                                          const text = btn.querySelector('.sound-text');
-
-                                          if (video.muted) {
-                                            if (icon) icon.textContent = '🔇';
-                                            if (text) text.textContent = 'SOUND OFF';
-                                            btn.style.background = 'rgba(0, 0, 0, 0.7)';
-                                          } else {
-                                            if (icon) icon.textContent = '🔊';
-                                            if (text) text.textContent = 'SOUND ON';
-                                            btn.style.background = 'var(--color-high, #196f3d)';
-                                          }
-                                        }
-                                      </script>
                                         <% if (activeSemester.id==='the-sia-vol-2' ) { %>
                                           <script>
                                             document.addEventListener('DOMContentLoaded', function () {
