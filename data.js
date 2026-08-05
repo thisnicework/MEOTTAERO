@@ -47,7 +47,7 @@ function loadSemesters() {
         ...sem,
         description: `
           <div class="project-text" style="max-width: 480px; margin-bottom: 2rem;">
-            <p class="bold" style="font-size: 1.25rem; margin-bottom: 0.5rem; color: var(--color-high);">&lt;다놀다농&gt; 댄스워크숍</p>
+            <p class="bold" style="font-size: 1.25rem; margin-bottom: 0.5rem; color: var(--color-high);">&lt;다놀다농&gt; 댄스파티</p>
             <p style="margin-bottom: 1.5rem; font-size: 0.95rem;">멋대로 X 다농마트 다같이 놀자 다농 한바퀴~ 💃🏿🪩🕺🏿</p>
             <p style="margin-bottom: 1.5rem; font-size: 0.95rem; line-height: 1.6;">
               춤과 음악을 중심으로 자유롭게 감각을 경험하고 머물 수 있는 로컬 기반 문화 프로젝트 &lt;다놀다농&gt;에서 음악·움직임·휴식·파티 문화를 보다 가볍고 열린 방식으로 즐길 분들을 모집합니다!
