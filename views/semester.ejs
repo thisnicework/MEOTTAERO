@@ -367,44 +367,69 @@
                                 style="max-width: 480px; width: 100%; height: auto; display: block; margin-top: 1.5rem; margin-bottom: 1.5rem;">
                               <% } %>
 
-                                <style>
-                                  /* 기본 컨트롤바에서 재생버튼, 탐색바, 전체화면 버튼 등을 숨기고 음량/음소거 제어만 남김 */
-                                  .archive-video::-webkit-media-controls-play-button,
-                                  .archive-video::-webkit-media-controls-start-playback-button,
-                                  .archive-video::-webkit-media-controls-timeline,
-                                  .archive-video::-webkit-media-controls-current-time-display,
-                                  .archive-video::-webkit-media-controls-time-remaining-display,
-                                  .archive-video::-webkit-media-controls-fullscreen-button,
-                                  .archive-video::-webkit-media-controls-overflow-button,
-                                  .archive-video::-webkit-media-controls-toggle-closed-captions-button {
-                                    display: none !important;
-                                  }
-                                  .archive-video::-webkit-media-controls-volume-control-container,
-                                  .archive-video::-webkit-media-controls-mute-button,
-                                  .archive-video::-webkit-media-controls-volume-slider {
-                                    display: flex !important;
-                                  }
-                                </style>
-
                                 <% if (activeSemester.id==='춤출자유vol-2' ) { %>
                                   <hr>
-                                  <video class="archive-video" autoplay loop muted playsinline preload="auto" controls controlsList="nodownload nofullscreen noremoteplayback"
-                                    style="max-width: 480px; width: 100%; border: none;">
-                                    <source
-                                      src="https://pysxtikwokpcyfjstdyv.supabase.co/storage/v1/object/public/videos/DancefreedomVol2.mp4"
-                                      type="video/mp4">
-                                  </video>
+                                  <div class="video-archive-wrapper" style="position: relative; max-width: 480px; width: 100%; border: none; margin-top: 1rem;">
+                                    <video class="archive-video" autoplay loop muted playsinline preload="auto" style="width: 100%; height: auto; display: block; border: none;">
+                                      <source
+                                        src="https://pysxtikwokpcyfjstdyv.supabase.co/storage/v1/object/public/videos/DancefreedomVol2.mp4"
+                                        type="video/mp4">
+                                    </video>
+                                    <button type="button" class="sound-mute-btn" onclick="toggleMute(this)" title="소리 켜기/끄기" style="position: absolute; bottom: 12px; right: 12px; background: rgba(0, 0, 0, 0.65); color: #ffffff; border: 1px solid rgba(255, 255, 255, 0.3); border-radius: 50%; width: 36px; height: 36px; display: flex; align-items: center; justify-content: center; cursor: pointer; backdrop-filter: blur(4px); z-index: 10; transition: all 0.2s ease;">
+                                      <!-- Muted icon (default) -->
+                                      <svg class="icon-muted" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                        <path d="M11 5L6 9H2v6h4l5 4V5zM23 9l-6 6M17 9l6 6"/>
+                                      </svg>
+                                      <!-- Unmuted icon -->
+                                      <svg class="icon-unmuted" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="display: none;">
+                                        <path d="M11 5L6 9H2v6h4l5 4V5zM19.07 4.93a10 10 0 0 1 0 14.14M15.54 8.46a5 5 0 0 1 0 7.07"/>
+                                      </svg>
+                                    </button>
+                                  </div>
                                   <% } %>
 
                                     <% if (activeSemester.id==='춤출자유vol-1' ) { %>
                                       <hr>
-                                      <video class="archive-video" autoplay loop muted playsinline preload="auto" controls controlsList="nodownload nofullscreen noremoteplayback"
-                                        style="max-width: 480px; width: 100%; border: none;">
-                                        <source
-                                          src="https://pysxtikwokpcyfjstdyv.supabase.co/storage/v1/object/public/videos/meottearo.mp4#t=30"
-                                          type="video/mp4">
-                                      </video>
+                                      <div class="video-archive-wrapper" style="position: relative; max-width: 480px; width: 100%; border: none; margin-top: 1rem;">
+                                        <video class="archive-video" autoplay loop muted playsinline preload="auto" style="width: 100%; height: auto; display: block; border: none;">
+                                          <source
+                                            src="https://pysxtikwokpcyfjstdyv.supabase.co/storage/v1/object/public/videos/meottearo.mp4#t=30"
+                                            type="video/mp4">
+                                        </video>
+                                        <button type="button" class="sound-mute-btn" onclick="toggleMute(this)" title="소리 켜기/끄기" style="position: absolute; bottom: 12px; right: 12px; background: rgba(0, 0, 0, 0.65); color: #ffffff; border: 1px solid rgba(255, 255, 255, 0.3); border-radius: 50%; width: 36px; height: 36px; display: flex; align-items: center; justify-content: center; cursor: pointer; backdrop-filter: blur(4px); z-index: 10; transition: all 0.2s ease;">
+                                          <!-- Muted icon (default) -->
+                                          <svg class="icon-muted" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                            <path d="M11 5L6 9H2v6h4l5 4V5zM23 9l-6 6M17 9l6 6"/>
+                                          </svg>
+                                          <!-- Unmuted icon -->
+                                          <svg class="icon-unmuted" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="display: none;">
+                                            <path d="M11 5L6 9H2v6h4l5 4V5zM19.07 4.93a10 10 0 0 1 0 14.14M15.54 8.46a5 5 0 0 1 0 7.07"/>
+                                          </svg>
+                                        </button>
+                                      </div>
                                       <% } %>
+
+                                      <script>
+                                        function toggleMute(btn) {
+                                          const wrapper = btn.closest('.video-archive-wrapper');
+                                          const video = wrapper ? wrapper.querySelector('video') : null;
+                                          if (!video) return;
+
+                                          video.muted = !video.muted;
+                                          const iconMuted = btn.querySelector('.icon-muted');
+                                          const iconUnmuted = btn.querySelector('.icon-unmuted');
+
+                                          if (video.muted) {
+                                            if (iconMuted) iconMuted.style.display = 'block';
+                                            if (iconUnmuted) iconUnmuted.style.display = 'none';
+                                            btn.style.background = 'rgba(0, 0, 0, 0.65)';
+                                          } else {
+                                            if (iconMuted) iconMuted.style.display = 'none';
+                                            if (iconUnmuted) iconUnmuted.style.display = 'block';
+                                            btn.style.background = 'var(--color-high, #196f3d)';
+                                          }
+                                        }
+                                      </script>
                                         <% if (activeSemester.id==='the-sia-vol-2' ) { %>
                                           <script>
                                             document.addEventListener('DOMContentLoaded', function () {
