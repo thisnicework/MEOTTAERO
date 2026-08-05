@@ -59,6 +59,9 @@ function loadSemesters() {
             <p class="bold" style="color: var(--color-high);">✪ 모집 기간</p>
             <p style="margin-bottom: 1rem;">2026. 07. 20 ~ 08. 06</p>
             
+            <p class="bold" style="color: var(--color-high);">✪ 장소</p>
+            <p style="margin-bottom: 1rem;">📍 다농마트 7층 아마리스 (경기도 안산시 단원구 예술대학로 18)</p>
+            
             <p class="bold" style="color: var(--color-high);">✪ 프로그램</p>
             <p style="margin-bottom: 1rem; line-height: 1.6;">
               <strong>1. 하우스댄스 워크숍</strong> (7.24 ~ 7.25 / 19시~21시)<br>
