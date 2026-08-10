@@ -39,7 +39,7 @@
             style="width: 100%; padding: 0.75rem; border: 1px solid var(--color-fg); outline: none;">
         </div>
 
-        <div class="filter-panel" style="margin-bottom: 1.5rem;">
+        <div class="filter-panel" id="panel-filter" style="display: none; margin-bottom: 1.5rem;">
           <label for="event-filter" class="bold" style="display: block; font-size: 0.85rem; margin-bottom: 0.5rem;">공연 필터 (Filter by Show)</label>
           <select id="event-filter" style="width: 100%; padding: 0.75rem; border: 1px solid var(--color-fg); outline: none; background: white; font-family: inherit;">
             <option value="all">전체 보기 (All Shows)</option>
@@ -222,6 +222,7 @@ function formatKST(dateStr) {
           const panelCapacity = document.getElementById('panel-capacity');
           const wrapperSia = document.getElementById('wrapper-cap-sia');
           const wrapperDanong = document.getElementById('wrapper-cap-danong');
+          const panelFilter = document.getElementById('panel-filter');
           
           // Count visible/available events from the filter dropdown options
           const eventOptions = eventFilter ? Array.from(eventFilter.options).filter(opt => opt.value !== 'all') : [];
@@ -229,6 +230,7 @@ function formatKST(dateStr) {
           
           if (selectedEvent === 'all') {
             if (cardTotal) cardTotal.style.display = eventCount > 1 ? '' : 'none';
+            if (panelFilter) panelFilter.style.display = eventCount > 1 ? '' : 'none';
             if (cardSia) cardSia.style.display = '';
             if (cardDanong) cardDanong.style.display = 'none'; // Always hide 다놀다농
             if (panelCapacity) panelCapacity.style.display = '';
