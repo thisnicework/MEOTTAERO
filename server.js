@@ -486,7 +486,7 @@ app.get('/admin', requireAdminAuth, async (req, res) => {
     });
 
     // Filter out bookings that belong to inactive/ended events
-    bookings = bookings.filter(b => b.eventId === 'the-sia-vol-2' || b.eventId === '다놀다농');
+    bookings = bookings.filter(b => b.eventId === 'the-sia-vol-2');
 
     const capacities = await db.getCapacities();
     res.render('bookings', {
@@ -529,7 +529,7 @@ app.get('/admin/export', requireAdminAuth, async (req, res) => {
     if (event && event !== 'all') {
       bookings = bookings.filter(b => b.eventId === event);
     } else {
-      bookings = bookings.filter(b => b.eventId === 'the-sia-vol-2' || b.eventId === '다놀다농');
+      bookings = bookings.filter(b => b.eventId === 'the-sia-vol-2');
     }
 
     const formatKST = (dateStr) => {
