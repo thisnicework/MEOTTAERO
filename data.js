@@ -91,8 +91,6 @@ function loadSemesters() {
                 하루 동안 이어지는 가장 긴 춤의 레이스. 댄스 마라톤.
               </p>
             </div>
-
-            <img src="/dancemarathon.png" alt="DANCE MARATHON" style="max-width: 320px; width: 100%; height: auto; display: block; margin-top: 1.5rem; margin-bottom: 1.5rem;">
           </div>
         `
       };
