@@ -1,5 +1,12 @@
 [
   {
+    "id": "dance-marathon",
+    "title": "DANCE MARATHON",
+    "term": "Sep. 2026",
+    "isEmpty": false,
+    "isUpcoming": true
+  },
+  {
     "id": "the-sia-vol-2",
     "title": "THE SIA Vol.2",
     "term": "Aug. 2026",

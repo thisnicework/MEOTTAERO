@@ -42,6 +42,61 @@ function loadStudents() {
 function loadSemesters() {
   const semestersRaw = JSON.parse(fs.readFileSync(path.resolve(__dirname, 'semesters.json'), 'utf8'));
   return semestersRaw.map(sem => {
+    if (sem.id === 'dance-marathon') {
+      return {
+        ...sem,
+        description: `
+          <div class="project-text" style="max-width: 480px; margin-bottom: 2rem;">
+            <p class="bold" style="font-size: 1.25rem; margin-bottom: 0.5rem; color: var(--color-high);">DANCE MARATHON</p>
+            <p style="margin-bottom: 1.5rem; font-size: 0.95rem; line-height: 1.6;">
+              8시간, 논스톱 춤판이 열린다.<br>
+              누구나 주인공이 되고, 누구도 탓하지 않는 자유롭고 평등한 무대<br>
+              오늘 하루, '가장 긴 춤의 레이스'에 함께하라!
+            </p>
+            
+            <p class="bold" style="color: var(--color-high);">✪ 일시</p>
+            <p style="margin-bottom: 1rem;">🕟 2026.09.19(수) 11:00 ~ 19:00 (소요시간 480분)</p>
+            
+            <p class="bold" style="color: var(--color-high);">✪ 장소</p>
+            <p style="margin-bottom: 1rem;">📍 서울무용창작센터</p>
+            
+            <p class="bold" style="color: var(--color-high);">✪ 티켓 / 관람안내</p>
+            <p style="margin-bottom: 1rem; line-height: 1.5;">
+              • 티켓가격 : 전석 무료<br>
+              • 관람연령 : 전체관람가
+            </p>
+
+            <div style="margin-top: 1.5rem; margin-bottom: 1.5rem;">
+              <a href="https://docs.google.com/forms/d/e/1FAIpQLSeirM7GI9dBH9-5vOb_Xgud5PGHcCHYVTNthRP5PXU6ChLRmQ/viewform" target="_blank" rel="noopener noreferrer" class="no-arrow" style="display: block; width: 100%; text-align: center; text-decoration: none; padding: 0.85rem 1.25rem; border: 1px solid var(--color-fg); background: var(--color-fg); color: var(--color-bg); font-weight: bold; font-size: 1rem; box-sizing: border-box;">
+                댄스 마라톤 신청하기 (REGISTER) ↗
+              </a>
+            </div>
+
+            <div style="margin-top: 1.5rem; margin-bottom: 1.5rem; line-height: 1.6; font-size: 0.95rem;">
+              <p style="margin-bottom: 1rem; font-weight: bold; color: var(--color-fg);">공연과 파티, 그 사이에서 펼쳐지는 움직임의 도전.</p>
+              <p style="margin-bottom: 1rem;">
+                &lt;댄스 마라톤&gt;은 춤을 사랑하는 사람들이 한 공간에 모여 하루를 함께 만들어가는 오픈 플로어 프로그램이다.
+              </p>
+              <p style="margin-bottom: 1rem;">
+                공개 모집을 통해 선정된 참가자들이 릴레이처럼 춤을 이어가고, 음악과 움직임은 새로운 만남을 만들어낸다.<br>
+                발레, 현대무용, 한국무용, 스트릿댄스 등 장르와 형식의 구분 없이 각자의 방식으로 참여한 몸들은 하루 동안 하나의 풍경을 이룬다.
+              </p>
+              <p style="margin-bottom: 1rem;">
+                누군가는 무대에 오르고, 누군가는 춤을 지켜본다.
+              </p>
+              <p style="margin-bottom: 1rem;">
+                관객과 참가자, 공연과 파티의 경계를 넘나드는 시간. 춤은 무대 위 작품을 넘어 함께 경험하고 나누는 축제가 된다.
+              </p>
+              <p style="margin-bottom: 1rem; font-weight: bold; color: var(--color-high);">
+                하루 동안 이어지는 가장 긴 춤의 레이스. 댄스 마라톤.
+              </p>
+            </div>
+
+            <img src="/dancemarathon.png" alt="DANCE MARATHON" style="max-width: 320px; width: 100%; height: auto; display: block; margin-top: 1.5rem; margin-bottom: 1.5rem;">
+          </div>
+        `
+      };
+    }
     if (sem.id === '다놀다농') {
       return {
         ...sem,

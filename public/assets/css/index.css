@@ -237,7 +237,8 @@ main div.gallery {
 	margin-bottom:var(--margin);
 }
 
-main div.gallery a::after {
+main div.gallery a::after,
+a.no-arrow::after {
 	content: none !important;
 }
 
