@@ -186,7 +186,9 @@ function loadSemesters() {
               • 얼리버드예매 (07.20 ~ 07.30)<br>
               &nbsp;&nbsp;참가비 30,000₩ / 관람비 25,000₩<br>
               • 일반예매 (07.30 ~ 08.26)<br>
-              &nbsp;&nbsp;참가비 35,000₩ / 관람비 30,000₩
+              &nbsp;&nbsp;참가비 35,000₩ / 관람비 30,000₩<br>
+              • 당일 현장 접수 가능<br>
+              &nbsp;&nbsp;참가비 38,000₩ / 관람비 30,000₩
             </p>
 
             <p class="bold" style="color: var(--color-high);">✪ BANK ACCOUNT</p>

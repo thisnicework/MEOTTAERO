@@ -53,9 +53,13 @@
       %>
         <div id="booking-container" class="booking-section">
           <% if (typeof isSoldOut !== 'undefined' && isSoldOut) { %>
-            <div style="border: 1px solid var(--color-high); padding: 2.5rem 1.5rem; text-align: center; background: rgba(0, 0, 0, 0.02); backdrop-filter: blur(10px); margin-bottom: 0;">
+            <div style="border: 1px solid var(--color-high); padding: 2rem 1.5rem; text-align: center; background: rgba(0, 0, 0, 0.02); backdrop-filter: blur(10px); margin-bottom: 0;">
               <h2 class="bold" style="color: var(--color-high); margin-bottom: 0.5rem; text-transform: uppercase;">예매 마감 (SOLD OUT)</h2>
-              <p style="font-size: 0.95em; line-height: 1.5; color: var(--color-fg); margin: 0; word-break: keep-all;">예매 인원이 초과되어 신청이 마감되었습니다.<br>성원에 감사드립니다.</p>
+              <p style="font-size: 0.95em; line-height: 1.5; color: var(--color-fg); margin: 0 0 1.25rem 0; word-break: keep-all;">사전 예매가 마감되었습니다.<br>성원에 감사드립니다.</p>
+              <div style="border-top: 1px dashed var(--color-high); padding-top: 1rem;">
+                <p class="bold" style="color: var(--color-high); margin-bottom: 0.35rem; font-size: 0.95rem;">당일 현장 접수 가능합니다.</p>
+                <p style="font-size: 0.9em; line-height: 1.5; color: var(--color-fg); margin: 0;">• 참가: 38,000원<br>• 관람: 30,000원</p>
+              </div>
             </div>
           <% } else { %>
             <h2 class="bold"
