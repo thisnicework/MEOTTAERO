@@ -1,6 +1,7 @@
 /**
  * SIDANCE ✕ FUTURE YOU - Main Application Controller
  * Glues together MultiPoseTracker, MultiCreatureEngine, Polyphonic AudioEngine, and Exhibition UI.
+ * Features live camera preview in PIP, full-screen background overlay, and pure artwork exhibition mode.
  */
 
 import { MultiPoseTracker } from './pose-tracker.js';
@@ -12,6 +13,9 @@ class SidanceApp {
     this.container = document.getElementById('canvas-container');
     this.videoElement = document.getElementById('webcam-video');
     this.pipVideo = document.getElementById('pip-video');
+    this.pipContainer = document.getElementById('pip-container');
+    this.bgVideo = document.getElementById('camera-bg-video');
+    this.bgDimmer = document.getElementById('camera-bg-dimmer');
 
     // UI Elements
     this.uiContainer = document.getElementById('exhibition-ui');
@@ -26,6 +30,9 @@ class SidanceApp {
     this.cameraSelect = document.getElementById('camera-select');
     this.resolutionSelect = document.getElementById('resolution-select');
     this.maxDancersSelect = document.getElementById('max-dancers-select');
+    this.camModeSelect = document.getElementById('cam-mode-select');
+    this.bgOpacitySlider = document.getElementById('bg-opacity-slider');
+    this.bgOpacityVal = document.getElementById('bg-opacity-val');
     this.scaleSlider = document.getElementById('scale-slider');
     this.scaleVal = document.getElementById('scale-val');
     this.offsetSlider = document.getElementById('offset-slider');
@@ -34,11 +41,10 @@ class SidanceApp {
     this.sensVal = document.getElementById('sens-val');
     this.volSlider = document.getElementById('vol-slider');
     this.volVal = document.getElementById('vol-val');
+    this.camViewBtn = document.getElementById('btn-cam-view');
     this.soundBtn = document.getElementById('btn-sound');
     this.mirrorBtn = document.getElementById('btn-mirror');
     this.demoBtn = document.getElementById('btn-demo');
-    this.pipToggle = document.getElementById('pip-toggle');
-    this.pipContainer = document.getElementById('pip-container');
     this.presenceToast = document.getElementById('presence-toast');
 
     // Submodules
@@ -50,6 +56,8 @@ class SidanceApp {
     this.isUiVisible = true;
     this.isMirror = true;
     this.isDemo = false;
+    this.camViewMode = 'pip'; // 'pip' | 'overlay' | 'off'
+    this.bgOpacity = 0.65;
     this.lastDancerCount = 0;
     this.calibration = {
       scale: 1.0,
@@ -87,7 +95,10 @@ class SidanceApp {
     await this.setupCameras();
     this.bindEvents();
 
-    // 5. Auto-start Camera Stream
+    // 5. Initialize Camera View Mode
+    this.applyCamViewMode();
+
+    // 6. Auto-start Camera Stream
     this.startCameraStream();
   }
 
@@ -114,7 +125,7 @@ class SidanceApp {
     const deviceId = this.cameraSelect.value || null;
     const resolution = this.resolutionSelect.value || '4k';
 
-    this.statusBadge.textContent = 'LOADING MULTIPOSE AI...';
+    this.statusBadge.textContent = 'CONNECTING CAMERA...';
     this.statusBadge.className = 'status-badge status-init';
 
     const success = await this.tracker.startCamera(deviceId, resolution);
@@ -125,11 +136,19 @@ class SidanceApp {
       this.isDemo = false;
       this.demoBtn.classList.remove('active');
 
-      if (this.pipVideo && this.tracker.stream) {
-        this.pipVideo.srcObject = this.tracker.stream;
-        this.pipVideo.play().catch(e => console.warn(e));
+      // Bind stream to PIP preview and background mirror video
+      if (this.tracker.stream) {
+        if (this.pipVideo) {
+          this.pipVideo.srcObject = this.tracker.stream;
+          this.pipVideo.play().catch(e => console.warn(e));
+        }
+        if (this.bgVideo) {
+          this.bgVideo.srcObject = this.tracker.stream;
+          this.bgVideo.play().catch(e => console.warn(e));
+        }
       }
       this.setupCameras();
+      this.applyCamViewMode();
     } else {
       this.statusBadge.textContent = 'DEMO DUET CHOREO';
       this.statusBadge.className = 'status-badge status-demo';
@@ -188,6 +207,68 @@ class SidanceApp {
     }, 2400);
   }
 
+  setCamViewMode(mode) {
+    this.camViewMode = mode;
+    this.applyCamViewMode();
+
+    const modeLabels = {
+      pip: 'CAM: PIP (CORNER PREVIEW)',
+      overlay: 'CAM: OVERLAY (BODY ALIGNMENT)',
+      off: 'CAM: OFF (PURE EXHIBITION)'
+    };
+    this.showToast(`// ${modeLabels[mode]}`);
+  }
+
+  cycleCamViewMode() {
+    const cycle = {
+      pip: 'overlay',
+      overlay: 'off',
+      off: 'pip'
+    };
+    this.setCamViewMode(cycle[this.camViewMode] || 'pip');
+  }
+
+  applyCamViewMode() {
+    if (this.camModeSelect) {
+      this.camModeSelect.value = this.camViewMode;
+    }
+
+    if (this.camViewMode === 'pip') {
+      if (this.pipContainer) this.pipContainer.classList.remove('hidden');
+      if (this.bgVideo) this.bgVideo.classList.remove('active');
+      if (this.bgDimmer) this.bgDimmer.classList.remove('active');
+      this.creature.setCameraBackground(false);
+
+      if (this.camViewBtn) {
+        this.camViewBtn.classList.add('active');
+        this.camViewBtn.querySelector('.btn-label').textContent = 'CAM: PIP';
+      }
+    } else if (this.camViewMode === 'overlay') {
+      if (this.pipContainer) this.pipContainer.classList.add('hidden');
+      if (this.bgVideo) {
+        this.bgVideo.classList.add('active');
+        this.bgVideo.style.opacity = this.bgOpacity;
+      }
+      if (this.bgDimmer) this.bgDimmer.classList.add('active');
+      this.creature.setCameraBackground(true);
+
+      if (this.camViewBtn) {
+        this.camViewBtn.classList.add('active');
+        this.camViewBtn.querySelector('.btn-label').textContent = 'CAM: OVERLAY';
+      }
+    } else { // 'off'
+      if (this.pipContainer) this.pipContainer.classList.add('hidden');
+      if (this.bgVideo) this.bgVideo.classList.remove('active');
+      if (this.bgDimmer) this.bgDimmer.classList.remove('active');
+      this.creature.setCameraBackground(false);
+
+      if (this.camViewBtn) {
+        this.camViewBtn.classList.remove('active');
+        this.camViewBtn.querySelector('.btn-label').textContent = 'CAM: OFF';
+      }
+    }
+  }
+
   bindEvents() {
     // 1. Form Switching
     this.formButtons.forEach(btn => {
@@ -197,7 +278,14 @@ class SidanceApp {
       });
     });
 
-    // 2. Sound Toggle
+    // 2. Camera View Mode Button
+    if (this.camViewBtn) {
+      this.camViewBtn.addEventListener('click', () => {
+        this.cycleCamViewMode();
+      });
+    }
+
+    // 3. Sound Toggle
     this.soundBtn.addEventListener('click', () => {
       const enabled = this.audio.toggle();
       this.soundBtn.classList.toggle('active', enabled);
@@ -205,7 +293,7 @@ class SidanceApp {
       this.showToast(enabled ? '// POLYPHONIC SOUNDSCAPE ON' : '// AUDIO MUTED');
     });
 
-    // 3. Mirror Toggle
+    // 4. Mirror Toggle
     this.mirrorBtn.addEventListener('click', () => {
       this.isMirror = !this.isMirror;
       this.tracker.setMirror(this.isMirror);
@@ -213,7 +301,7 @@ class SidanceApp {
       this.showToast(this.isMirror ? '// MIRROR ON' : '// MIRROR OFF');
     });
 
-    // 4. Demo Mode Toggle
+    // 5. Demo Mode Toggle
     this.demoBtn.addEventListener('click', () => {
       this.isDemo = !this.isDemo;
       if (this.isDemo) {
@@ -227,7 +315,7 @@ class SidanceApp {
       }
     });
 
-    // 5. Settings Drawer Toggle
+    // 6. Settings Drawer Toggle
     document.getElementById('btn-settings').addEventListener('click', () => {
       this.toggleSettings();
     });
@@ -236,21 +324,36 @@ class SidanceApp {
       this.toggleSettings(false);
     });
 
-    // 6. Fullscreen Toggle
+    // 7. Fullscreen Toggle
     const fsBtn = document.getElementById('btn-fullscreen');
     fsBtn.addEventListener('click', () => this.toggleFullscreen());
     window.addEventListener('dblclick', (e) => {
-      if (!e.target.closest('#settings-drawer') && !e.target.closest('.ui-controls')) {
+      if (!e.target.closest('#settings-drawer') && !e.target.closest('.ui-controls') && !e.target.closest('#pip-container')) {
         this.toggleFullscreen();
       }
     });
 
-    // 7. PIP Webcam Toggle
-    this.pipToggle.addEventListener('change', (e) => {
-      this.pipContainer.classList.toggle('hidden', !e.target.checked);
-    });
+    // 8. Camera Mode Select (in Drawer)
+    if (this.camModeSelect) {
+      this.camModeSelect.addEventListener('change', (e) => {
+        this.setCamViewMode(e.target.value);
+      });
+    }
 
-    // 8. Max Dancers Selection
+    // 9. Background Opacity Slider
+    if (this.bgOpacitySlider) {
+      this.bgOpacitySlider.addEventListener('input', (e) => {
+        this.bgOpacity = parseFloat(e.target.value);
+        if (this.bgOpacityVal) {
+          this.bgOpacityVal.textContent = `${Math.round(this.bgOpacity * 100)}%`;
+        }
+        if (this.camViewMode === 'overlay' && this.bgVideo) {
+          this.bgVideo.style.opacity = this.bgOpacity;
+        }
+      });
+    }
+
+    // 10. Max Dancers Selection
     if (this.maxDancersSelect) {
       this.maxDancersSelect.addEventListener('change', (e) => {
         this.tracker.setMaxDancers(e.target.value);
@@ -258,7 +361,7 @@ class SidanceApp {
       });
     }
 
-    // 9. Calibration Sliders
+    // 11. Calibration Sliders
     this.scaleSlider.addEventListener('input', (e) => {
       const val = parseFloat(e.target.value);
       this.calibration.scale = val;
@@ -289,11 +392,13 @@ class SidanceApp {
     this.cameraSelect.addEventListener('change', () => this.startCameraStream());
     this.resolutionSelect.addEventListener('change', () => this.startCameraStream());
 
-    // 10. Keyboard Shortcuts
+    // 12. Keyboard Shortcuts
     window.addEventListener('keydown', (e) => {
       const key = e.key.toUpperCase();
 
-      if (key === 'F') {
+      if (key === 'V') {
+        this.cycleCamViewMode();
+      } else if (key === 'F') {
         this.toggleFullscreen();
       } else if (key === 'H') {
         this.toggleUI();
@@ -331,12 +436,11 @@ class SidanceApp {
   updateMirrorState() {
     this.mirrorBtn.classList.toggle('active', this.isMirror);
     this.mirrorBtn.querySelector('.btn-label').textContent = this.isMirror ? 'MIRROR: ON' : 'MIRROR: OFF';
-    if (this.videoElement) {
-      this.videoElement.style.transform = this.isMirror ? 'scaleX(-1)' : 'none';
-    }
-    if (this.pipVideo) {
-      this.pipVideo.style.transform = this.isMirror ? 'scaleX(-1)' : 'none';
-    }
+    const transformVal = this.isMirror ? 'scaleX(-1)' : 'none';
+
+    if (this.videoElement) this.videoElement.style.transform = transformVal;
+    if (this.pipVideo) this.pipVideo.style.transform = transformVal;
+    if (this.bgVideo) this.bgVideo.style.transform = transformVal;
   }
 
   toggleUI(force) {

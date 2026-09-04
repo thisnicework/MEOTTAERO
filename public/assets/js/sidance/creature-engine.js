@@ -80,11 +80,11 @@ export class CreatureEngine {
     this.camera = new THREE.PerspectiveCamera(50, width / height, 0.1, 100);
     this.camera.position.set(0, 0.0, 4.6);
 
-    // 3. WebGL Renderer
+    // 3. WebGL Renderer (alpha: true enables camera background video overlay)
     this.renderer = new THREE.WebGLRenderer({
       antialias: true,
       powerPreference: 'high-performance',
-      alpha: false
+      alpha: true
     });
     this.renderer.setSize(width, height);
     this.renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
@@ -154,6 +154,16 @@ export class CreatureEngine {
     if (scale !== undefined) this.options.scale = scale;
     if (yOffset !== undefined) this.options.yOffset = yOffset;
     if (sensitivity !== undefined) this.options.sensitivity = sensitivity;
+  }
+
+  setCameraBackground(isOverlayActive) {
+    if (isOverlayActive) {
+      this.renderer.setClearColor(0x000000, 0.0);
+      if (this.scene.fog) this.scene.fog.density = 0.0;
+    } else {
+      this.renderer.setClearColor(0x040507, 1.0);
+      if (this.scene.fog) this.scene.fog.density = 0.07;
+    }
   }
 
   updateMultiDancers(trackedDancersMap, collectiveMetrics) {

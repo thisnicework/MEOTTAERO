@@ -412,19 +412,54 @@
   }
 
   /* PIP Mini Preview Window */
+  /* Fullscreen Background Camera Video Layer (Ghost / Alignment Mode) */
+  #camera-bg-video {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    object-fit: cover;
+    z-index: 0;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.35s ease;
+    filter: brightness(0.7) contrast(1.15) saturate(1.1);
+  }
+
+  #camera-bg-video.active {
+    opacity: 0.65;
+  }
+
+  #camera-bg-dimmer {
+    position: absolute;
+    inset: 0;
+    background: radial-gradient(circle at center, rgba(4, 5, 7, 0.2) 30%, rgba(4, 5, 7, 0.85) 100%);
+    z-index: 0;
+    pointer-events: none;
+    opacity: 0;
+    transition: opacity 0.35s ease;
+  }
+
+  #camera-bg-dimmer.active {
+    opacity: 1;
+  }
+
+  /* PIP Camera Feed Window (Prominent for Stage Calibration) */
   #pip-container {
     position: absolute;
     bottom: 5.5rem;
     left: 2.2rem;
-    width: 180px;
-    height: 240px;
-    background: #000;
-    border: 1px solid rgba(0, 240, 255, 0.4);
-    border-radius: 8px;
+    width: 220px;
+    height: 300px;
+    background: #090d16;
+    border: 1.5px solid rgba(0, 240, 255, 0.5);
+    border-radius: 12px;
     overflow: hidden;
-    z-index: 20;
-    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.8);
+    z-index: 30;
+    box-shadow: 0 12px 36px rgba(0, 0, 0, 0.85), 0 0 15px rgba(0, 240, 255, 0.2);
     pointer-events: auto;
+    transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
   }
 
   #pip-container.hidden {
@@ -437,21 +472,48 @@
     object-fit: cover;
   }
 
-  .pip-label {
+  .pip-header {
     position: absolute;
-    top: 6px;
+    top: 8px;
     left: 8px;
+    right: 8px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    z-index: 5;
+  }
+
+  .pip-label {
     font-family: ui-monospace, SFMono-Regular, monospace;
-    font-size: 0.62rem;
-    background: rgba(0, 0, 0, 0.7);
+    font-size: 0.65rem;
+    font-weight: 700;
+    background: rgba(0, 0, 0, 0.75);
     color: #00f0ff;
-    padding: 2px 5px;
-    border-radius: 3px;
-    letter-spacing: 0.05em;
+    padding: 3px 7px;
+    border-radius: 4px;
+    letter-spacing: 0.08em;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    border: 1px solid rgba(0, 240, 255, 0.3);
+  }
+
+  .pip-label::before {
+    content: '';
+    display: inline-block;
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: #00ff66;
+    box-shadow: 0 0 6px #00ff66;
   }
 </style>
 
 <main>
+  <!-- Fullscreen Camera Background Feed (For Alignment & Testing) -->
+  <video id="camera-bg-video" autoplay playsinline muted></video>
+  <div id="camera-bg-dimmer"></div>
+
   <!-- 3D Three.js Render Target -->
   <div id="canvas-container"></div>
 
@@ -501,6 +563,10 @@
         <div class="divider-vert"></div>
 
         <!-- Utility Buttons -->
+        <button id="btn-cam-view" class="btn-pill active">
+          <span class="btn-label">CAM: PIP</span>
+        </button>
+
         <button id="btn-sound" class="btn-pill">
           <span class="btn-label">SOUND: OFF</span>
         </button>
@@ -523,6 +589,7 @@
       </div>
 
       <div class="hint-legend">
+        [<kbd>V</kbd>] Cam Mode (PIP / Overlay / Off) &nbsp;·&nbsp;
         [<kbd>F</kbd>] Fullscreen &nbsp;·&nbsp;
         [<kbd>H</kbd>] Clean Exhibition (Hide UI) &nbsp;·&nbsp;
         [<kbd>1</kbd>~<kbd>4</kbd>] Form Morph &nbsp;·&nbsp;
@@ -533,9 +600,11 @@
     </div>
   </div>
 
-  <!-- PIP Verification Mini-Feed (Toggleable for Stage Operators) -->
-  <div id="pip-container" class="hidden">
-    <div class="pip-label">CAM 4K PIP</div>
+  <!-- PIP Real-time Camera Preview Window -->
+  <div id="pip-container">
+    <div class="pip-header">
+      <div class="pip-label">LIVE CAMERA FEED</div>
+    </div>
     <video id="pip-video" autoplay playsinline muted></video>
   </div>
 
@@ -581,12 +650,25 @@
       </select>
     </div>
 
-    <!-- PIP Diagnostic Video -->
+    <!-- Camera Feed Display Mode (PIP / Overlay / Off) -->
     <div class="setting-group">
-      <label style="display: flex; align-items: center; gap: 0.5rem; font-size: 0.8rem; cursor: pointer;">
-        <input type="checkbox" id="pip-toggle">
-        <span>Show Stage Tracking PIP Window</span>
-      </label>
+      <div class="setting-label">
+        <span>Camera Display Mode (Test & Align)</span>
+      </div>
+      <select id="cam-mode-select" class="setting-select">
+        <option value="pip" selected>Corner PIP Window (Live Camera)</option>
+        <option value="overlay">Background Mirror (Body Overlay)</option>
+        <option value="off">Off (Pure Void Artwork Stage)</option>
+      </select>
+    </div>
+
+    <!-- Background Camera Overlay Opacity -->
+    <div class="setting-group" id="group-bg-opacity">
+      <div class="setting-label">
+        <span>Background Mirror Opacity</span>
+        <span id="bg-opacity-val">65%</span>
+      </div>
+      <input id="bg-opacity-slider" class="setting-slider" type="range" min="0.2" max="1.0" step="0.05" value="0.65">
     </div>
 
     <hr style="border: 0; border-top: 1px solid rgba(255,255,255,0.1); margin: 0.5rem 0;">
