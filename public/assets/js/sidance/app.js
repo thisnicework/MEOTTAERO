@@ -496,12 +496,12 @@ class SidanceApp {
     });
 
     const formNames = {
-      1: '01 스파인',
-      2: '02 브리슬',
-      3: '03 리본',
-      4: '04 퀀텀'
+      1: '01 실크 플로우',
+      2: '02 오로라 베일',
+      3: '03 수묵 키네틱',
+      4: '04 코스믹 얀'
     };
-    this.showToast(`// 폼 전환 완료: ${formNames[formId]}`);
+    this.showToast(`// 무용 폼 전환: ${formNames[formId]}`);
   }
 
   updateMirrorState() {
