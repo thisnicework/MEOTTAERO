@@ -166,12 +166,20 @@ export class CreatureEngine {
     }
   }
 
+  setTestOverlayMode(isTest) {
+    this.options.isTestOverlayMode = Boolean(isTest);
+    this.setCameraBackground(this.options.isTestOverlayMode);
+  }
+
   updateMultiDancers(trackedDancersMap, collectiveMetrics) {
     const delta = this.clock.getDelta();
     this.elapsedTime += delta;
 
-    // Apply global vertical offset & base scale
-    this.rootGroup.position.set(0, this.options.yOffset, 0);
+    // In Test Overlay Mode, lock to 1:1 scale and 0.0 offset to fit directly over real human body
+    const effectiveYOffset = this.options.isTestOverlayMode ? 0.0 : this.options.yOffset;
+    const effectiveScale = this.options.isTestOverlayMode ? 1.0 : this.options.scale;
+
+    this.rootGroup.position.set(0, effectiveYOffset, 0);
 
     const activeIds = new Set();
 
@@ -191,7 +199,7 @@ export class CreatureEngine {
           time: this.elapsedTime,
           delta,
           sensitivity: this.options.sensitivity,
-          baseScale: this.options.scale,
+          baseScale: effectiveScale,
           isExiting: dancer.isExiting
         });
       }
@@ -465,7 +473,16 @@ class CyberSpineForm {
     }
 
     const ribFlutter = Math.sin(time * 12.0) * energy * 0.15;
-    const ribSpread = (1.0 + energy * 0.85) * awakeFactor;
+
+    // Adapt rib cage width to dancer's real shoulder width for custom-fitted suit
+    const ls = landmarks[11];
+    const rs = landmarks[12];
+    let bodyWidthScale = 1.0;
+    if (ls && rs && ls.visibility > 0.1 && rs.visibility > 0.1) {
+      const sw = Math.hypot(rs.x - ls.x, rs.y - ls.y);
+      bodyWidthScale = Math.max(0.7, Math.min(1.6, sw / 0.55));
+    }
+    const ribSpread = (1.0 + energy * 0.85) * awakeFactor * bodyWidthScale;
 
     this.ribMeshes.forEach(ribPair => {
       const span = ribPair.baseSpan * ribSpread;

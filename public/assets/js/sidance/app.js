@@ -41,6 +41,8 @@ class SidanceApp {
     this.sensVal = document.getElementById('sens-val');
     this.volSlider = document.getElementById('vol-slider');
     this.volVal = document.getElementById('vol-val');
+    this.testModeBtn = document.getElementById('btn-test-mode');
+    this.hudModeBadge = document.getElementById('hud-mode-badge');
     this.camViewBtn = document.getElementById('btn-cam-view');
     this.soundBtn = document.getElementById('btn-sound');
     this.mirrorBtn = document.getElementById('btn-mirror');
@@ -56,7 +58,8 @@ class SidanceApp {
     this.isUiVisible = true;
     this.isMirror = true;
     this.isDemo = false;
-    this.camViewMode = 'pip'; // 'pip' | 'overlay' | 'off'
+    this.isTestFitMode = true; // Enabled by default for direct 1:1 real person alignment
+    this.camViewMode = 'overlay'; // 'pip' | 'overlay' | 'off'
     this.bgOpacity = 0.65;
     this.lastDancerCount = 0;
     this.calibration = {
@@ -95,8 +98,8 @@ class SidanceApp {
     await this.setupCameras();
     this.bindEvents();
 
-    // 5. Initialize Camera View Mode
-    this.applyCamViewMode();
+    // 5. Initialize Test Fit Mode (1:1 Real Body Overlay)
+    this.setTestFitMode(true);
 
     // 6. Auto-start Camera Stream
     this.startCameraStream();
@@ -207,6 +210,35 @@ class SidanceApp {
     }, 2400);
   }
 
+  toggleTestFitMode(force) {
+    const next = force !== undefined ? force : !this.isTestFitMode;
+    this.setTestFitMode(next);
+  }
+
+  setTestFitMode(enable) {
+    this.isTestFitMode = Boolean(enable);
+    this.creature.setTestOverlayMode(this.isTestFitMode);
+
+    if (this.testModeBtn) {
+      this.testModeBtn.classList.toggle('active', this.isTestFitMode);
+      this.testModeBtn.querySelector('.btn-label').textContent = this.isTestFitMode ? '⚡ TEST FIT: ON' : '⚡ TEST FIT: OFF';
+      this.testModeBtn.style.color = this.isTestFitMode ? '#00ff66' : '#94a3b8';
+      this.testModeBtn.style.borderColor = this.isTestFitMode ? 'rgba(0, 255, 102, 0.6)' : 'rgba(255, 255, 255, 0.15)';
+    }
+
+    if (this.hudModeBadge) {
+      this.hudModeBadge.style.display = this.isTestFitMode ? 'flex' : 'none';
+    }
+
+    if (this.isTestFitMode) {
+      this.setCamViewMode('overlay');
+      this.showToast('// ⚡ TEST FIT ACTIVE: 1:1 REAL BODY OVERLAY');
+    } else {
+      this.setCamViewMode('off');
+      this.showToast('// STAGE ARTWORK MODE (VOID STAGE)');
+    }
+  }
+
   setCamViewMode(mode) {
     this.camViewMode = mode;
     this.applyCamViewMode();
@@ -278,14 +310,21 @@ class SidanceApp {
       });
     });
 
-    // 2. Camera View Mode Button
+    // 2. Test Fit Mode Button (1:1 Real Body Overlay)
+    if (this.testModeBtn) {
+      this.testModeBtn.addEventListener('click', () => {
+        this.toggleTestFitMode();
+      });
+    }
+
+    // 3. Camera View Mode Button
     if (this.camViewBtn) {
       this.camViewBtn.addEventListener('click', () => {
         this.cycleCamViewMode();
       });
     }
 
-    // 3. Sound Toggle
+    // 4. Sound Toggle
     this.soundBtn.addEventListener('click', () => {
       const enabled = this.audio.toggle();
       this.soundBtn.classList.toggle('active', enabled);
@@ -396,7 +435,9 @@ class SidanceApp {
     window.addEventListener('keydown', (e) => {
       const key = e.key.toUpperCase();
 
-      if (key === 'V') {
+      if (key === 'T') {
+        this.toggleTestFitMode();
+      } else if (key === 'V') {
         this.cycleCamViewMode();
       } else if (key === 'F') {
         this.toggleFullscreen();

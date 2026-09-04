@@ -303,18 +303,53 @@ export class MultiPoseTracker {
     // Convert MoveNet 17 keypoints into standard 33 anatomical landmarks format
     const transformed = new Array(33).fill(null).map(() => ({ x: 0, y: 0, z: 0, visibility: 0 }));
 
-    // Helper to map and normalize keypoint
+    // Screen and perspective frustum dimensions for 1:1 camera body overlay
+    const sw = window.innerWidth || 1080;
+    const sh = window.innerHeight || 1920;
+    const screenAspect = sw / sh;
+
+    const videoAspect = (this.videoElement && this.videoElement.videoWidth && this.videoElement.videoHeight)
+      ? (this.videoElement.videoWidth / this.videoElement.videoHeight)
+      : (cw / ch);
+
+    // Three.js frustum bounds at z = 0 with camera at z = 4.6, FOV = 50 deg
+    const fovRad = (50 * Math.PI) / 360;
+    const halfFrustumH = Math.tan(fovRad) * 4.6;
+    const halfFrustumW = halfFrustumH * screenAspect;
+
+    // Helper to project keypoint directly onto screen pixel location
     const mapKp = (kpIndex) => {
       const kp = keypoints[kpIndex];
       if (!kp || kp.score < 0.15) return null;
 
-      let normX = kp.x / cw; // [0, 1]
-      if (mirror) normX = 1.0 - normX;
+      let normX = kp.x / cw;
+      let normY = kp.y / ch;
 
-      const x = (normX - 0.5) * 3.2;  // Stage width span
-      const y = -(kp.y / ch - 0.5) * 3.6; // Vertical screen span
-      const z = 0;
-      return { x, y, z, visibility: kp.score };
+      if (mirror) {
+        normX = 1.0 - normX;
+      }
+
+      // Exact CSS object-fit: cover coordinate mapping
+      let normScreenX, normScreenY;
+      if (screenAspect > videoAspect) {
+        // Screen is wider than video (video height cropped)
+        const renderedH = sw / videoAspect;
+        const cropOffset = (renderedH - sh) * 0.5;
+        normScreenX = normX;
+        normScreenY = (normY * renderedH - cropOffset) / sh;
+      } else {
+        // Screen is taller than video (Vertical 9:16 screen: video width cropped)
+        const renderedW = sh * videoAspect;
+        const cropOffset = (renderedW - sw) * 0.5;
+        normScreenX = (normX * renderedW - cropOffset) / sw;
+        normScreenY = normY;
+      }
+
+      // Convert from screen space [0, 1] to Three.js world space [-halfFrustum, +halfFrustum]
+      const worldX = (normScreenX - 0.5) * 2.0 * halfFrustumW;
+      const worldY = -(normScreenY - 0.5) * 2.0 * halfFrustumH;
+
+      return { x: worldX, y: worldY, z: 0, visibility: kp.score };
     };
 
     // MoveNet 17 to MediaPipe 33 mapping
