@@ -155,21 +155,22 @@ export class AudioEngine {
     if (!this.isEnabled || !this.ctx || !trackedDancersMap) return;
 
     const t = this.ctx.currentTime;
-    const dancerCount = trackedDancersMap.size;
-    const totalEnergy = collectiveMetrics.totalEnergy || 0;
+    const dancerCount = collectiveMetrics ? (collectiveMetrics.dancerCount || 0) : 0;
+    const totalEnergy = collectiveMetrics ? (collectiveMetrics.totalEnergy || 0) : 0;
 
     // 1. Dynamic Filter opening proportional to collective energy and dancer count
-    const targetCutoff = 380 + Math.min(totalEnergy * 1400 + dancerCount * 300, 4200);
+    const targetCutoff = dancerCount === 0 ? 320 : 380 + Math.min(totalEnergy * 1400 + dancerCount * 300, 4200);
     this.filter.frequency.setTargetAtTime(targetCutoff, t, 0.09);
 
-    // 2. Map active dancers to polyphonic voices
-    const dancers = Array.from(trackedDancersMap.values());
+    // 2. Map confirmed active dancers to polyphonic voices
+    const activeDancers = Array.from(trackedDancersMap.values())
+      .filter(d => (d.isConfirmed !== false) && !d.isExiting && d.metrics && d.metrics.isPresent);
 
     for (let i = 0; i < this.voices.length; i++) {
       const voice = this.voices[i];
-      const dancer = dancers[i];
+      const dancer = activeDancers[i];
 
-      if (dancer && !dancer.isExiting) {
+      if (dancer) {
         const lw = dancer.landmarks[15];
         const rw = dancer.landmarks[16];
         const handY = Math.max(lw ? lw.y : 0, rw ? rw.y : 0);

@@ -13,7 +13,7 @@ export class MultiPoseTracker {
       resolution: '4k',
       maxDancers: 4,
       smoothingAlpha: 0.65,
-      minScore: 0.22,
+      minScore: 0.42,
       onMultiPose: null, // Callback: (activeDancersMap, collectiveMetrics) => {}
       onPresenceChange: null,
       onFps: null,
@@ -34,9 +34,8 @@ export class MultiPoseTracker {
     this.demoMode = false;
     this.isModelReady = false;
 
-    // Multi-dancer state map: personId -> { id, landmarks, prevLandmarks, metrics, lastSeen, isExiting }
+    // Multi-dancer state map: slotId (1..maxDancers) -> { id, landmarks, prevLandmarks, metrics, lastSeen, isExiting, isConfirmed, detectionStreak }
     this.trackedDancers = new Map();
-    this.nextVirtualId = 1;
 
     // Frame timing & FPS
     this.lastFrameTime = performance.now();
@@ -231,26 +230,100 @@ export class MultiPoseTracker {
     requestAnimationFrame(loop);
   }
 
-  _handleMultiPoses(rawPoses, now) {
-    const validPoses = (rawPoses || []).filter(p => (p.score || 0) >= this.options.minScore);
-    const seenIds = new Set();
+  _isValidHumanPose(rawPose) {
+    if (!rawPose || (rawPose.score || 0) < this.options.minScore) {
+      return false;
+    }
 
-    validPoses.forEach((rawPose, idx) => {
-      // MoveNet MultiPose provides pose.id (integer)
-      let personId = rawPose.id;
-      if (personId === undefined || personId === null) {
-        // Fallback spatial proximity assignment
-        personId = this._matchOrCreatePersonId(rawPose);
+    const kps = rawPose.keypoints;
+    if (!kps || kps.length < 17) return false;
+
+    // 1. Count keypoints with solid confidence and compute bounding box in 512x384 canvas
+    let confidentCount = 0;
+    let minX = Infinity, maxX = -Infinity, minY = Infinity, maxY = -Infinity;
+
+    for (let i = 0; i < 17; i++) {
+      const kp = kps[i];
+      if (kp && kp.score >= 0.28) {
+        confidentCount++;
+        if (kp.x < minX) minX = kp.x;
+        if (kp.x > maxX) maxX = kp.x;
+        if (kp.y < minY) minY = kp.y;
+        if (kp.y > maxY) maxY = kp.y;
       }
+    }
 
-      seenIds.add(personId);
-      this._processPersonPose(personId, rawPose, now);
+    // Require at least 5 confident keypoints to reject sensor/background noise
+    if (confidentCount < 5) {
+      return false;
+    }
+
+    // 2. Physical bounding box in 512x384 canvas
+    const boxW = maxX - minX;
+    const boxH = maxY - minY;
+    // Reject tiny micro-speck noise clumps (like 5px dot in empty room)
+    if (boxH < 36 || boxW < 16) {
+      return false;
+    }
+
+    // 3. Essential anatomical joints check:
+    // Shoulders: 5 (left_shoulder), 6 (right_shoulder)
+    const ls = kps[5];
+    const rs = kps[6];
+    const hasShoulder = (ls && ls.score >= 0.32) || (rs && rs.score >= 0.32);
+    if (!hasShoulder) {
+      return false;
+    }
+
+    // Hip or Head: 11 (left_hip), 12 (right_hip), 0 (nose)
+    const lh = kps[11];
+    const rh = kps[12];
+    const nose = kps[0];
+    const hasHip = (lh && lh.score >= 0.28) || (rh && rh.score >= 0.28);
+    const hasNose = nose && nose.score >= 0.32;
+
+    if (!hasHip && !hasNose) {
+      return false;
+    }
+
+    // 4. Torso span check: If hips are detected, verify physical vertical distance
+    if (hasHip) {
+      const shoulderY = (ls && rs && ls.score >= 0.25 && rs.score >= 0.25)
+        ? (ls.y + rs.y) * 0.5
+        : (ls && ls.score >= 0.25 ? ls.y : rs.y);
+      const hipY = (lh && rh && lh.score >= 0.25 && rh.score >= 0.25)
+        ? (lh.y + rh.y) * 0.5
+        : (lh && lh.score >= 0.25 ? lh.y : rh.y);
+
+      const torsoH = Math.abs(hipY - shoulderY);
+      if (torsoH < 20) {
+        // Collapsed torso: sensor noise speck
+        return false;
+      }
+    }
+
+    return true;
+  }
+
+  _handleMultiPoses(rawPoses, now) {
+    // 1. Strict anatomical filtering to eliminate noise and phantom candidates
+    const validPoses = (rawPoses || [])
+      .filter(p => this._isValidHumanPose(p))
+      .slice(0, this.options.maxDancers);
+
+    // 2. Spatial slot assignment strictly bound to 1..maxDancers
+    const assignments = this._assignSlotsToPoses(validPoses);
+    const seenSlotIds = new Set();
+
+    assignments.forEach(({ slotId, rawPose, cx, cy }) => {
+      seenSlotIds.add(slotId);
+      this._processPersonPose(slotId, rawPose, now, cx, cy);
     });
 
-    // Handle absent dancers (graceful collapse)
-    const timeoutThreshold = 1400; // ms before removing dancer
+    // 3. Handle absent dancers (fast 650ms timeout)
+    const timeoutThreshold = 650;
     for (const [id, dancer] of this.trackedDancers.entries()) {
-      if (!seenIds.has(id)) {
+      if (!seenSlotIds.has(id)) {
         const elapsed = now - dancer.lastSeen;
         if (elapsed > timeoutThreshold) {
           this.trackedDancers.delete(id);
@@ -258,9 +331,6 @@ export class MultiPoseTracker {
           dancer.isExiting = true;
           dancer.metrics.isPresent = false;
         }
-      } else {
-        dancer.isExiting = false;
-        dancer.metrics.isPresent = true;
       }
     }
 
@@ -271,29 +341,74 @@ export class MultiPoseTracker {
     }
   }
 
-  _matchOrCreatePersonId(rawPose) {
-    const nose = rawPose.keypoints[0] || { x: 0, y: 0 };
-    let bestId = null;
-    let minDist = 150; // pixel distance threshold
+  _assignSlotsToPoses(validPoses) {
+    const assignments = [];
+    const maxDancers = this.options.maxDancers || 4;
+    const availableSlotIds = [];
+    for (let i = 1; i <= maxDancers; i++) {
+      availableSlotIds.push(i);
+    }
 
-    for (const [id, dancer] of this.trackedDancers.entries()) {
-      const prevNose = dancer.rawNose || { x: 0, y: 0 };
-      const d = Math.hypot(nose.x - prevNose.x, nose.y - prevNose.y);
-      if (d < minDist) {
-        minDist = d;
-        bestId = id;
+    // Compute candidate centroid in 512x384 canvas
+    const candidates = validPoses.map(pose => {
+      const kps = pose.keypoints;
+      let cx = 0, cy = 0, count = 0;
+      [5, 6, 11, 12, 0].forEach(idx => {
+        if (kps[idx] && kps[idx].score >= 0.25) {
+          cx += kps[idx].x;
+          cy += kps[idx].y;
+          count++;
+        }
+      });
+      if (count === 0 && kps[0]) {
+        cx = kps[0].x;
+        cy = kps[0].y;
+      } else if (count > 0) {
+        cx /= count;
+        cy /= count;
       }
-    }
+      return { pose, cx, cy };
+    });
 
-    if (bestId !== null) {
-      return bestId;
-    }
+    const unassignedCandidates = [];
+    const usedSlotIds = new Set();
 
-    const newId = this.nextVirtualId++;
-    return newId;
+    // 1st pass: match to existing tracked dancers nearest to candidate
+    candidates.forEach(cand => {
+      let bestSlot = null;
+      let minDist = 180; // pixel distance threshold in 512x384 canvas
+
+      for (const [slotId, dancer] of this.trackedDancers.entries()) {
+        if (usedSlotIds.has(slotId)) continue;
+        const dCenter = dancer.canvasCenter || { x: 256, y: 192 };
+        const dist = Math.hypot(cand.cx - dCenter.x, cand.cy - dCenter.y);
+        if (dist < minDist) {
+          minDist = dist;
+          bestSlot = slotId;
+        }
+      }
+
+      if (bestSlot !== null) {
+        usedSlotIds.add(bestSlot);
+        assignments.push({ slotId: bestSlot, rawPose: cand.pose, cx: cand.cx, cy: cand.cy });
+      } else {
+        unassignedCandidates.push(cand);
+      }
+    });
+
+    // 2nd pass: assign lowest free slot (1..maxDancers) to new candidates
+    unassignedCandidates.forEach(cand => {
+      const freeSlot = availableSlotIds.find(id => !this.trackedDancers.has(id) && !usedSlotIds.has(id));
+      if (freeSlot !== undefined) {
+        usedSlotIds.add(freeSlot);
+        assignments.push({ slotId: freeSlot, rawPose: cand.pose, cx: cand.cx, cy: cand.cy });
+      }
+    });
+
+    return assignments;
   }
 
-  _processPersonPose(personId, rawPose, now) {
+  _processPersonPose(personId, rawPose, now, cx, cy) {
     const alpha = this.options.smoothingAlpha;
     const mirror = this.options.mirror;
     const cw = this.offscreenCanvas.width;
@@ -384,10 +499,12 @@ export class MultiPoseTracker {
     if (!dancer) {
       dancer = {
         id: personId,
-        colorIndex: ((personId - 1) % 4) + 1, // 1 to 4
+        colorIndex: ((personId - 1) % 4) + 1, // strictly 1 to 4
         landmarks: transformed.map(p => ({ ...p })),
         prevLandmarks: transformed.map(p => ({ ...p })),
-        rawNose: keypoints[0] ? { x: keypoints[0].x, y: keypoints[0].y } : { x: 0, y: 0 },
+        canvasCenter: { x: cx, y: cy },
+        detectionStreak: 1,
+        isConfirmed: false, // Require at least 2 consecutive frames before confirmed
         metrics: { energy: 0, velocity: 0, spread: 1.0, torsoAngle: 0, torsoCenter: { x: 0, y: 0, z: 0 }, spinePoints: [], isPresent: true },
         lastSeen: now,
         isExiting: false
@@ -395,7 +512,13 @@ export class MultiPoseTracker {
       this.trackedDancers.set(personId, dancer);
     } else {
       dancer.lastSeen = now;
-      dancer.rawNose = keypoints[0] ? { x: keypoints[0].x, y: keypoints[0].y } : dancer.rawNose;
+      dancer.isExiting = false;
+      dancer.metrics.isPresent = true;
+      dancer.canvasCenter = { x: cx, y: cy };
+      dancer.detectionStreak = (dancer.detectionStreak || 0) + 1;
+      if (dancer.detectionStreak >= 2) {
+        dancer.isConfirmed = true;
+      }
 
       // Landmark smoothing
       let totalVel = 0;
@@ -467,12 +590,17 @@ export class MultiPoseTracker {
   }
 
   _computeCollectiveMetrics() {
-    const count = this.trackedDancers.size;
+    const activeDancers = Array.from(this.trackedDancers.values())
+      .filter(d => d.isConfirmed && !d.isExiting && d.metrics.isPresent);
+
+    const count = activeDancers.length;
     this.collectiveMetrics.dancerCount = count;
 
     if (count === 0) {
       this.collectiveMetrics.totalEnergy = 0;
       this.collectiveMetrics.averageSpread = 0;
+      this.collectiveMetrics.centerOfMass = { x: 0, y: 0, z: 0 };
+      this.collectiveMetrics.distanceBetweenDancers = 0;
       return;
     }
 
@@ -480,8 +608,7 @@ export class MultiPoseTracker {
     let sumSpread = 0;
     let sumX = 0, sumY = 0;
 
-    const dancers = Array.from(this.trackedDancers.values());
-    dancers.forEach(d => {
+    activeDancers.forEach(d => {
       sumEnergy += d.metrics.energy || 0;
       sumSpread += d.metrics.spread || 1.0;
       sumX += d.metrics.torsoCenter.x;
@@ -493,9 +620,11 @@ export class MultiPoseTracker {
     this.collectiveMetrics.centerOfMass = { x: sumX / count, y: sumY / count, z: 0 };
 
     if (count >= 2) {
-      const d1 = dancers[0].metrics.torsoCenter;
-      const d2 = dancers[1].metrics.torsoCenter;
+      const d1 = activeDancers[0].metrics.torsoCenter;
+      const d2 = activeDancers[1].metrics.torsoCenter;
       this.collectiveMetrics.distanceBetweenDancers = Math.hypot(d1.x - d2.x, d1.y - d2.y);
+    } else {
+      this.collectiveMetrics.distanceBetweenDancers = 0;
     }
   }
 
@@ -570,6 +699,8 @@ export class MultiPoseTracker {
         id: spec.id,
         colorIndex: spec.id,
         landmarks: syntheticLandmarks,
+        isConfirmed: true,
+        detectionStreak: 10,
         metrics: {
           energy: 0.5 + Math.abs(Math.sin(dt * 1.8)) * 0.7,
           velocity: 0.8,

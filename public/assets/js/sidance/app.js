@@ -170,13 +170,13 @@ class SidanceApp {
     this.audio.updateMultiDancers(trackedDancersMap, collectiveMetrics);
 
     // 3. Update HUD metrics
-    const count = collectiveMetrics.dancerCount;
+    const count = collectiveMetrics ? (collectiveMetrics.dancerCount || 0) : 0;
     if (this.dancersVal) {
       this.dancersVal.textContent = count === 0 ? '0 DANCERS' : `${count} DANCER${count > 1 ? 'S ACTIVE' : ' ACTIVE'}`;
     }
 
     if (this.isUiVisible && collectiveMetrics) {
-      const energyPct = Math.min(Math.round((collectiveMetrics.totalEnergy || 0) * 45), 100);
+      const energyPct = count === 0 ? 0 : Math.min(Math.round((collectiveMetrics.totalEnergy || 0) * 45), 100);
       this.energyMeter.style.width = `${energyPct}%`;
       this.energyText.textContent = `${energyPct}%`;
     }
@@ -188,7 +188,7 @@ class SidanceApp {
         else if (count === 2) this.showToast('// 2 DANCERS SYNCHRONIZED (DUET)');
         else this.showToast(`// ${count} DANCERS SYNCHRONIZED (ENSEMBLE)`);
       } else if (count === 0 && this.lastDancerCount > 0) {
-        this.showToast('// ALL DANCERS EXITED — COLLAPSING');
+        this.showToast('// ALL DANCERS EXITED — VOID STAGE');
       }
       this.lastDancerCount = count;
     }

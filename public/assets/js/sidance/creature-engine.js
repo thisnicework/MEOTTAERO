@@ -185,27 +185,32 @@ export class CreatureEngine {
 
     if (trackedDancersMap) {
       for (const [id, dancer] of trackedDancersMap.entries()) {
-        activeIds.add(id);
+        const isConfirmed = dancer.isConfirmed !== false;
+        const isPresent = dancer.metrics && dancer.metrics.isPresent && !dancer.isExiting;
 
-        let avatar = this.avatars.get(id);
-        if (!avatar) {
-          const paletteIndex = ((dancer.colorIndex || 1) - 1) % DANCER_PALETTES.length;
-          avatar = new AvatarInstance(id, DANCER_PALETTES[paletteIndex], this.rootGroup);
-          avatar.setForm(this.options.activeForm);
-          this.avatars.set(id, avatar);
+        if (isConfirmed && isPresent) {
+          activeIds.add(id);
+
+          let avatar = this.avatars.get(id);
+          if (!avatar) {
+            const paletteIndex = ((dancer.colorIndex || 1) - 1) % DANCER_PALETTES.length;
+            avatar = new AvatarInstance(id, DANCER_PALETTES[paletteIndex], this.rootGroup);
+            avatar.setForm(this.options.activeForm);
+            this.avatars.set(id, avatar);
+          }
+
+          avatar.update(dancer.landmarks, dancer.metrics, {
+            time: this.elapsedTime,
+            delta,
+            sensitivity: this.options.sensitivity,
+            baseScale: effectiveScale,
+            isExiting: false
+          });
         }
-
-        avatar.update(dancer.landmarks, dancer.metrics, {
-          time: this.elapsedTime,
-          delta,
-          sensitivity: this.options.sensitivity,
-          baseScale: effectiveScale,
-          isExiting: dancer.isExiting
-        });
       }
     }
 
-    // Clean up avatars whose dancers have left
+    // Clean up avatars whose dancers have left or are exiting
     for (const [id, avatar] of this.avatars.entries()) {
       if (!activeIds.has(id)) {
         avatar.collapse(delta);
