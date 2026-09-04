@@ -1,0 +1,637 @@
+<%- include('partials/header') %>
+
+<!-- Three.js and Post-Processing Libraries -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/shaders/CopyShader.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/shaders/LuminosityHighPassShader.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/postprocessing/Pass.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/postprocessing/ShaderPass.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/postprocessing/RenderPass.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/postprocessing/EffectComposer.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/postprocessing/UnrealBloomPass.js"></script>
+
+<!-- TensorFlow.js and MoveNet MultiPose Libraries -->
+<script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs-core@4.17.0/dist/tf-core.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs-converter@4.17.0/dist/tf-converter.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs-backend-webgl@4.17.0/dist/tf-backend-webgl.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@tensorflow-models/pose-detection@2.1.3/dist/pose-detection.min.js"></script>
+
+<style>
+  /* Reset & Exhibition Viewport */
+  html, body {
+    margin: 0;
+    padding: 0;
+    width: 100vw;
+    height: 100vh;
+    overflow: hidden;
+    background-color: #040507;
+    font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Segoe UI", Roboto, sans-serif;
+    color: #f1f5f9;
+    user-select: none;
+    -webkit-user-select: none;
+  }
+
+  /* 3D WebGL Canvas Layer */
+  #canvas-container {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 1;
+  }
+
+  #canvas-container canvas {
+    display: block;
+    width: 100% !important;
+    height: 100% !important;
+  }
+
+  /* Exhibition UI Container (Smooth Fade on 'H') */
+  #exhibition-ui {
+    position: absolute;
+    inset: 0;
+    z-index: 10;
+    pointer-events: none;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    padding: 2.2rem;
+    box-sizing: border-box;
+    transition: opacity 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+  }
+
+  #exhibition-ui.ui-hidden {
+    opacity: 0;
+    pointer-events: none !important;
+  }
+
+  /* Top HUD Bar */
+  .hud-top {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    pointer-events: auto;
+  }
+
+  .brand-group {
+    display: flex;
+    flex-direction: column;
+    gap: 0.35rem;
+  }
+
+  .brand-title {
+    font-size: 1.15rem;
+    font-weight: 800;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    color: #ffffff;
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+  }
+
+  .brand-title .badge {
+    background: rgba(0, 240, 255, 0.15);
+    border: 1px solid rgba(0, 240, 255, 0.4);
+    color: #00f0ff;
+    font-size: 0.65rem;
+    font-weight: 700;
+    padding: 0.2rem 0.45rem;
+    border-radius: 4px;
+    letter-spacing: 0.1em;
+  }
+
+  .brand-sub {
+    font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+    font-size: 0.72rem;
+    letter-spacing: 0.08em;
+    color: rgba(255, 255, 255, 0.55);
+  }
+
+  /* Metrics Panel */
+  .hud-metrics {
+    display: flex;
+    align-items: center;
+    gap: 1.2rem;
+    background: rgba(15, 23, 42, 0.65);
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    padding: 0.55rem 1.1rem;
+    border-radius: 9999px;
+  }
+
+  .status-badge {
+    font-family: ui-monospace, SFMono-Regular, monospace;
+    font-size: 0.72rem;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    display: flex;
+    align-items: center;
+    gap: 0.45rem;
+  }
+
+  .status-badge::before {
+    content: '';
+    display: inline-block;
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+  }
+
+  .status-active {
+    color: #00f0ff;
+  }
+  .status-active::before {
+    background: #00f0ff;
+    box-shadow: 0 0 10px #00f0ff;
+  }
+
+  .status-idle {
+    color: #f59e0b;
+  }
+  .status-idle::before {
+    background: #f59e0b;
+    box-shadow: 0 0 8px #f59e0b;
+  }
+
+  .status-demo {
+    color: #ff0077;
+  }
+  .status-demo::before {
+    background: #ff0077;
+    box-shadow: 0 0 8px #ff0077;
+  }
+
+  .status-init {
+    color: #94a3b8;
+  }
+  .status-init::before {
+    background: #94a3b8;
+  }
+
+  .metric-item {
+    font-family: ui-monospace, SFMono-Regular, monospace;
+    font-size: 0.75rem;
+    color: rgba(255, 255, 255, 0.75);
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+  }
+
+  .energy-bar-wrap {
+    width: 65px;
+    height: 6px;
+    background: rgba(255, 255, 255, 0.15);
+    border-radius: 3px;
+    overflow: hidden;
+  }
+
+  .energy-bar-fill {
+    width: 0%;
+    height: 100%;
+    background: linear-gradient(90deg, #00f0ff, #ff0077);
+    transition: width 0.1s ease-out;
+  }
+
+  /* Bottom Control Dock */
+  .hud-bottom {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 1rem;
+    pointer-events: auto;
+  }
+
+  .controls-bar {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    align-items: center;
+    gap: 0.6rem;
+    background: rgba(10, 15, 28, 0.75);
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    padding: 0.45rem 0.65rem;
+    border-radius: 9999px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+  }
+
+  /* Form & Utility Buttons */
+  .btn-pill {
+    background: transparent;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    color: #94a3b8;
+    padding: 0.45rem 0.85rem;
+    border-radius: 9999px;
+    font-family: ui-monospace, SFMono-Regular, monospace;
+    font-size: 0.75rem;
+    font-weight: 600;
+    letter-spacing: 0.05em;
+    cursor: pointer;
+    transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+  }
+
+  .btn-pill:hover {
+    color: #ffffff;
+    border-color: rgba(255, 255, 255, 0.35);
+    background: rgba(255, 255, 255, 0.06);
+  }
+
+  .btn-pill.active {
+    background: #ffffff;
+    color: #040507;
+    border-color: #ffffff;
+    font-weight: 700;
+    box-shadow: 0 0 16px rgba(255, 255, 255, 0.35);
+  }
+
+  .divider-vert {
+    width: 1px;
+    height: 18px;
+    background: rgba(255, 255, 255, 0.2);
+    margin: 0 0.15rem;
+  }
+
+  .hint-legend {
+    font-family: ui-monospace, SFMono-Regular, monospace;
+    font-size: 0.68rem;
+    color: rgba(255, 255, 255, 0.4);
+    letter-spacing: 0.06em;
+  }
+
+  .hint-legend kbd {
+    background: rgba(255, 255, 255, 0.1);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    border-radius: 3px;
+    padding: 0.1rem 0.3rem;
+    font-size: 0.65rem;
+    color: #e2e8f0;
+  }
+
+  /* Presence Notification Toast */
+  #presence-toast {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%) scale(0.9);
+    background: rgba(10, 15, 28, 0.88);
+    border: 1px solid rgba(0, 240, 255, 0.4);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    color: #00f0ff;
+    padding: 0.85rem 1.8rem;
+    border-radius: 8px;
+    font-family: ui-monospace, SFMono-Regular, monospace;
+    font-size: 0.85rem;
+    font-weight: 700;
+    letter-spacing: 0.15em;
+    pointer-events: none;
+    opacity: 0;
+    box-shadow: 0 0 35px rgba(0, 240, 255, 0.25);
+    transition: all 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+    z-index: 50;
+  }
+
+  #presence-toast.show {
+    opacity: 1;
+    transform: translate(-50%, -50%) scale(1.0);
+  }
+
+  /* Operator Settings Drawer */
+  #settings-drawer {
+    position: absolute;
+    top: 0;
+    right: -420px;
+    width: 380px;
+    height: 100vh;
+    background: rgba(8, 12, 22, 0.94);
+    border-left: 1px solid rgba(255, 255, 255, 0.14);
+    backdrop-filter: blur(24px);
+    -webkit-backdrop-filter: blur(24px);
+    z-index: 100;
+    box-sizing: border-box;
+    padding: 2.2rem 1.8rem;
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+    box-shadow: -15px 0 45px rgba(0, 0, 0, 0.7);
+    transition: right 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+    overflow-y: auto;
+  }
+
+  #settings-drawer.open {
+    right: 0;
+  }
+
+  .drawer-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.12);
+    padding-bottom: 1rem;
+  }
+
+  .drawer-title {
+    font-size: 0.95rem;
+    font-weight: 700;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: #ffffff;
+  }
+
+  .btn-close {
+    background: none;
+    border: none;
+    color: #94a3b8;
+    font-size: 1.2rem;
+    cursor: pointer;
+    padding: 0.2rem;
+  }
+
+  .btn-close:hover {
+    color: #ffffff;
+  }
+
+  .setting-group {
+    display: flex;
+    flex-direction: column;
+    gap: 0.6rem;
+  }
+
+  .setting-label {
+    font-family: ui-monospace, SFMono-Regular, monospace;
+    font-size: 0.72rem;
+    font-weight: 700;
+    color: rgba(255, 255, 255, 0.7);
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    display: flex;
+    justify-content: space-between;
+  }
+
+  .setting-select {
+    background: rgba(255, 255, 255, 0.06);
+    border: 1px solid rgba(255, 255, 255, 0.18);
+    color: #ffffff;
+    padding: 0.55rem 0.8rem;
+    border-radius: 6px;
+    font-size: 0.82rem;
+    outline: none;
+    cursor: pointer;
+  }
+
+  .setting-select option {
+    background: #0d1322;
+    color: #ffffff;
+  }
+
+  .setting-slider {
+    -webkit-appearance: none;
+    width: 100%;
+    height: 5px;
+    border-radius: 3px;
+    background: rgba(255, 255, 255, 0.15);
+    outline: none;
+  }
+
+  .setting-slider::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    width: 15px;
+    height: 15px;
+    border-radius: 50%;
+    background: #00f0ff;
+    cursor: pointer;
+    box-shadow: 0 0 10px #00f0ff;
+  }
+
+  /* PIP Mini Preview Window */
+  #pip-container {
+    position: absolute;
+    bottom: 5.5rem;
+    left: 2.2rem;
+    width: 180px;
+    height: 240px;
+    background: #000;
+    border: 1px solid rgba(0, 240, 255, 0.4);
+    border-radius: 8px;
+    overflow: hidden;
+    z-index: 20;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.8);
+    pointer-events: auto;
+  }
+
+  #pip-container.hidden {
+    display: none;
+  }
+
+  #pip-video {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+
+  .pip-label {
+    position: absolute;
+    top: 6px;
+    left: 8px;
+    font-family: ui-monospace, SFMono-Regular, monospace;
+    font-size: 0.62rem;
+    background: rgba(0, 0, 0, 0.7);
+    color: #00f0ff;
+    padding: 2px 5px;
+    border-radius: 3px;
+    letter-spacing: 0.05em;
+  }
+</style>
+
+<main>
+  <!-- 3D Three.js Render Target -->
+  <div id="canvas-container"></div>
+
+  <!-- Raw Webcam Feed (Hidden for offscreen MediaPipe analysis) -->
+  <video id="webcam-video" autoplay playsinline muted style="display:none;"></video>
+
+  <!-- Interactive Exhibition UI Layer -->
+  <div id="exhibition-ui">
+    <!-- Top HUD Bar -->
+    <div class="hud-top">
+      <div class="brand-group">
+        <div class="brand-title">
+          <span>// SIDANCE</span>
+          <span class="badge">FUTURE YOU</span>
+        </div>
+        <div class="brand-sub">GENERATIVE DANCE BODY MIRROR · 4K VERTICAL</div>
+      </div>
+
+      <div class="hud-metrics">
+        <div id="hud-status" class="status-badge status-init">INITIALIZING...</div>
+        <div id="hud-dancers-badge" class="metric-item" style="color: #ff0077; font-weight: 700;">
+          <span id="hud-dancers-val">0 DANCERS</span>
+        </div>
+        <div class="metric-item">
+          <span>ENERGY</span>
+          <div class="energy-bar-wrap">
+            <div id="hud-energy-bar" class="energy-bar-fill"></div>
+          </div>
+          <span id="hud-energy-val" style="min-width: 28px;">0%</span>
+        </div>
+        <div id="hud-fps" class="metric-item" style="color: #00f0ff;">60 FPS</div>
+      </div>
+    </div>
+
+    <!-- Center Interactive Notification Toast -->
+    <div id="presence-toast">// AVATAR SYNCHRONIZED</div>
+
+    <!-- Bottom Floating Dock -->
+    <div class="hud-bottom">
+      <div class="controls-bar">
+        <!-- Generative Form Selectors -->
+        <button class="btn-pill active" data-form-btn="1">01 CYBER SPINE</button>
+        <button class="btn-pill" data-form-btn="2">02 BIO BRISTLE</button>
+        <button class="btn-pill" data-form-btn="3">03 LIQUID RIBBON</button>
+        <button class="btn-pill" data-form-btn="4">04 QUANTUM</button>
+
+        <div class="divider-vert"></div>
+
+        <!-- Utility Buttons -->
+        <button id="btn-sound" class="btn-pill">
+          <span class="btn-label">SOUND: OFF</span>
+        </button>
+
+        <button id="btn-mirror" class="btn-pill active">
+          <span class="btn-label">MIRROR: ON</span>
+        </button>
+
+        <button id="btn-demo" class="btn-pill">
+          <span class="btn-label">DEMO CHOREO</span>
+        </button>
+
+        <button id="btn-settings" class="btn-pill">
+          <span>⚙ OPERATOR</span>
+        </button>
+
+        <button id="btn-fullscreen" class="btn-pill">
+          <span>⛶ FULLSCREEN</span>
+        </button>
+      </div>
+
+      <div class="hint-legend">
+        [<kbd>F</kbd>] Fullscreen &nbsp;·&nbsp;
+        [<kbd>H</kbd>] Clean Exhibition (Hide UI) &nbsp;·&nbsp;
+        [<kbd>1</kbd>~<kbd>4</kbd>] Form Morph &nbsp;·&nbsp;
+        [<kbd>M</kbd>] Mirror &nbsp;·&nbsp;
+        [<kbd>S</kbd>] Sound &nbsp;·&nbsp;
+        [<kbd>C</kbd>] Settings
+      </div>
+    </div>
+  </div>
+
+  <!-- PIP Verification Mini-Feed (Toggleable for Stage Operators) -->
+  <div id="pip-container" class="hidden">
+    <div class="pip-label">CAM 4K PIP</div>
+    <video id="pip-video" autoplay playsinline muted></video>
+  </div>
+
+  <!-- Operator Settings Drawer -->
+  <aside id="settings-drawer">
+    <div class="drawer-header">
+      <div class="drawer-title">STAGE & SENSOR TUNING</div>
+      <button id="btn-close-settings" class="btn-close">✕</button>
+    </div>
+
+    <!-- Camera Selection -->
+    <div class="setting-group">
+      <div class="setting-label">
+        <span>4K Camera Source</span>
+      </div>
+      <select id="camera-select" class="setting-select">
+        <option value="">Default Webcam</option>
+      </select>
+    </div>
+
+    <!-- Capture Resolution -->
+    <div class="setting-group">
+      <div class="setting-label">
+        <span>Capture Stream Resolution</span>
+      </div>
+      <select id="resolution-select" class="setting-select">
+        <option value="4k" selected>Ultra HD 4K (3840×2160)</option>
+        <option value="1080p">Full HD 1080p (1920×1080)</option>
+        <option value="720p">HD 720p (1280×720)</option>
+      </select>
+    </div>
+
+    <!-- Max Tracked Dancers (Multi-Person Control) -->
+    <div class="setting-group">
+      <div class="setting-label">
+        <span>Max Simultaneous Dancers</span>
+      </div>
+      <select id="max-dancers-select" class="setting-select">
+        <option value="1">1 Person (Solo Performance)</option>
+        <option value="2">2 Persons (Duet Dance)</option>
+        <option value="4" selected>4 Persons (Group Ensemble)</option>
+        <option value="6">6 Persons (Full Cast Stage)</option>
+      </select>
+    </div>
+
+    <!-- PIP Diagnostic Video -->
+    <div class="setting-group">
+      <label style="display: flex; align-items: center; gap: 0.5rem; font-size: 0.8rem; cursor: pointer;">
+        <input type="checkbox" id="pip-toggle">
+        <span>Show Stage Tracking PIP Window</span>
+      </label>
+    </div>
+
+    <hr style="border: 0; border-top: 1px solid rgba(255,255,255,0.1); margin: 0.5rem 0;">
+
+    <!-- Calibration: Avatar Scale -->
+    <div class="setting-group">
+      <div class="setting-label">
+        <span>Avatar Stature Scale</span>
+        <span id="scale-val">1.00x</span>
+      </div>
+      <input id="scale-slider" class="setting-slider" type="range" min="0.5" max="2.5" step="0.05" value="1.0">
+    </div>
+
+    <!-- Calibration: Vertical Y Offset -->
+    <div class="setting-group">
+      <div class="setting-label">
+        <span>Vertical Stage Offset</span>
+        <span id="offset-val">-0.10m</span>
+      </div>
+      <input id="offset-slider" class="setting-slider" type="range" min="-1.5" max="1.5" step="0.05" value="-0.1">
+    </div>
+
+    <!-- Calibration: Kinetic Sensitivity -->
+    <div class="setting-group">
+      <div class="setting-label">
+        <span>Motion Sensitivity</span>
+        <span id="sens-val">1.2x</span>
+      </div>
+      <input id="sens-slider" class="setting-slider" type="range" min="0.5" max="3.0" step="0.1" value="1.2">
+    </div>
+
+    <!-- Audio Master Volume -->
+    <div class="setting-group">
+      <div class="setting-label">
+        <span>Master Synthesizer Volume</span>
+        <span id="vol-val">45%</span>
+      </div>
+      <input id="vol-slider" class="setting-slider" type="range" min="0" max="1" step="0.05" value="0.45">
+    </div>
+
+    <div style="margin-top: auto; font-family: ui-monospace, monospace; font-size: 0.68rem; color: rgba(255,255,255,0.4); line-height: 1.5;">
+      💡 TIP: Double-click anywhere or press <kbd>F</kbd> for kiosk fullscreen. Press <kbd>H</kbd> to hide all buttons for the audience.
+    </div>
+  </aside>
+</main>
+
+<!-- Main Client Logic (ES Module) -->
+<script type="module" src="/assets/js/sidance/app.js"></script>

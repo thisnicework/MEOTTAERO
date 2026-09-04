@@ -242,6 +242,14 @@ app.get(['/HETEROTOPIA', '/heterotopia'], (req, res) => {
   });
 });
 
+// Route: SIDANCE ✕ FUTURE YOU Interactive Media Art Installation
+app.get(['/sidance', '/SIDANCE'], (req, res) => {
+  res.render('sidance', {
+    title: '// SIDANCE — FUTURE YOU',
+    activeMenu: 'sidance'
+  });
+});
+
 // Route: HETEROTOPIA Live Stream Page
 app.get(['/HETEROTOPIA/stream', '/heterotopia/stream', '/stream', '/live'], (req, res) => {
   res.render('stream', {
