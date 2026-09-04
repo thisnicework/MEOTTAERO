@@ -134,7 +134,7 @@ class SidanceApp {
     const success = await this.tracker.startCamera(deviceId, resolution);
 
     if (success) {
-      this.statusBadge.textContent = 'SYSTEM ACTIVE // 4K MULTI-POSE';
+      this.statusBadge.textContent = '카메라 활성 // 2D MULTI-POSE 60FPS';
       this.statusBadge.className = 'status-badge status-active';
       this.isDemo = false;
       this.demoBtn.classList.remove('active');
@@ -153,7 +153,7 @@ class SidanceApp {
       this.setupCameras();
       this.applyCamViewMode();
     } else {
-      this.statusBadge.textContent = 'DEMO DUET CHOREO';
+      this.statusBadge.textContent = '듀엣 데모 안무';
       this.statusBadge.className = 'status-badge status-demo';
       this.isDemo = true;
       this.demoBtn.classList.add('active');
@@ -172,7 +172,7 @@ class SidanceApp {
     // 3. Update HUD metrics
     const count = collectiveMetrics ? (collectiveMetrics.dancerCount || 0) : 0;
     if (this.dancersVal) {
-      this.dancersVal.textContent = count === 0 ? '0 DANCERS' : `${count} DANCER${count > 1 ? 'S ACTIVE' : ' ACTIVE'}`;
+      this.dancersVal.textContent = count === 0 ? '0명 감지' : `${count}인 감지 (${count === 1 ? '솔로' : count === 2 ? '듀엣' : '앙상블'})`;
     }
 
     if (this.isUiVisible && collectiveMetrics) {
@@ -184,11 +184,11 @@ class SidanceApp {
     // Toast on dancer count changes
     if (count !== this.lastDancerCount) {
       if (count > this.lastDancerCount) {
-        if (count === 1) this.showToast('// DANCER 1 SYNCHRONIZED');
-        else if (count === 2) this.showToast('// 2 DANCERS SYNCHRONIZED (DUET)');
-        else this.showToast(`// ${count} DANCERS SYNCHRONIZED (ENSEMBLE)`);
+        if (count === 1) this.showToast('// 댄서 1인 감지 완료');
+        else if (count === 2) this.showToast('// 2인 듀엣 동기화 완료');
+        else this.showToast(`// ${count}인 앙상블 동기화 완료`);
       } else if (count === 0 && this.lastDancerCount > 0) {
-        this.showToast('// ALL DANCERS EXITED — VOID STAGE');
+        this.showToast('// 모든 댄서 이탈 — 스테이지 리셋');
       }
       this.lastDancerCount = count;
     }
@@ -221,9 +221,7 @@ class SidanceApp {
 
     if (this.testModeBtn) {
       this.testModeBtn.classList.toggle('active', this.isTestFitMode);
-      this.testModeBtn.querySelector('.btn-label').textContent = this.isTestFitMode ? '⚡ TEST FIT: ON' : '⚡ TEST FIT: OFF';
-      this.testModeBtn.style.color = this.isTestFitMode ? '#00ff66' : '#94a3b8';
-      this.testModeBtn.style.borderColor = this.isTestFitMode ? 'rgba(0, 255, 102, 0.6)' : 'rgba(255, 255, 255, 0.15)';
+      this.testModeBtn.querySelector('.btn-label').textContent = this.isTestFitMode ? '⚡ 1:1 피팅: ON' : '⚡ 1:1 피팅: OFF';
     }
 
     if (this.hudModeBadge) {
@@ -232,10 +230,10 @@ class SidanceApp {
 
     if (this.isTestFitMode) {
       this.setCamViewMode('overlay');
-      this.showToast('// ⚡ TEST FIT ACTIVE: 1:1 REAL BODY OVERLAY');
+      this.showToast('// ⚡ 1:1 바디 매칭 활성화');
     } else {
       this.setCamViewMode('off');
-      this.showToast('// STAGE ARTWORK MODE (VOID STAGE)');
+      this.showToast('// 순수 전시 모드 (VOID STAGE)');
     }
   }
 
@@ -273,7 +271,7 @@ class SidanceApp {
 
       if (this.camViewBtn) {
         this.camViewBtn.classList.add('active');
-        this.camViewBtn.querySelector('.btn-label').textContent = 'CAM: PIP';
+        this.camViewBtn.querySelector('.btn-label').textContent = '📷 카메라: PIP';
       }
     } else if (this.camViewMode === 'overlay') {
       if (this.pipContainer) this.pipContainer.classList.add('hidden');
@@ -286,7 +284,7 @@ class SidanceApp {
 
       if (this.camViewBtn) {
         this.camViewBtn.classList.add('active');
-        this.camViewBtn.querySelector('.btn-label').textContent = 'CAM: OVERLAY';
+        this.camViewBtn.querySelector('.btn-label').textContent = '📷 카메라: 오버레이';
       }
     } else { // 'off'
       if (this.pipContainer) this.pipContainer.classList.add('hidden');
@@ -296,7 +294,7 @@ class SidanceApp {
 
       if (this.camViewBtn) {
         this.camViewBtn.classList.remove('active');
-        this.camViewBtn.querySelector('.btn-label').textContent = 'CAM: OFF';
+        this.camViewBtn.querySelector('.btn-label').textContent = '📷 카메라: OFF';
       }
     }
   }
@@ -328,33 +326,68 @@ class SidanceApp {
     this.soundBtn.addEventListener('click', () => {
       const enabled = this.audio.toggle();
       this.soundBtn.classList.toggle('active', enabled);
-      this.soundBtn.querySelector('.btn-label').textContent = enabled ? 'SOUND: ON' : 'SOUND: OFF';
-      this.showToast(enabled ? '// POLYPHONIC SOUNDSCAPE ON' : '// AUDIO MUTED');
+      this.soundBtn.querySelector('.btn-label').textContent = enabled ? '🔊 사운드: ON' : '🔊 사운드: OFF';
+      this.showToast(enabled ? '// 사운드 활성화' : '// 사운드 음소거');
     });
 
-    // 4. Mirror Toggle
+    // 4-1. Dedicated Clean Stage UI Hide Button
+    const hideBtn = document.getElementById('btn-hide-ui');
+    if (hideBtn) {
+      hideBtn.addEventListener('click', () => {
+        this.hideAllUi();
+      });
+    }
+
+    // 4-2. Double-Click Anywhere to Toggle/Restore UI
+    window.addEventListener('dblclick', (e) => {
+      if (e.target.tagName === 'INPUT' || e.target.tagName === 'SELECT' || e.target.tagName === 'BUTTON' || e.target.closest('#settings-drawer')) return;
+      if (!this.isUiVisible) {
+        this.showAllUi();
+      } else {
+        if (!e.target.closest('.controls-bar')) {
+          this.hideAllUi();
+        }
+      }
+    });
+
+    // 4-3. Touch Double-Tap Anywhere for Touch/Kiosk Displays
+    let lastTapTime = 0;
+    window.addEventListener('touchend', (e) => {
+      if (e.target.tagName === 'INPUT' || e.target.tagName === 'SELECT' || e.target.tagName === 'BUTTON' || e.target.closest('#settings-drawer')) return;
+      const now = Date.now();
+      if (now - lastTapTime < 350) {
+        if (!this.isUiVisible) {
+          this.showAllUi();
+        } else if (!e.target.closest('.controls-bar')) {
+          this.hideAllUi();
+        }
+      }
+      lastTapTime = now;
+    });
+
+    // 5. Mirror Toggle
     this.mirrorBtn.addEventListener('click', () => {
       this.isMirror = !this.isMirror;
       this.tracker.setMirror(this.isMirror);
       this.updateMirrorState();
-      this.showToast(this.isMirror ? '// MIRROR ON' : '// MIRROR OFF');
+      this.showToast(this.isMirror ? '// 미러 모드: ON' : '// 미러 모드: OFF');
     });
 
-    // 5. Demo Mode Toggle
+    // 6. Demo Mode Toggle
     this.demoBtn.addEventListener('click', () => {
       this.isDemo = !this.isDemo;
       if (this.isDemo) {
         this.tracker.startDemoMode();
         this.demoBtn.classList.add('active');
-        this.statusBadge.textContent = 'DEMO DUET CHOREO';
+        this.statusBadge.textContent = '듀엣 데모 안무';
         this.statusBadge.className = 'status-badge status-demo';
-        this.showToast('// DEMO DUET CHOREOGRAPHY ACTIVE');
+        this.showToast('// 듀엣 데모 안무 활성화');
       } else {
         this.startCameraStream();
       }
     });
 
-    // 6. Settings Drawer Toggle
+    // 7. Settings Drawer Toggle
     document.getElementById('btn-settings').addEventListener('click', () => {
       this.toggleSettings();
     });
@@ -363,14 +396,11 @@ class SidanceApp {
       this.toggleSettings(false);
     });
 
-    // 7. Fullscreen Toggle
+    // 8. Fullscreen Toggle
     const fsBtn = document.getElementById('btn-fullscreen');
-    fsBtn.addEventListener('click', () => this.toggleFullscreen());
-    window.addEventListener('dblclick', (e) => {
-      if (!e.target.closest('#settings-drawer') && !e.target.closest('.ui-controls') && !e.target.closest('#pip-container')) {
-        this.toggleFullscreen();
-      }
-    });
+    if (fsBtn) {
+      fsBtn.addEventListener('click', () => this.toggleFullscreen());
+    }
 
     // 8. Camera Mode Select (in Drawer)
     if (this.camModeSelect) {
@@ -466,17 +496,17 @@ class SidanceApp {
     });
 
     const formNames = {
-      1: '01 CYBER SPINETRON',
-      2: '02 BIO-LUMEN BRISTLE',
-      3: '03 LIQUID MERCURY RIBBON',
-      4: '04 QUANTUM POLYHEDRA'
+      1: '01 스파인',
+      2: '02 브리슬',
+      3: '03 리본',
+      4: '04 퀀텀'
     };
-    this.showToast(`// ALL AVATARS MORPHED: ${formNames[formId]}`);
+    this.showToast(`// 폼 전환 완료: ${formNames[formId]}`);
   }
 
   updateMirrorState() {
     this.mirrorBtn.classList.toggle('active', this.isMirror);
-    this.mirrorBtn.querySelector('.btn-label').textContent = this.isMirror ? 'MIRROR: ON' : 'MIRROR: OFF';
+    this.mirrorBtn.querySelector('.btn-label').textContent = this.isMirror ? '⟳ 미러: ON' : '⟳ 미러: OFF';
     const transformVal = this.isMirror ? 'scaleX(-1)' : 'none';
 
     if (this.videoElement) this.videoElement.style.transform = transformVal;
@@ -486,11 +516,23 @@ class SidanceApp {
 
   toggleUI(force) {
     this.isUiVisible = force !== undefined ? force : !this.isUiVisible;
-    this.uiContainer.classList.toggle('ui-hidden', !this.isUiVisible);
+    if (this.uiContainer) {
+      this.uiContainer.classList.toggle('ui-hidden', !this.isUiVisible);
+    }
     if (!this.isUiVisible) {
       this.toggleSettings(false);
-      this.showToast('// CLEAN EXHIBITION MODE (PRESS "H" TO RESTORE UI)');
+      this.showToast('// 전시 모드: 화면을 더블 클릭하면 UI가 복원됩니다');
+    } else {
+      this.showToast('// UI 복원 완료');
     }
+  }
+
+  hideAllUi() {
+    this.toggleUI(false);
+  }
+
+  showAllUi() {
+    this.toggleUI(true);
   }
 
   toggleSettings(force) {

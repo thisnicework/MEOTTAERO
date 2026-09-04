@@ -1,37 +1,46 @@
 <%- include('partials/header') %>
 
-<!-- Three.js and Post-Processing Libraries -->
-<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/shaders/CopyShader.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/shaders/LuminosityHighPassShader.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/postprocessing/Pass.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/postprocessing/ShaderPass.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/postprocessing/RenderPass.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/postprocessing/EffectComposer.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/postprocessing/UnrealBloomPass.js"></script>
-
-<!-- TensorFlow.js and MoveNet MultiPose Libraries -->
+<!-- TensorFlow.js and MoveNet MultiPose Libraries (Ultra-low latency 2D inference) -->
 <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs-core@4.17.0/dist/tf-core.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs-converter@4.17.0/dist/tf-converter.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs-backend-webgl@4.17.0/dist/tf-backend-webgl.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@tensorflow-models/pose-detection@2.1.3/dist/pose-detection.min.js"></script>
 
 <style>
-  /* Reset & Exhibition Viewport */
+  /* ==========================================================================
+     MOTTAERO (멋대로) NATIVE BRUTALIST EXHIBITION STYLESHEET
+     Optimized for 4K Vertical Displays, Ultra-Low-Latency 2D HTML Canvas,
+     and Pure Exhibition Mode (One-click UI hide & Double-click restore).
+     ========================================================================== */
+
+  :root {
+    --color-bg: #050505;
+    --color-fg: #ffffff;
+    --color-high: #00f0ff;
+    --color-accent: #00ff66;
+    --color-pink: #ff0077;
+    --color-border: #ffffff;
+    --font-sans: "Inter", "Neue Haas Grotesk", -apple-system, sans-serif;
+    --font-mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+    --mottaero-shadow: 2px 2px 0px #ffffff;
+    --mottaero-shadow-cyan: 2px 2px 0px #00f0ff;
+    --mottaero-shadow-pink: 2px 2px 0px #ff0077;
+  }
+
   html, body {
     margin: 0;
     padding: 0;
     width: 100vw;
     height: 100vh;
     overflow: hidden;
-    background-color: #040507;
-    font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Segoe UI", Roboto, sans-serif;
-    color: #f1f5f9;
+    background-color: var(--color-bg);
+    font-family: var(--font-sans);
+    color: var(--color-fg);
     user-select: none;
     -webkit-user-select: none;
   }
 
-  /* 3D WebGL Canvas Layer */
+  /* 2D HTML5 Canvas Target */
   #canvas-container {
     position: absolute;
     top: 0;
@@ -39,6 +48,7 @@
     width: 100%;
     height: 100%;
     z-index: 1;
+    pointer-events: none;
   }
 
   #canvas-container canvas {
@@ -47,7 +57,37 @@
     height: 100% !important;
   }
 
-  /* Exhibition UI Container (Smooth Fade on 'H') */
+  /* Fullscreen Camera Background Feed */
+  #camera-bg-video {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    z-index: 0;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+    display: none;
+  }
+
+  #camera-bg-video.active {
+    display: block;
+  }
+
+  #camera-bg-dimmer {
+    position: absolute;
+    inset: 0;
+    background: rgba(4, 5, 7, 0.4);
+    z-index: 0;
+    display: none;
+  }
+
+  #camera-bg-dimmer.active {
+    display: block;
+  }
+
+  /* Interactive Exhibition UI Layer (Smooth Fade on Hide) */
   #exhibition-ui {
     position: absolute;
     inset: 0;
@@ -56,13 +96,14 @@
     display: flex;
     flex-direction: column;
     justify-content: space-between;
-    padding: 2.2rem;
+    padding: 1.8rem;
     box-sizing: border-box;
-    transition: opacity 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+    transition: opacity 0.35s cubic-bezier(0.16, 1, 0.3, 1), transform 0.35s ease;
   }
 
   #exhibition-ui.ui-hidden {
     opacity: 0;
+    transform: scale(0.98);
     pointer-events: none !important;
   }
 
@@ -74,6 +115,7 @@
     pointer-events: auto;
   }
 
+  /* MOTTAERO Brand Header */
   .brand-group {
     display: flex;
     flex-direction: column;
@@ -81,10 +123,9 @@
   }
 
   .brand-title {
-    font-size: 1.15rem;
-    font-weight: 800;
-    letter-spacing: 0.15em;
-    text-transform: uppercase;
+    font-size: 1.25rem;
+    font-weight: 900;
+    letter-spacing: -0.02em;
     color: #ffffff;
     display: flex;
     align-items: center;
@@ -92,42 +133,42 @@
   }
 
   .brand-title .badge {
-    background: rgba(0, 240, 255, 0.15);
-    border: 1px solid rgba(0, 240, 255, 0.4);
-    color: #00f0ff;
-    font-size: 0.65rem;
+    background: #000000;
+    border: 1px solid #ffffff;
+    box-shadow: 2px 2px 0px #ffffff;
+    color: var(--color-high);
+    font-family: var(--font-mono);
+    font-size: 0.7rem;
     font-weight: 700;
-    padding: 0.2rem 0.45rem;
-    border-radius: 4px;
-    letter-spacing: 0.1em;
+    padding: 0.15rem 0.45rem;
+    border-radius: 0px;
+    letter-spacing: 0.08em;
   }
 
   .brand-sub {
-    font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+    font-family: var(--font-mono);
     font-size: 0.72rem;
-    letter-spacing: 0.08em;
-    color: rgba(255, 255, 255, 0.55);
+    letter-spacing: 0.06em;
+    color: rgba(255, 255, 255, 0.6);
   }
 
-  /* Metrics Panel */
+  /* Metrics Panel (Brutalist Sharp Boxes) */
   .hud-metrics {
     display: flex;
     align-items: center;
-    gap: 1.2rem;
-    background: rgba(15, 23, 42, 0.65);
-    border: 1px solid rgba(255, 255, 255, 0.12);
-    backdrop-filter: blur(12px);
-    -webkit-backdrop-filter: blur(12px);
-    padding: 0.55rem 1.1rem;
-    border-radius: 9999px;
+    gap: 0.6rem;
   }
 
-  .status-badge {
-    font-family: ui-monospace, SFMono-Regular, monospace;
+  .mottaero-tag {
+    font-family: var(--font-mono);
     font-size: 0.72rem;
     font-weight: 700;
-    letter-spacing: 0.1em;
-    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    background: #000000;
+    border: 1px solid #ffffff;
+    box-shadow: 2px 2px 0px #ffffff;
+    padding: 0.35rem 0.65rem;
+    color: #ffffff;
     display: flex;
     align-items: center;
     gap: 0.45rem;
@@ -138,31 +179,27 @@
     display: inline-block;
     width: 7px;
     height: 7px;
-    border-radius: 50%;
+    border-radius: 0px;
   }
 
   .status-active {
-    color: #00f0ff;
+    color: var(--color-high);
+    border-color: var(--color-high);
+    box-shadow: 2px 2px 0px var(--color-high);
   }
   .status-active::before {
-    background: #00f0ff;
-    box-shadow: 0 0 10px #00f0ff;
-  }
-
-  .status-idle {
-    color: #f59e0b;
-  }
-  .status-idle::before {
-    background: #f59e0b;
-    box-shadow: 0 0 8px #f59e0b;
+    background: var(--color-high);
+    box-shadow: 0 0 6px var(--color-high);
   }
 
   .status-demo {
-    color: #ff0077;
+    color: var(--color-pink);
+    border-color: var(--color-pink);
+    box-shadow: 2px 2px 0px var(--color-pink);
   }
   .status-demo::before {
-    background: #ff0077;
-    box-shadow: 0 0 8px #ff0077;
+    background: var(--color-pink);
+    box-shadow: 0 0 6px var(--color-pink);
   }
 
   .status-init {
@@ -173,26 +210,26 @@
   }
 
   .metric-item {
-    font-family: ui-monospace, SFMono-Regular, monospace;
-    font-size: 0.75rem;
-    color: rgba(255, 255, 255, 0.75);
+    font-family: var(--font-mono);
+    font-size: 0.72rem;
+    color: #ffffff;
     display: flex;
     align-items: center;
     gap: 0.5rem;
   }
 
   .energy-bar-wrap {
-    width: 65px;
-    height: 6px;
-    background: rgba(255, 255, 255, 0.15);
-    border-radius: 3px;
+    width: 60px;
+    height: 8px;
+    background: #000000;
+    border: 1px solid #ffffff;
     overflow: hidden;
   }
 
   .energy-bar-fill {
     width: 0%;
     height: 100%;
-    background: linear-gradient(90deg, #00f0ff, #ff0077);
+    background: var(--color-high);
     transition: width 0.1s ease-out;
   }
 
@@ -201,7 +238,7 @@
     display: flex;
     flex-direction: column;
     align-items: center;
-    gap: 1rem;
+    gap: 0.8rem;
     pointer-events: auto;
   }
 
@@ -210,93 +247,110 @@
     flex-wrap: wrap;
     justify-content: center;
     align-items: center;
-    gap: 0.6rem;
-    background: rgba(10, 15, 28, 0.75);
-    border: 1px solid rgba(255, 255, 255, 0.15);
-    backdrop-filter: blur(16px);
-    -webkit-backdrop-filter: blur(16px);
-    padding: 0.45rem 0.65rem;
-    border-radius: 9999px;
-    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+    gap: 0.5rem;
+    background: #000000;
+    border: 2px solid #ffffff;
+    box-shadow: 4px 4px 0px #ffffff;
+    padding: 0.5rem 0.8rem;
   }
 
-  /* Form & Utility Buttons */
-  .btn-pill {
-    background: transparent;
-    border: 1px solid rgba(255, 255, 255, 0.1);
-    color: #94a3b8;
-    padding: 0.45rem 0.85rem;
-    border-radius: 9999px;
-    font-family: ui-monospace, SFMono-Regular, monospace;
+  /* MOTTAERO Brutalist Rectangular Buttons */
+  .mottaero-btn {
+    background: #000000;
+    border: 1px solid #ffffff;
+    color: #ffffff;
+    padding: 0.45rem 0.75rem;
+    font-family: var(--font-mono);
     font-size: 0.75rem;
-    font-weight: 600;
-    letter-spacing: 0.05em;
+    font-weight: 700;
+    letter-spacing: 0.04em;
     cursor: pointer;
-    transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+    box-shadow: 2px 2px 0px #ffffff;
+    transition: transform 0.1s ease, box-shadow 0.1s ease, background 0.1s ease, color 0.1s ease;
     display: inline-flex;
     align-items: center;
-    gap: 0.4rem;
+    gap: 0.35rem;
+    border-radius: 0px;
   }
 
-  .btn-pill:hover {
-    color: #ffffff;
-    border-color: rgba(255, 255, 255, 0.35);
-    background: rgba(255, 255, 255, 0.06);
-  }
-
-  .btn-pill.active {
+  .mottaero-btn:hover {
     background: #ffffff;
-    color: #040507;
+    color: #000000;
+    transform: translate(-1px, -1px);
+    box-shadow: 3px 3px 0px #00f0ff;
+  }
+
+  .mottaero-btn:active {
+    transform: translate(1px, 1px);
+    box-shadow: 1px 1px 0px #ffffff;
+  }
+
+  .mottaero-btn.active {
+    background: #ffffff;
+    color: #000000;
     border-color: #ffffff;
-    font-weight: 700;
-    box-shadow: 0 0 16px rgba(255, 255, 255, 0.35);
+    box-shadow: 2px 2px 0px var(--color-high);
+  }
+
+  /* Clean Display Hide UI Button */
+  .btn-clean-mode {
+    border-color: var(--color-accent);
+    color: var(--color-accent);
+    box-shadow: 2px 2px 0px var(--color-accent);
+  }
+  .btn-clean-mode:hover {
+    background: var(--color-accent);
+    color: #000000;
+    box-shadow: 3px 3px 0px #ffffff;
   }
 
   .divider-vert {
     width: 1px;
-    height: 18px;
-    background: rgba(255, 255, 255, 0.2);
-    margin: 0 0.15rem;
+    height: 20px;
+    background: rgba(255, 255, 255, 0.4);
+    margin: 0 0.2rem;
   }
 
   .hint-legend {
-    font-family: ui-monospace, SFMono-Regular, monospace;
-    font-size: 0.68rem;
-    color: rgba(255, 255, 255, 0.4);
-    letter-spacing: 0.06em;
+    font-family: var(--font-mono);
+    font-size: 0.7rem;
+    color: rgba(255, 255, 255, 0.75);
+    background: rgba(0, 0, 0, 0.85);
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    padding: 0.3rem 0.8rem;
+    letter-spacing: 0.04em;
+    text-align: center;
   }
 
   .hint-legend kbd {
-    background: rgba(255, 255, 255, 0.1);
-    border: 1px solid rgba(255, 255, 255, 0.2);
-    border-radius: 3px;
-    padding: 0.1rem 0.3rem;
+    background: #ffffff;
+    color: #000000;
+    font-weight: 700;
+    padding: 0.08rem 0.3rem;
     font-size: 0.65rem;
-    color: #e2e8f0;
   }
 
-  /* Presence Notification Toast */
+  /* Center Interactive Notification Toast */
   #presence-toast {
     position: absolute;
     top: 50%;
     left: 50%;
-    transform: translate(-50%, -50%) scale(0.9);
-    background: rgba(10, 15, 28, 0.88);
-    border: 1px solid rgba(0, 240, 255, 0.4);
-    backdrop-filter: blur(16px);
-    -webkit-backdrop-filter: blur(16px);
-    color: #00f0ff;
+    transform: translate(-50%, -50%) scale(0.92);
+    background: #000000;
+    border: 2px solid #ffffff;
+    box-shadow: 5px 5px 0px var(--color-high);
+    color: #ffffff;
     padding: 0.85rem 1.8rem;
-    border-radius: 8px;
-    font-family: ui-monospace, SFMono-Regular, monospace;
-    font-size: 0.85rem;
-    font-weight: 700;
-    letter-spacing: 0.15em;
+    font-family: var(--font-mono);
+    font-size: 0.9rem;
+    font-weight: 800;
+    letter-spacing: 0.12em;
     pointer-events: none;
     opacity: 0;
-    box-shadow: 0 0 35px rgba(0, 240, 255, 0.25);
-    transition: all 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+    transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
     z-index: 50;
+    text-align: center;
+    max-width: 90vw;
   }
 
   #presence-toast.show {
@@ -304,165 +358,24 @@
     transform: translate(-50%, -50%) scale(1.0);
   }
 
-  /* Operator Settings Drawer */
-  #settings-drawer {
-    position: absolute;
-    top: 0;
-    right: -420px;
-    width: 380px;
-    height: 100vh;
-    background: rgba(8, 12, 22, 0.94);
-    border-left: 1px solid rgba(255, 255, 255, 0.14);
-    backdrop-filter: blur(24px);
-    -webkit-backdrop-filter: blur(24px);
-    z-index: 100;
-    box-sizing: border-box;
-    padding: 2.2rem 1.8rem;
-    display: flex;
-    flex-direction: column;
-    gap: 1.5rem;
-    box-shadow: -15px 0 45px rgba(0, 0, 0, 0.7);
-    transition: right 0.35s cubic-bezier(0.16, 1, 0.3, 1);
-    overflow-y: auto;
-  }
-
-  #settings-drawer.open {
-    right: 0;
-  }
-
-  .drawer-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    border-bottom: 1px solid rgba(255, 255, 255, 0.12);
-    padding-bottom: 1rem;
-  }
-
-  .drawer-title {
-    font-size: 0.95rem;
-    font-weight: 700;
-    letter-spacing: 0.12em;
-    text-transform: uppercase;
-    color: #ffffff;
-  }
-
-  .btn-close {
-    background: none;
-    border: none;
-    color: #94a3b8;
-    font-size: 1.2rem;
-    cursor: pointer;
-    padding: 0.2rem;
-  }
-
-  .btn-close:hover {
-    color: #ffffff;
-  }
-
-  .setting-group {
-    display: flex;
-    flex-direction: column;
-    gap: 0.6rem;
-  }
-
-  .setting-label {
-    font-family: ui-monospace, SFMono-Regular, monospace;
-    font-size: 0.72rem;
-    font-weight: 700;
-    color: rgba(255, 255, 255, 0.7);
-    letter-spacing: 0.08em;
-    text-transform: uppercase;
-    display: flex;
-    justify-content: space-between;
-  }
-
-  .setting-select {
-    background: rgba(255, 255, 255, 0.06);
-    border: 1px solid rgba(255, 255, 255, 0.18);
-    color: #ffffff;
-    padding: 0.55rem 0.8rem;
-    border-radius: 6px;
-    font-size: 0.82rem;
-    outline: none;
-    cursor: pointer;
-  }
-
-  .setting-select option {
-    background: #0d1322;
-    color: #ffffff;
-  }
-
-  .setting-slider {
-    -webkit-appearance: none;
-    width: 100%;
-    height: 5px;
-    border-radius: 3px;
-    background: rgba(255, 255, 255, 0.15);
-    outline: none;
-  }
-
-  .setting-slider::-webkit-slider-thumb {
-    -webkit-appearance: none;
-    width: 15px;
-    height: 15px;
-    border-radius: 50%;
-    background: #00f0ff;
-    cursor: pointer;
-    box-shadow: 0 0 10px #00f0ff;
-  }
-
-  /* PIP Mini Preview Window */
-  /* Fullscreen Background Camera Video Layer (Ghost / Alignment Mode) */
-  #camera-bg-video {
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 100vw;
-    height: 100vh;
-    object-fit: cover;
-    z-index: 0;
-    opacity: 0;
-    pointer-events: none;
-    transition: opacity 0.35s ease;
-    filter: brightness(0.7) contrast(1.15) saturate(1.1);
-  }
-
-  #camera-bg-video.active {
-    opacity: 0.65;
-  }
-
-  #camera-bg-dimmer {
-    position: absolute;
-    inset: 0;
-    background: radial-gradient(circle at center, rgba(4, 5, 7, 0.2) 30%, rgba(4, 5, 7, 0.85) 100%);
-    z-index: 0;
-    pointer-events: none;
-    opacity: 0;
-    transition: opacity 0.35s ease;
-  }
-
-  #camera-bg-dimmer.active {
-    opacity: 1;
-  }
-
-  /* PIP Camera Feed Window (Prominent for Stage Calibration) */
+  /* PIP Real-time Camera Preview Window */
   #pip-container {
     position: absolute;
-    bottom: 5.5rem;
-    left: 2.2rem;
-    width: 220px;
-    height: 300px;
-    background: #090d16;
-    border: 1.5px solid rgba(0, 240, 255, 0.5);
-    border-radius: 12px;
+    top: 1.8rem;
+    right: 1.8rem;
+    width: 200px;
+    height: 320px;
+    background: #000000;
+    border: 2px solid #ffffff;
+    box-shadow: 4px 4px 0px #ffffff;
     overflow: hidden;
-    z-index: 30;
-    box-shadow: 0 12px 36px rgba(0, 0, 0, 0.85), 0 0 15px rgba(0, 240, 255, 0.2);
-    pointer-events: auto;
-    transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+    z-index: 15;
+    transition: opacity 0.3s ease;
   }
 
   #pip-container.hidden {
+    opacity: 0;
+    pointer-events: none;
     display: none;
   }
 
@@ -474,9 +387,9 @@
 
   .pip-header {
     position: absolute;
-    top: 8px;
-    left: 8px;
-    right: 8px;
+    top: 6px;
+    left: 6px;
+    right: 6px;
     display: flex;
     justify-content: space-between;
     align-items: center;
@@ -484,28 +397,123 @@
   }
 
   .pip-label {
-    font-family: ui-monospace, SFMono-Regular, monospace;
+    font-family: var(--font-mono);
     font-size: 0.65rem;
-    font-weight: 700;
-    background: rgba(0, 0, 0, 0.75);
-    color: #00f0ff;
-    padding: 3px 7px;
-    border-radius: 4px;
-    letter-spacing: 0.08em;
-    display: flex;
-    align-items: center;
-    gap: 5px;
-    border: 1px solid rgba(0, 240, 255, 0.3);
+    font-weight: 800;
+    background: #000000;
+    color: var(--color-high);
+    padding: 2px 6px;
+    border: 1px solid #ffffff;
+    box-shadow: 2px 2px 0px #ffffff;
   }
 
-  .pip-label::before {
-    content: '';
-    display: inline-block;
-    width: 6px;
+  /* Operator Settings Drawer */
+  #settings-drawer {
+    position: absolute;
+    top: 0;
+    right: -450px;
+    width: 400px;
+    height: 100vh;
+    background: #000000;
+    border-left: 2px solid #ffffff;
+    z-index: 100;
+    box-sizing: border-box;
+    padding: 2.2rem 1.8rem;
+    display: flex;
+    flex-direction: column;
+    gap: 1.4rem;
+    box-shadow: -10px 0 0px rgba(255, 255, 255, 0.15);
+    transition: right 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+    overflow-y: auto;
+  }
+
+  #settings-drawer.open {
+    right: 0;
+  }
+
+  .drawer-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 2px solid #ffffff;
+    padding-bottom: 0.9rem;
+  }
+
+  .drawer-title {
+    font-size: 1rem;
+    font-weight: 800;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: #ffffff;
+    font-family: var(--font-mono);
+  }
+
+  .btn-close {
+    background: #000000;
+    border: 1px solid #ffffff;
+    color: #ffffff;
+    box-shadow: 2px 2px 0px #ffffff;
+    width: 28px;
+    height: 28px;
+    font-size: 0.9rem;
+    font-weight: 800;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .btn-close:hover {
+    background: #ffffff;
+    color: #000000;
+  }
+
+  .setting-group {
+    display: flex;
+    flex-direction: column;
+    gap: 0.45rem;
+  }
+
+  .setting-label {
+    font-family: var(--font-mono);
+    font-size: 0.72rem;
+    font-weight: 700;
+    color: #ffffff;
+    display: flex;
+    justify-content: space-between;
+  }
+
+  .setting-select {
+    background: #000000;
+    border: 1px solid #ffffff;
+    box-shadow: 2px 2px 0px #ffffff;
+    color: #ffffff;
+    padding: 0.45rem 0.6rem;
+    font-family: var(--font-mono);
+    font-size: 0.78rem;
+    outline: none;
+    cursor: pointer;
+  }
+
+  .setting-slider {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 100%;
     height: 6px;
-    border-radius: 50%;
-    background: #00ff66;
-    box-shadow: 0 0 6px #00ff66;
+    background: #333333;
+    outline: none;
+    border: 1px solid #ffffff;
+  }
+
+  .setting-slider::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 16px;
+    height: 16px;
+    background: var(--color-high);
+    border: 1px solid #ffffff;
+    cursor: pointer;
+    box-shadow: 1px 1px 0px #ffffff;
   }
 </style>
 
@@ -514,10 +522,10 @@
   <video id="camera-bg-video" autoplay playsinline muted></video>
   <div id="camera-bg-dimmer"></div>
 
-  <!-- 3D Three.js Render Target -->
+  <!-- 2D HTML5 Canvas Target (Zero-latency 60 FPS Generative Visuals) -->
   <div id="canvas-container"></div>
 
-  <!-- Raw Webcam Feed (Hidden for offscreen MediaPipe analysis) -->
+  <!-- Raw Webcam Feed (Hidden for offscreen analysis) -->
   <video id="webcam-video" autoplay playsinline muted style="display:none;"></video>
 
   <!-- Interactive Exhibition UI Layer -->
@@ -526,28 +534,28 @@
     <div class="hud-top">
       <div class="brand-group">
         <div class="brand-title">
-          <span>// SIDANCE</span>
-          <span class="badge">FUTURE YOU</span>
+          <span>// 멋대로 ✕ SIDANCE</span>
+          <span class="badge">2D CANVAS</span>
         </div>
-        <div class="brand-sub">GENERATIVE DANCE BODY MIRROR · 4K VERTICAL</div>
+        <div class="brand-sub">GENERATIVE DANCE BODY MIRROR · 4K VERTICAL EXHIBITION</div>
       </div>
 
       <div class="hud-metrics">
-        <div id="hud-status" class="status-badge status-init">INITIALIZING...</div>
-        <div id="hud-mode-badge" class="metric-item" style="color: #00ff66; font-weight: 700; display: none;">
-          <span>⚡ 1:1 BODY FIT</span>
+        <div id="hud-status" class="mottaero-tag status-badge status-init">INITIALIZING...</div>
+        <div id="hud-mode-badge" class="mottaero-tag" style="color: var(--color-accent); border-color: var(--color-accent); box-shadow: 2px 2px 0px var(--color-accent); display: none;">
+          <span>⚡ 1:1 바디 매칭</span>
         </div>
-        <div id="hud-dancers-badge" class="metric-item" style="color: #ff0077; font-weight: 700;">
+        <div id="hud-dancers-badge" class="mottaero-tag" style="color: var(--color-pink); border-color: var(--color-pink); box-shadow: 2px 2px 0px var(--color-pink);">
           <span id="hud-dancers-val">0 DANCERS</span>
         </div>
-        <div class="metric-item">
-          <span>ENERGY</span>
+        <div class="mottaero-tag">
+          <span>에너지</span>
           <div class="energy-bar-wrap">
             <div id="hud-energy-bar" class="energy-bar-fill"></div>
           </div>
           <span id="hud-energy-val" style="min-width: 28px;">0%</span>
         </div>
-        <div id="hud-fps" class="metric-item" style="color: #00f0ff;">60 FPS</div>
+        <div id="hud-fps" class="mottaero-tag" style="color: var(--color-high); border-color: var(--color-high); box-shadow: 2px 2px 0px var(--color-high);">60 FPS</div>
       </div>
     </div>
 
@@ -558,52 +566,56 @@
     <div class="hud-bottom">
       <div class="controls-bar">
         <!-- Generative Form Selectors -->
-        <button class="btn-pill active" data-form-btn="1">01 CYBER SPINE</button>
-        <button class="btn-pill" data-form-btn="2">02 BIO BRISTLE</button>
-        <button class="btn-pill" data-form-btn="3">03 LIQUID RIBBON</button>
-        <button class="btn-pill" data-form-btn="4">04 QUANTUM</button>
+        <button class="mottaero-btn active" data-form-btn="1">[01 스파인]</button>
+        <button class="mottaero-btn" data-form-btn="2">[02 브리슬]</button>
+        <button class="mottaero-btn" data-form-btn="3">[03 리본]</button>
+        <button class="mottaero-btn" data-form-btn="4">[04 퀀텀]</button>
 
         <div class="divider-vert"></div>
 
         <!-- Mode & Utility Buttons -->
-        <button id="btn-test-mode" class="btn-pill active" style="border-color: rgba(0, 255, 102, 0.6); color: #00ff66;">
-          <span class="btn-label">⚡ TEST FIT: ON</span>
+        <button id="btn-test-mode" class="mottaero-btn active" style="border-color: var(--color-accent); color: var(--color-accent); box-shadow: 2px 2px 0px var(--color-accent);">
+          <span class="btn-label">⚡ 1:1 피팅: ON</span>
         </button>
 
-        <button id="btn-cam-view" class="btn-pill active">
-          <span class="btn-label">CAM: OVERLAY</span>
+        <button id="btn-cam-view" class="mottaero-btn active">
+          <span class="btn-label">📷 카메라: 오버레이</span>
         </button>
 
-        <button id="btn-sound" class="btn-pill">
-          <span class="btn-label">SOUND: OFF</span>
+        <button id="btn-sound" class="mottaero-btn">
+          <span class="btn-label">🔊 사운드: OFF</span>
         </button>
 
-        <button id="btn-mirror" class="btn-pill active">
-          <span class="btn-label">MIRROR: ON</span>
+        <!-- Dedicated Clean Stage UI Hide Button -->
+        <button id="btn-hide-ui" class="mottaero-btn btn-clean-mode">
+          <span>👁️ UI 숨기기</span>
         </button>
 
-        <button id="btn-demo" class="btn-pill">
-          <span class="btn-label">DEMO CHOREO</span>
+        <button id="btn-mirror" class="mottaero-btn active">
+          <span class="btn-label">⟳ 미러: ON</span>
         </button>
 
-        <button id="btn-settings" class="btn-pill">
-          <span>⚙ OPERATOR</span>
+        <button id="btn-demo" class="mottaero-btn">
+          <span class="btn-label">듀엣 데모</span>
         </button>
 
-        <button id="btn-fullscreen" class="btn-pill">
-          <span>⛶ FULLSCREEN</span>
+        <button id="btn-settings" class="mottaero-btn">
+          <span>⚙️ 설정</span>
+        </button>
+
+        <button id="btn-fullscreen" class="mottaero-btn">
+          <span>⛶ 전체화면</span>
         </button>
       </div>
 
       <div class="hint-legend">
-        [<kbd>T</kbd>] 1:1 Body Fit &nbsp;·&nbsp;
-        [<kbd>V</kbd>] Cam View &nbsp;·&nbsp;
-        [<kbd>F</kbd>] Fullscreen &nbsp;·&nbsp;
-        [<kbd>H</kbd>] Clean UI &nbsp;·&nbsp;
-        [<kbd>1</kbd>~<kbd>4</kbd>] Form &nbsp;·&nbsp;
-        [<kbd>M</kbd>] Mirror &nbsp;·&nbsp;
-        [<kbd>S</kbd>] Sound &nbsp;·&nbsp;
-        [<kbd>C</kbd>] Settings
+        [<kbd>더블클릭</kbd>] 화면을 두 번 연속 클릭하면 UI가 숨김/복원됩니다 &nbsp;·&nbsp;
+        [<kbd>H</kbd>] UI 숨김 &nbsp;·&nbsp;
+        [<kbd>T</kbd>] 1:1 피팅 &nbsp;·&nbsp;
+        [<kbd>1~4</kbd>] 폼 변경 &nbsp;·&nbsp;
+        [<kbd>V</kbd>] 카메라 &nbsp;·&nbsp;
+        [<kbd>S</kbd>] 사운드 &nbsp;·&nbsp;
+        [<kbd>F</kbd>] 전체화면
       </div>
     </div>
   </div>
@@ -645,7 +657,7 @@
       </select>
     </div>
 
-    <!-- Max Tracked Dancers (Multi-Person Control) -->
+    <!-- Max Tracked Dancers -->
     <div class="setting-group">
       <div class="setting-label">
         <span>Max Simultaneous Dancers</span>
@@ -654,18 +666,17 @@
         <option value="1">1 Person (Solo Performance)</option>
         <option value="2">2 Persons (Duet Dance)</option>
         <option value="4" selected>4 Persons (Group Ensemble)</option>
-        <option value="6">6 Persons (Full Cast Stage)</option>
       </select>
     </div>
 
-    <!-- Camera Feed Display Mode (PIP / Overlay / Off) -->
+    <!-- Camera Feed Display Mode -->
     <div class="setting-group">
       <div class="setting-label">
-        <span>Camera Display Mode (Test & Align)</span>
+        <span>Camera Display Mode</span>
       </div>
       <select id="cam-mode-select" class="setting-select">
-        <option value="pip" selected>Corner PIP Window (Live Camera)</option>
-        <option value="overlay">Background Mirror (Body Overlay)</option>
+        <option value="overlay" selected>Background Mirror (Body Overlay)</option>
+        <option value="pip">Corner PIP Window (Live Camera)</option>
         <option value="off">Off (Pure Void Artwork Stage)</option>
       </select>
     </div>
@@ -679,7 +690,7 @@
       <input id="bg-opacity-slider" class="setting-slider" type="range" min="0.2" max="1.0" step="0.05" value="0.65">
     </div>
 
-    <hr style="border: 0; border-top: 1px solid rgba(255,255,255,0.1); margin: 0.5rem 0;">
+    <hr style="border: 0; border-top: 1px solid rgba(255,255,255,0.2); margin: 0.5rem 0;">
 
     <!-- Calibration: Avatar Scale -->
     <div class="setting-group">
@@ -687,16 +698,16 @@
         <span>Avatar Stature Scale</span>
         <span id="scale-val">1.00x</span>
       </div>
-      <input id="scale-slider" class="setting-slider" type="range" min="0.5" max="2.5" step="0.05" value="1.0">
+      <input id="scale-slider" class="setting-slider" type="range" min="0.5" max="2.0" step="0.05" value="1.0">
     </div>
 
     <!-- Calibration: Vertical Y Offset -->
     <div class="setting-group">
       <div class="setting-label">
         <span>Vertical Stage Offset</span>
-        <span id="offset-val">-0.10m</span>
+        <span id="offset-val">0.0m</span>
       </div>
-      <input id="offset-slider" class="setting-slider" type="range" min="-1.5" max="1.5" step="0.05" value="-0.1">
+      <input id="offset-slider" class="setting-slider" type="range" min="-1.0" max="1.0" step="0.05" value="0.0">
     </div>
 
     <!-- Calibration: Kinetic Sensitivity -->
@@ -717,8 +728,8 @@
       <input id="vol-slider" class="setting-slider" type="range" min="0" max="1" step="0.05" value="0.45">
     </div>
 
-    <div style="margin-top: auto; font-family: ui-monospace, monospace; font-size: 0.68rem; color: rgba(255,255,255,0.4); line-height: 1.5;">
-      💡 TIP: Double-click anywhere or press <kbd>F</kbd> for kiosk fullscreen. Press <kbd>H</kbd> to hide all buttons for the audience.
+    <div style="margin-top: auto; font-family: var(--font-mono); font-size: 0.68rem; color: rgba(255,255,255,0.5); line-height: 1.5;">
+      💡 TIP: 화면을 더블 클릭하면 UI를 숨기거나 복원할 수 있습니다. 전시 시 [👁️ UI 숨기기] 버튼을 누르면 관람객에게 순수 작품 화면만 제공됩니다.
     </div>
   </aside>
 </main>

@@ -460,11 +460,24 @@ export class MultiPoseTracker {
         normScreenY = normY;
       }
 
-      // Convert from screen space [0, 1] to Three.js world space [-halfFrustum, +halfFrustum]
+      // Convert from screen space [0, 1] to exact 2D canvas pixel coordinates
+      const screenX = normScreenX * sw;
+      const screenY = normScreenY * sh;
       const worldX = (normScreenX - 0.5) * 2.0 * halfFrustumW;
       const worldY = -(normScreenY - 0.5) * 2.0 * halfFrustumH;
 
-      return { x: worldX, y: worldY, z: 0, visibility: kp.score };
+      return {
+        x: screenX,
+        y: screenY,
+        z: 0,
+        screenX,
+        screenY,
+        worldX,
+        worldY,
+        normX: normScreenX,
+        normY: normScreenY,
+        visibility: kp.score
+      };
     };
 
     // MoveNet 17 to MediaPipe 33 mapping
@@ -548,33 +561,36 @@ export class MultiPoseTracker {
       dancer.metrics.energy += 0.25 * (rawEnergy - dancer.metrics.energy);
     }
 
-    // Reconstruct Neck, Pelvis, and Vertebrae Spine
+    // Reconstruct Neck, Pelvis, and Vertebrae Spine in 2D Screen Space
     const lm = dancer.landmarks;
-    const ls = lm[11].visibility > 0.1 ? lm[11] : { x: lm[0].x - 0.3, y: lm[0].y - 0.3, z: 0 };
-    const rs = lm[12].visibility > 0.1 ? lm[12] : { x: lm[0].x + 0.3, y: lm[0].y - 0.3, z: 0 };
-    const lh = lm[23].visibility > 0.1 ? lm[23] : { x: ls.x, y: ls.y - 0.7, z: 0 };
-    const rh = lm[24].visibility > 0.1 ? lm[24] : { x: rs.x, y: rs.y - 0.7, z: 0 };
+    const defaultW = sw * 0.12;
+    const defaultH = sh * 0.22;
+    const nose = lm[0] && lm[0].visibility > 0.1 ? lm[0] : { x: sw * 0.5, y: sh * 0.35, z: 0 };
+    const ls = lm[11] && lm[11].visibility > 0.1 ? lm[11] : { x: nose.x - defaultW * 0.5, y: nose.y + 40, z: 0 };
+    const rs = lm[12] && lm[12].visibility > 0.1 ? lm[12] : { x: nose.x + defaultW * 0.5, y: nose.y + 40, z: 0 };
+    const lh = lm[23] && lm[23].visibility > 0.1 ? lm[23] : { x: ls.x, y: ls.y + defaultH, z: 0 };
+    const rh = lm[24] && lm[24].visibility > 0.1 ? lm[24] : { x: rs.x, y: rs.y + defaultH, z: 0 };
 
-    const neck = { x: (ls.x + rs.x) * 0.5, y: (ls.y + rs.y) * 0.5, z: (ls.z + rs.z) * 0.5 };
-    const pelvis = { x: (lh.x + rh.x) * 0.5, y: (lh.y + rh.y) * 0.5, z: (lh.z + rh.z) * 0.5 };
+    const neck = { x: (ls.x + rs.x) * 0.5, y: (ls.y + rs.y) * 0.5, z: 0 };
+    const pelvis = { x: (lh.x + rh.x) * 0.5, y: (lh.y + rh.y) * 0.5, z: 0 };
 
     dancer.metrics.torsoCenter = {
       x: (neck.x + pelvis.x) * 0.5,
       y: (neck.y + pelvis.y) * 0.5,
-      z: (neck.z + pelvis.z) * 0.5
+      z: 0
     };
-    dancer.metrics.torsoAngle = Math.atan2(neck.x - pelvis.x, neck.y - pelvis.y);
+    dancer.metrics.torsoAngle = Math.atan2(pelvis.x - neck.x, pelvis.y - neck.y);
 
-    // Spine spline points
+    // Spine spline points in 2D
     const spineSegments = 20;
     const spine = [];
     for (let s = 0; s <= spineSegments; s++) {
       const t = s / spineSegments;
-      const arch = Math.sin(t * Math.PI) * (dancer.metrics.torsoAngle * 0.35);
+      const arch = Math.sin(t * Math.PI) * (dancer.metrics.torsoAngle * 25);
       spine.push({
         x: neck.x + (pelvis.x - neck.x) * t + arch,
         y: neck.y + (pelvis.y - neck.y) * t,
-        z: neck.z + (pelvis.z - neck.z) * t,
+        z: 0,
         t: t
       });
     }
@@ -631,43 +647,48 @@ export class MultiPoseTracker {
   _generateMultiDancerDemo(delta) {
     this.demoTime += delta * 1.3;
     const t = this.demoTime;
+    const sw = window.innerWidth || 1080;
+    const sh = window.innerHeight || 1920;
 
-    // Simulate 2 distinct dancers performing a duet across the stage!
+    // Simulate 2 distinct dancers performing a duet across the stage in 2D Canvas!
     const activeDemoDancers = [
-      { id: 1, baseOffsetX: -0.75, speedMult: 1.0, phase: 0 },
-      { id: 2, baseOffsetX: 0.75, speedMult: 1.15, phase: Math.PI * 0.7 }
+      { id: 1, baseNormX: 0.32, speedMult: 1.0, phase: 0 },
+      { id: 2, baseNormX: 0.68, speedMult: 1.15, phase: Math.PI * 0.7 }
     ];
 
     activeDemoDancers.forEach(spec => {
       const dt = t * spec.speedMult + spec.phase;
-      const sway = Math.sin(dt * 1.2) * 0.25;
-      const bob = Math.cos(dt * 2.4) * 0.1;
+      const sway = Math.sin(dt * 1.2) * (sw * 0.04);
+      const bob = Math.cos(dt * 2.4) * (sh * 0.02);
       const armL = Math.sin(dt * 1.8);
       const armR = Math.cos(dt * 1.8);
       const legExt = Math.sin(dt * 0.9);
 
-      const neck = { x: spec.baseOffsetX + sway * 0.5, y: 0.6 + bob, z: Math.sin(dt) * 0.15 };
-      const pelvis = { x: spec.baseOffsetX + sway * 0.2, y: -0.15 + bob * 0.5, z: 0 };
+      const baseX = spec.baseNormX * sw;
+      const baseY = sh * 0.42;
 
-      const leftShoulder = { x: neck.x - 0.32, y: neck.y - 0.05, z: neck.z };
-      const rightShoulder = { x: neck.x + 0.32, y: neck.y - 0.05, z: neck.z };
-      const leftHip = { x: pelvis.x - 0.2, y: pelvis.y, z: pelvis.z };
-      const rightHip = { x: pelvis.x + 0.2, y: pelvis.y, z: pelvis.z };
+      const neck = { x: baseX + sway * 0.8, y: baseY - sh * 0.14 + bob, z: 0 };
+      const pelvis = { x: baseX + sway * 0.4, y: baseY + sh * 0.1 + bob * 0.5, z: 0 };
 
-      const leftElbow = { x: leftShoulder.x - 0.35 + Math.cos(dt * 2) * 0.15, y: leftShoulder.y + 0.2 + armL * 0.3, z: 0.2 };
-      const leftWrist = { x: leftElbow.x - 0.35 + Math.sin(dt * 2.5) * 0.2, y: leftElbow.y + 0.3 + armL * 0.35, z: 0.25 };
+      const leftShoulder = { x: neck.x - sw * 0.07, y: neck.y + sh * 0.02, z: 0 };
+      const rightShoulder = { x: neck.x + sw * 0.07, y: neck.y + sh * 0.02, z: 0 };
+      const leftHip = { x: pelvis.x - sw * 0.045, y: pelvis.y, z: 0 };
+      const rightHip = { x: pelvis.x + sw * 0.045, y: pelvis.y, z: 0 };
 
-      const rightElbow = { x: rightShoulder.x + 0.35 - Math.sin(dt * 2) * 0.15, y: rightShoulder.y + 0.2 + armR * 0.3, z: 0.2 };
-      const rightWrist = { x: rightElbow.x + 0.35 - Math.cos(dt * 2.5) * 0.2, y: rightElbow.y + 0.3 + armR * 0.35, z: 0.25 };
+      const leftElbow = { x: leftShoulder.x - sw * 0.07 + Math.cos(dt * 2) * (sw * 0.02), y: leftShoulder.y + sh * 0.08 + armL * (sh * 0.04), z: 0 };
+      const leftWrist = { x: leftElbow.x - sw * 0.05 + Math.sin(dt * 2.5) * (sw * 0.03), y: leftElbow.y + sh * 0.09 + armL * (sh * 0.04), z: 0 };
 
-      const leftKnee = { x: leftHip.x - 0.08, y: leftHip.y - 0.48 + Math.max(0, bob * 2), z: 0 };
-      const leftAnkle = { x: leftKnee.x, y: leftKnee.y - 0.52, z: 0 };
+      const rightElbow = { x: rightShoulder.x + sw * 0.07 - Math.sin(dt * 2) * (sw * 0.02), y: rightShoulder.y + sh * 0.08 + armR * (sh * 0.04), z: 0 };
+      const rightWrist = { x: rightElbow.x + sw * 0.05 - Math.cos(dt * 2.5) * (sw * 0.03), y: rightElbow.y + sh * 0.09 + armR * (sh * 0.04), z: 0 };
 
-      const rightKnee = { x: rightHip.x + 0.15 + legExt * 0.3, y: rightHip.y - 0.4 + Math.sin(dt * 1.5) * 0.25, z: 0.2 };
-      const rightAnkle = { x: rightKnee.x + 0.15 + legExt * 0.2, y: rightKnee.y - 0.45, z: 0.2 };
+      const leftKnee = { x: leftHip.x - sw * 0.02, y: leftHip.y + sh * 0.15 + Math.max(0, bob * 1.5), z: 0 };
+      const leftAnkle = { x: leftKnee.x, y: leftKnee.y + sh * 0.17, z: 0 };
+
+      const rightKnee = { x: rightHip.x + sw * 0.03 + legExt * (sw * 0.03), y: rightHip.y + sh * 0.13 + Math.sin(dt * 1.5) * (sh * 0.03), z: 0 };
+      const rightAnkle = { x: rightKnee.x + sw * 0.03 + legExt * (sw * 0.02), y: rightKnee.y + sh * 0.16, z: 0 };
 
       const syntheticLandmarks = new Array(33).fill(null).map(() => ({ x: 0, y: 0, z: 0, visibility: 1 }));
-      syntheticLandmarks[0] = { x: neck.x, y: neck.y + 0.24, z: neck.z, visibility: 1 };
+      syntheticLandmarks[0] = { x: neck.x, y: neck.y - sh * 0.05, z: 0, visibility: 1 };
       syntheticLandmarks[11] = { ...leftShoulder, visibility: 1 };
       syntheticLandmarks[12] = { ...rightShoulder, visibility: 1 };
       syntheticLandmarks[13] = { ...leftElbow, visibility: 1 };
@@ -683,14 +704,14 @@ export class MultiPoseTracker {
 
       const spineSegments = 20;
       const spine = [];
-      const torsoAngle = Math.atan2(neck.x - pelvis.x, neck.y - pelvis.y);
+      const torsoAngle = Math.atan2(pelvis.x - neck.x, pelvis.y - neck.y);
       for (let s = 0; s <= spineSegments; s++) {
         const u = s / spineSegments;
-        const arch = Math.sin(u * Math.PI) * (torsoAngle * 0.35);
+        const arch = Math.sin(u * Math.PI) * (torsoAngle * 30);
         spine.push({
           x: neck.x + (pelvis.x - neck.x) * u + arch,
           y: neck.y + (pelvis.y - neck.y) * u,
-          z: neck.z + (pelvis.z - neck.z) * u,
+          z: 0,
           t: u
         });
       }

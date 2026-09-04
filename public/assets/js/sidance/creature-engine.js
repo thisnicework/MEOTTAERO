@@ -1,146 +1,89 @@
 /**
- * SIDANCE ✕ FUTURE YOU - Multi-Avatar 3D Creature Engine
- * High-performance WebGL2 procedural multi-avatar rendering with UnrealBloom post-processing.
- * Manages multiple simultaneous Future You creature instances (1~6 dancers) with
- * individual color palettes, independent wake/collapse physics, and 4 morphing forms.
+ * SIDANCE ✕ FUTURE YOU - 2D HTML5 Canvas Generative Graphics Engine
+ * Ultra-low-latency 60+ FPS generative creature renderer replacing heavy 3D WebGL.
+ * Features 4 kinetic morphing forms (Cyber Spine, Bio Bristle, Liquid Ribbon, Quantum),
+ * multi-dancer color palettes, additive neon glow blending, and 1:1 camera body overlay.
  */
 
-// Color Palettes for Multi-Dancer Distinction
 const DANCER_PALETTES = [
   {
-    name: 'Cyber Cyan & Magenta',
-    primary: 0x00f0ff,
-    accent: 0xff0066,
-    metal: 0x1e293b,
-    chrome: 0xe2e8f0,
-    trail: 0x00f0ff
+    name: 'CYAN_MAGENTA',
+    primary: '#00f0ff',
+    secondary: '#ff0077',
+    core: '#ffffff',
+    glow: 'rgba(0, 240, 255, 0.55)',
+    metal: '#e2e8f0'
   },
   {
-    name: 'Solar Amber & Gold',
-    primary: 0xffaa00,
-    accent: 0xff3300,
-    metal: 0x271a00,
-    chrome: 0xffe8b3,
-    trail: 0xffbb00
+    name: 'BIO_LIME_GOLD',
+    primary: '#00ff66',
+    secondary: '#ffe600',
+    core: '#ffffff',
+    glow: 'rgba(0, 255, 102, 0.55)',
+    metal: '#f1f5f9'
   },
   {
-    name: 'Ultraviolet & Mint',
-    primary: 0xaa00ff,
-    accent: 0x00ffaa,
-    metal: 0x1e102d,
-    chrome: 0xe9d5ff,
-    trail: 0xaa00ff
+    name: 'VIOLET_AMBER',
+    primary: '#a855f7',
+    secondary: '#ff5400',
+    core: '#ffffff',
+    glow: 'rgba(168, 85, 247, 0.55)',
+    metal: '#fed7aa'
   },
   {
-    name: 'Laser Crimson & Acid',
-    primary: 0xff0033,
-    accent: 0x00ff66,
-    metal: 0x260a0a,
-    chrome: 0xfecdd3,
-    trail: 0xff0055
+    name: 'WHITE_AZURE',
+    primary: '#ffffff',
+    secondary: '#0099ff',
+    core: '#00f0ff',
+    glow: 'rgba(0, 153, 255, 0.55)',
+    metal: '#e0f2fe'
   }
 ];
 
 export class CreatureEngine {
-  constructor(containerElement, options = {}) {
-    this.container = containerElement;
+  constructor(container, options = {}) {
+    this.container = container;
     this.options = Object.assign({
+      activeForm: 1,
       scale: 1.0,
-      yOffset: -0.1,
+      yOffset: 0.0,
       sensitivity: 1.2,
-      activeForm: 1, // 1: Cyber Spine, 2: Bio Bristle, 3: Liquid Ribbon, 4: Quantum
+      isTestOverlayMode: true,
+      hasCameraBg: true
     }, options);
 
-    this.scene = null;
-    this.camera = null;
-    this.renderer = null;
-    this.composer = null;
-    this.bloomPass = null;
+    this.canvas = document.createElement('canvas');
+    this.canvas.id = 'sidance-2d-canvas';
+    this.canvas.style.position = 'absolute';
+    this.canvas.style.top = '0';
+    this.canvas.style.left = '0';
+    this.canvas.style.width = '100%';
+    this.canvas.style.height = '100%';
+    this.canvas.style.zIndex = '1';
+    this.canvas.style.pointerEvents = 'none';
 
-    // Multi-Avatar Map: personId -> AvatarInstance
-    this.avatars = new Map();
-    this.rootGroup = null;
+    this.container.innerHTML = '';
+    this.container.appendChild(this.canvas);
 
-    // Time & clock
-    this.clock = new THREE.Clock();
+    this.ctx = this.canvas.getContext('2d', { alpha: true });
+    this.dpr = Math.min(window.devicePixelRatio || 1, 2);
+
+    this.avatars = new Map(); // slotId -> AvatarInstance
+    this.lastTime = performance.now();
     this.elapsedTime = 0;
 
-    this.init();
-  }
-
-  init() {
-    const width = this.container.clientWidth || window.innerWidth;
-    const height = this.container.clientHeight || window.innerHeight;
-
-    // 1. Scene & Atmosphere
-    this.scene = new THREE.Scene();
-    this.scene.fog = new THREE.FogExp2(0x040507, 0.07);
-
-    // 2. Camera (Vertical 9:16 optimized)
-    this.camera = new THREE.PerspectiveCamera(50, width / height, 0.1, 100);
-    this.camera.position.set(0, 0.0, 4.6);
-
-    // 3. WebGL Renderer (alpha: true enables camera background video overlay)
-    this.renderer = new THREE.WebGLRenderer({
-      antialias: true,
-      powerPreference: 'high-performance',
-      alpha: true
-    });
-    this.renderer.setSize(width, height);
-    this.renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
-    this.renderer.setClearColor(0x040507, 1);
-    this.renderer.toneMapping = THREE.ACESFilmicToneMapping;
-    this.renderer.toneMappingExposure = 1.2;
-    this.container.appendChild(this.renderer.domElement);
-
-    // 4. UnrealBloom Post-Processing
-    this._setupPostProcessing(width, height);
-
-    // 5. Lighting
-    this._setupLighting();
-
-    // 6. Multi-Avatar Root Group
-    this.rootGroup = new THREE.Group();
-    this.scene.add(this.rootGroup);
-
-    // 7. Event Listeners
+    this.onResize();
     window.addEventListener('resize', () => this.onResize());
   }
 
-  _setupLighting() {
-    const ambient = new THREE.AmbientLight(0x0e1726, 1.2);
-    this.scene.add(ambient);
+  onResize() {
+    const sw = window.innerWidth || 1080;
+    const sh = window.innerHeight || 1920;
+    this.width = sw;
+    this.height = sh;
 
-    const dirLight = new THREE.DirectionalLight(0xffffff, 1.5);
-    dirLight.position.set(2, 5, 3);
-    this.scene.add(dirLight);
-
-    const rimL = new THREE.PointLight(0x00f0ff, 2.0, 10);
-    rimL.position.set(-4, 2, -2);
-    this.scene.add(rimL);
-
-    const rimR = new THREE.PointLight(0xff0077, 2.0, 10);
-    rimR.position.set(4, 2, -2);
-    this.scene.add(rimR);
-  }
-
-  _setupPostProcessing(width, height) {
-    if (!window.THREE || !window.THREE.EffectComposer) {
-      console.warn('EffectComposer not found, falling back to standard render');
-      return;
-    }
-
-    const renderPass = new THREE.RenderPass(this.scene, this.camera);
-    this.bloomPass = new THREE.UnrealBloomPass(
-      new THREE.Vector2(width, height),
-      1.2,  // bloom strength
-      0.45, // radius
-      0.2   // threshold
-    );
-
-    this.composer = new THREE.EffectComposer(this.renderer);
-    this.composer.addPass(renderPass);
-    this.composer.addPass(this.bloomPass);
+    this.canvas.width = Math.floor(sw * this.dpr);
+    this.canvas.height = Math.floor(sh * this.dpr);
   }
 
   setForm(formId) {
@@ -150,20 +93,22 @@ export class CreatureEngine {
     }
   }
 
-  setCalibration({ scale, yOffset, sensitivity }) {
-    if (scale !== undefined) this.options.scale = scale;
-    if (yOffset !== undefined) this.options.yOffset = yOffset;
-    if (sensitivity !== undefined) this.options.sensitivity = sensitivity;
+  setSensitivity(val) {
+    this.options.sensitivity = Math.max(0.2, Math.min(3.0, Number(val) || 1.2));
   }
 
-  setCameraBackground(isOverlayActive) {
-    if (isOverlayActive) {
-      this.renderer.setClearColor(0x000000, 0.0);
-      if (this.scene.fog) this.scene.fog.density = 0.0;
-    } else {
-      this.renderer.setClearColor(0x040507, 1.0);
-      if (this.scene.fog) this.scene.fog.density = 0.07;
-    }
+  setScale(scale) {
+    this.options.scale = Math.max(0.5, Math.min(2.0, Number(scale) || 1.0));
+  }
+
+  setCalibration(cal = {}) {
+    if (cal.scale !== undefined) this.setScale(cal.scale);
+    if (cal.yOffset !== undefined) this.setYOffset(cal.yOffset);
+    if (cal.sensitivity !== undefined) this.setSensitivity(cal.sensitivity);
+  }
+
+  setCameraBackground(show) {
+    this.options.hasCameraBg = Boolean(show);
   }
 
   setTestOverlayMode(isTest) {
@@ -172,14 +117,27 @@ export class CreatureEngine {
   }
 
   updateMultiDancers(trackedDancersMap, collectiveMetrics) {
-    const delta = this.clock.getDelta();
+    const now = performance.now();
+    const delta = Math.min((now - this.lastTime) * 0.001, 0.1);
+    this.lastTime = now;
     this.elapsedTime += delta;
 
-    // In Test Overlay Mode, lock to 1:1 scale and 0.0 offset to fit directly over real human body
-    const effectiveYOffset = this.options.isTestOverlayMode ? 0.0 : this.options.yOffset;
-    const effectiveScale = this.options.isTestOverlayMode ? 1.0 : this.options.scale;
+    const ctx = this.ctx;
+    const w = this.width;
+    const h = this.height;
 
-    this.rootGroup.position.set(0, effectiveYOffset, 0);
+    // Reset canvas transform to handle DPR
+    ctx.setTransform(this.dpr, 0, 0, this.dpr, 0, 0);
+
+    // Canvas background clearing
+    if (this.options.hasCameraBg || this.options.isTestOverlayMode) {
+      // Clear transparently so camera video feeds through underneath
+      ctx.clearRect(0, 0, w, h);
+    } else {
+      // Void Stage: Deep exhibition pitch black with subtle motion persistence trail
+      ctx.fillStyle = 'rgba(4, 5, 7, 0.35)';
+      ctx.fillRect(0, 0, w, h);
+    }
 
     const activeIds = new Set();
 
@@ -194,7 +152,7 @@ export class CreatureEngine {
           let avatar = this.avatars.get(id);
           if (!avatar) {
             const paletteIndex = ((dancer.colorIndex || 1) - 1) % DANCER_PALETTES.length;
-            avatar = new AvatarInstance(id, DANCER_PALETTES[paletteIndex], this.rootGroup);
+            avatar = new AvatarInstance(id, DANCER_PALETTES[paletteIndex]);
             avatar.setForm(this.options.activeForm);
             this.avatars.set(id, avatar);
           }
@@ -203,698 +161,612 @@ export class CreatureEngine {
             time: this.elapsedTime,
             delta,
             sensitivity: this.options.sensitivity,
-            baseScale: effectiveScale,
-            isExiting: false
+            scale: this.options.scale,
+            yOffset: this.options.isTestOverlayMode ? 0 : this.options.yOffset * 100,
+            isTestMode: this.options.isTestOverlayMode
           });
+
+          // Draw avatar
+          avatar.render(ctx);
         }
       }
     }
 
-    // Clean up avatars whose dancers have left or are exiting
+    // Clean up leaving or unconfirmed avatars
     for (const [id, avatar] of this.avatars.entries()) {
       if (!activeIds.has(id)) {
         avatar.collapse(delta);
         if (avatar.isDead()) {
-          avatar.dispose(this.rootGroup);
           this.avatars.delete(id);
+        } else {
+          avatar.render(ctx);
         }
       }
-    }
-
-    // Render 4K Scene
-    if (this.composer) {
-      this.composer.render();
-    } else {
-      this.renderer.render(this.scene, this.camera);
-    }
-  }
-
-  onResize() {
-    const width = this.container.clientWidth || window.innerWidth;
-    const height = this.container.clientHeight || window.innerHeight;
-
-    this.camera.aspect = width / height;
-    this.camera.updateProjectionMatrix();
-
-    this.renderer.setSize(width, height);
-    if (this.composer) {
-      this.composer.setSize(width, height);
     }
   }
 }
 
 
 /**
- * ============================================================================
  * AVATAR INSTANCE CLASS
- * Represents one discrete dancer's Future You avatar in 3D space with its own
- * position, color palette, lifecycle (wake/collapse), and 4 creature forms.
- * ============================================================================
+ * Manages one discrete dancer's kinetic creature avatar, smoothing, and form switching.
  */
 class AvatarInstance {
-  constructor(id, palette, parentGroup) {
+  constructor(id, palette) {
     this.id = id;
     this.palette = palette;
-    this.group = new THREE.Group();
-    parentGroup.add(this.group);
-
-    this.awakeFactor = 0.0; // 0 (asleep) -> 1 (fully awake)
+    this.awakeFactor = 0.0;
     this.currentFormId = 1;
 
-    // Dynamic light on dancer's core
-    this.coreLight = new THREE.PointLight(this.palette.primary, 1.8, 4.5);
-    this.group.add(this.coreLight);
-
-    // Initialize the 4 forms with this dancer's palette
     this.forms = {
-      1: new CyberSpineForm(this.palette),
-      2: new BioBristleForm(this.palette),
-      3: new LiquidRibbonForm(this.palette),
-      4: new QuantumLatticeForm(this.palette)
+      1: new CyberSpine2D(this.palette),
+      2: new BioBristle2D(this.palette),
+      3: new LiquidRibbon2D(this.palette),
+      4: new QuantumLattice2D(this.palette)
     };
-
-    Object.values(this.forms).forEach(f => {
-      this.group.add(f.root);
-      f.setVisible(false);
-    });
   }
 
   setForm(formId) {
     this.currentFormId = formId;
-    Object.entries(this.forms).forEach(([id, f]) => {
-      f.setVisible(Number(id) === this.currentFormId);
-    });
   }
 
-  update(landmarks, metrics, { time, delta, sensitivity, baseScale, isExiting }) {
-    // Smooth wake-up or exit-collapse
-    const targetAwake = isExiting ? 0.0 : 1.0;
-    this.awakeFactor += (targetAwake - this.awakeFactor) * (delta * 3.2);
+  update(landmarks, metrics, options) {
+    // Smooth wake-up: 0 -> 1 in ~0.2s
+    this.awakeFactor += (1.0 - this.awakeFactor) * Math.min(options.delta * 5.0, 1.0);
 
-    const s = baseScale * this.awakeFactor;
-    this.group.scale.set(s, s, s);
-
-    // Core light position & pulse
-    if (metrics.torsoCenter) {
-      this.coreLight.position.set(
-        metrics.torsoCenter.x,
-        metrics.torsoCenter.y,
-        metrics.torsoCenter.z + 0.3
-      );
-      this.coreLight.intensity = (1.0 + (metrics.energy || 0) * 2.0) * this.awakeFactor;
-    }
-
-    const currentForm = this.forms[this.currentFormId];
-    if (currentForm && landmarks) {
-      currentForm.update(landmarks, metrics, {
-        time,
-        delta,
-        awakeFactor: this.awakeFactor,
-        sensitivity
+    const form = this.forms[this.currentFormId];
+    if (form && landmarks) {
+      form.update(landmarks, metrics, {
+        ...options,
+        awakeFactor: this.awakeFactor
       });
     }
   }
 
   collapse(delta) {
-    this.awakeFactor -= delta * 2.5;
-    const s = Math.max(0, this.awakeFactor);
-    this.group.scale.set(s, s, s);
+    // Fast collapse: 1 -> 0 in ~0.35s
+    this.awakeFactor -= delta * 3.2;
   }
 
   isDead() {
     return this.awakeFactor <= 0.01;
   }
 
-  dispose(parentGroup) {
-    parentGroup.remove(this.group);
+  render(ctx) {
+    if (this.awakeFactor <= 0.01) return;
+    const form = this.forms[this.currentFormId];
+    if (form) {
+      ctx.save();
+      // Additive blending for vivid, blooming neon aesthetics
+      ctx.globalCompositeOperation = 'lighter';
+      ctx.globalAlpha = Math.max(0, Math.min(1, this.awakeFactor));
+      form.render(ctx);
+      ctx.restore();
+    }
   }
 }
 
 
 /**
- * ============================================================================
- * FORM 1: CYBER SPINE & RIBS (Multi-Dancer Palette Aware)
- * ============================================================================
+ * FORM 1: CYBER SPINE & RIBS (2D HTML Canvas)
+ * Symmetrical mechanical vertebrae column with articulated ribs, kinetic struts, and neon glow.
  */
-class CyberSpineForm {
+class CyberSpine2D {
   constructor(palette) {
-    this.root = new THREE.Group();
     this.palette = palette;
-    this.vertebraeCount = 20;
-    this.vertebraeMeshes = [];
-    this.ribMeshes = [];
-
-    this.metalMaterial = new THREE.MeshStandardMaterial({
-      color: palette.metal,
-      metalness: 0.95,
-      roughness: 0.2
-    });
-
-    this.chromeMaterial = new THREE.MeshStandardMaterial({
-      color: palette.chrome,
-      metalness: 0.98,
-      roughness: 0.12
-    });
-
-    this.primaryNeon = new THREE.MeshBasicMaterial({ color: palette.primary });
-    this.accentNeon = new THREE.MeshBasicMaterial({ color: palette.accent });
-
-    this._buildSpineAndRibs();
-    this._buildLimbs();
-    this._buildCore();
+    this.spinePoints = [];
+    this.landmarks = [];
+    this.metrics = {};
+    this.params = {};
+    this.pulsePhase = 0;
   }
 
-  setVisible(v) {
-    this.root.visible = v;
+  update(landmarks, metrics, params) {
+    this.landmarks = landmarks;
+    this.metrics = metrics;
+    this.params = params;
+    this.spinePoints = metrics.spinePoints || [];
+    this.pulsePhase += params.delta * 4.0;
   }
 
-  _buildSpineAndRibs() {
-    const spineGroup = new THREE.Group();
+  render(ctx) {
+    const lm = this.landmarks;
+    const spine = this.spinePoints;
+    if (!lm || lm.length < 33 || !spine || spine.length === 0) return;
 
-    for (let i = 0; i < this.vertebraeCount; i++) {
-      const vGeom = new THREE.CylinderGeometry(0.04, 0.05, 0.03, 14);
-      const vMesh = new THREE.Mesh(vGeom, this.metalMaterial);
+    const { time, awakeFactor, sensitivity, isTestMode, yOffset } = this.params;
+    const energy = (this.metrics.energy || 0) * sensitivity;
+    const pal = this.palette;
 
-      const ringGeom = new THREE.TorusGeometry(0.045, 0.007, 8, 20);
-      const ringMesh = new THREE.Mesh(ringGeom, this.primaryNeon);
-      vMesh.add(ringMesh);
+    ctx.save();
+    if (yOffset) ctx.translate(0, yOffset);
 
-      spineGroup.add(vMesh);
-      this.vertebraeMeshes.push(vMesh);
-
-      if (i >= 3 && i <= 15) {
-        const ribPair = { left: null, right: null, baseSpan: 0.12 + (1.0 - Math.abs(i - 9) / 6.5) * 0.2 };
-        const ribGeom = new THREE.BoxGeometry(0.018, 0.012, 0.22);
-
-        const leftRib = new THREE.Mesh(ribGeom, this.chromeMaterial);
-        const rightRib = new THREE.Mesh(ribGeom, this.chromeMaterial);
-
-        const tipGeom = new THREE.SphereGeometry(0.016, 8, 8);
-        const tipL = new THREE.Mesh(tipGeom, this.accentNeon);
-        tipL.position.z = 0.11;
-        leftRib.add(tipL);
-
-        const tipR = new THREE.Mesh(tipGeom, this.accentNeon);
-        tipR.position.z = 0.11;
-        rightRib.add(tipR);
-
-        vMesh.add(leftRib);
-        vMesh.add(rightRib);
-
-        ribPair.left = leftRib;
-        ribPair.right = rightRib;
-        this.ribMeshes.push(ribPair);
-      }
-    }
-
-    this.root.add(spineGroup);
-  }
-
-  _buildLimbs() {
-    this.limbSegments = [
-      { from: 11, to: 13 }, { from: 13, to: 15 },
-      { from: 12, to: 14 }, { from: 14, to: 16 },
-      { from: 23, to: 25 }, { from: 25, to: 27 },
-      { from: 24, to: 26 }, { from: 26, to: 28 }
+    // 1. Draw Mechanical Limbs (Shoulder -> Elbow -> Wrist, Hip -> Knee -> Ankle)
+    const limbPairs = [
+      [11, 13], [13, 15], // Left Arm
+      [12, 14], [14, 16], // Right Arm
+      [23, 25], [25, 27], // Left Leg
+      [24, 26], [26, 28]  // Right Leg
     ];
 
-    this.limbMeshes = this.limbSegments.map(() => {
-      const group = new THREE.Group();
-      const cylGeom = new THREE.CylinderGeometry(0.03, 0.04, 1.0, 10);
-      const cylMesh = new THREE.Mesh(cylGeom, this.metalMaterial);
-      cylMesh.position.y = 0.5;
-      group.add(cylMesh);
+    ctx.lineWidth = 3;
+    ctx.lineCap = 'round';
+    ctx.lineJoin = 'round';
 
-      const ringGeom = new THREE.CylinderGeometry(0.048, 0.048, 0.18, 10);
-      const ringMesh = new THREE.Mesh(ringGeom, this.chromeMaterial);
-      ringMesh.position.y = 0.5;
-      group.add(ringMesh);
+    limbPairs.forEach(([from, to]) => {
+      const p1 = lm[from];
+      const p2 = lm[to];
+      if (!p1 || !p2 || p1.visibility < 0.15 || p2.visibility < 0.15) return;
 
-      const jointGeom = new THREE.SphereGeometry(0.058, 12, 12);
-      const jointMesh = new THREE.Mesh(jointGeom, this.primaryNeon);
-      group.add(jointMesh);
+      const dx = p2.x - p1.x;
+      const dy = p2.y - p1.y;
+      const dist = Math.hypot(dx, dy);
+      const nx = -dy / (dist || 1);
+      const ny = dx / (dist || 1);
+      const railOffset = 6 * awakeFactor;
 
-      this.root.add(group);
-      return { group, cylMesh, ringMesh };
+      // Dual hydraulic rail struts
+      ctx.strokeStyle = pal.primary;
+      ctx.lineWidth = 2.2;
+      ctx.beginPath();
+      ctx.moveTo(p1.x + nx * railOffset, p1.y + ny * railOffset);
+      ctx.lineTo(p2.x + nx * railOffset, p2.y + ny * railOffset);
+      ctx.stroke();
+
+      ctx.beginPath();
+      ctx.moveTo(p1.x - nx * railOffset, p1.y - ny * railOffset);
+      ctx.lineTo(p2.x - nx * railOffset, p2.y - ny * railOffset);
+      ctx.stroke();
+
+      // Metallic center rod
+      ctx.strokeStyle = pal.core;
+      ctx.lineWidth = 1.2;
+      ctx.beginPath();
+      ctx.moveTo(p1.x, p1.y);
+      ctx.lineTo(p2.x, p2.y);
+      ctx.stroke();
+
+      // Energy sliding sleeve
+      const sleeveT = (Math.sin(time * 3 + from) * 0.5 + 0.5);
+      const sx = p1.x + dx * sleeveT;
+      const sy = p1.y + dy * sleeveT;
+      ctx.fillStyle = pal.secondary;
+      ctx.beginPath();
+      ctx.arc(sx, sy, 4.5 * awakeFactor, 0, Math.PI * 2);
+      ctx.fill();
     });
-  }
 
-  _buildCore() {
-    this.coreGroup = new THREE.Group();
-    const coreSphere = new THREE.Mesh(
-      new THREE.SphereGeometry(0.075, 16, 16),
-      this.primaryNeon
-    );
-    this.coreGroup.add(coreSphere);
-
-    for (let r = 1; r <= 3; r++) {
-      const ring = new THREE.Mesh(
-        new THREE.TorusGeometry(0.1 * r, 0.005, 6, 24),
-        this.chromeMaterial
-      );
-      this.coreGroup.add(ring);
-    }
-
-    this.root.add(this.coreGroup);
-  }
-
-  update(landmarks, metrics, { time, delta, awakeFactor, sensitivity }) {
-    if (!metrics.spinePoints || metrics.spinePoints.length === 0) return;
-
-    const spine = metrics.spinePoints;
-    const energy = (metrics.energy || 0) * sensitivity;
-
-    for (let i = 0; i < this.vertebraeMeshes.length; i++) {
-      const mesh = this.vertebraeMeshes[i];
-      const pIdx = Math.min(i, spine.length - 1);
-      const pt = spine[pIdx];
-
-      mesh.position.set(pt.x, pt.y, pt.z);
-      if (pIdx < spine.length - 1) {
-        const next = spine[pIdx + 1];
-        mesh.lookAt(next.x, next.y, next.z);
-        mesh.rotateX(Math.PI * 0.5);
-      }
-    }
-
-    const ribFlutter = Math.sin(time * 12.0) * energy * 0.15;
-
-    // Adapt rib cage width to dancer's real shoulder width for custom-fitted suit
-    const ls = landmarks[11];
-    const rs = landmarks[12];
-    let bodyWidthScale = 1.0;
+    // 2. Adaptive Shoulder Width for Custom Fit Exoskeleton
+    const ls = lm[11];
+    const rs = lm[12];
+    let shoulderDist = 120;
     if (ls && rs && ls.visibility > 0.1 && rs.visibility > 0.1) {
-      const sw = Math.hypot(rs.x - ls.x, rs.y - ls.y);
-      bodyWidthScale = Math.max(0.7, Math.min(1.6, sw / 0.55));
+      shoulderDist = Math.hypot(rs.x - ls.x, rs.y - ls.y);
     }
-    const ribSpread = (1.0 + energy * 0.85) * awakeFactor * bodyWidthScale;
+    const baseSpan = Math.max(60, Math.min(260, shoulderDist * 0.9));
 
-    this.ribMeshes.forEach(ribPair => {
-      const span = ribPair.baseSpan * ribSpread;
-      const angle = (0.55 + ribFlutter) * awakeFactor;
+    // 3. Articulated Ribs radiating from Spine
+    const ribPairs = 10;
+    const flutter = Math.sin(time * 12.0) * energy * 8;
 
-      ribPair.left.position.set(-span * 0.8, 0, span * 0.5);
-      ribPair.left.rotation.set(0, angle, 0.2);
+    for (let r = 0; r < ribPairs; r++) {
+      const u = (r + 1) / (ribPairs + 2);
+      const sIdx = Math.floor(u * (spine.length - 1));
+      const pt = spine[sIdx];
+      const nextPt = spine[Math.min(sIdx + 1, spine.length - 1)];
+      if (!pt || !nextPt) continue;
 
-      ribPair.right.position.set(span * 0.8, 0, span * 0.5);
-      ribPair.right.rotation.set(0, -angle, -0.2);
+      const tangentX = nextPt.x - pt.x;
+      const tangentY = nextPt.y - pt.y;
+      const tLen = Math.hypot(tangentX, tangentY) || 1;
+      const perpX = -tangentY / tLen;
+      const perpY = tangentX / tLen;
+
+      // Rib taper: wider at chest, tapered at waist
+      const taper = Math.sin(u * Math.PI);
+      const ribLen = (baseSpan * 0.5 * taper + energy * 25 + flutter) * awakeFactor;
+      const curveArch = 18 * taper;
+
+      // Left Rib
+      const lx1 = pt.x - perpX * (ribLen * 0.5);
+      const ly1 = pt.y - perpY * (ribLen * 0.5) - curveArch;
+      const lx2 = pt.x - perpX * ribLen;
+      const ly2 = pt.y - perpY * ribLen;
+
+      ctx.strokeStyle = r % 2 === 0 ? pal.primary : pal.secondary;
+      ctx.lineWidth = 2.4;
+      ctx.beginPath();
+      ctx.moveTo(pt.x, pt.y);
+      ctx.quadraticCurveTo(lx1, ly1, lx2, ly2);
+      ctx.stroke();
+
+      // Right Rib
+      const rx1 = pt.x + perpX * (ribLen * 0.5);
+      const ry1 = pt.y + perpY * (ribLen * 0.5) - curveArch;
+      const rx2 = pt.x + perpX * ribLen;
+      const ry2 = pt.y + perpY * ribLen;
+
+      ctx.beginPath();
+      ctx.moveTo(pt.x, pt.y);
+      ctx.quadraticCurveTo(rx1, ry1, rx2, ry2);
+      ctx.stroke();
+
+      // Rib tip glowing node
+      ctx.fillStyle = pal.core;
+      ctx.beginPath();
+      ctx.arc(lx2, ly2, 3, 0, Math.PI * 2);
+      ctx.arc(rx2, ry2, 3, 0, Math.PI * 2);
+      ctx.fill();
+    }
+
+    // 4. Central Vertebrae Spinal Column
+    ctx.strokeStyle = pal.primary;
+    ctx.lineWidth = 4;
+    ctx.beginPath();
+    ctx.moveTo(spine[0].x, spine[0].y);
+    for (let i = 1; i < spine.length; i++) {
+      ctx.lineTo(spine[i].x, spine[i].y);
+    }
+    ctx.stroke();
+
+    // Vertebrae discs
+    for (let i = 0; i < spine.length; i += 2) {
+      const pt = spine[i];
+      ctx.fillStyle = pal.core;
+      ctx.beginPath();
+      ctx.arc(pt.x, pt.y, 4.5 * awakeFactor, 0, Math.PI * 2);
+      ctx.fill();
+    }
+
+    // 5. Articulated Joint Bearings & Concentric Rings
+    const majorJoints = [11, 12, 13, 14, 15, 16, 23, 24, 25, 26, 27, 28];
+    majorJoints.forEach(idx => {
+      const pt = lm[idx];
+      if (!pt || pt.visibility < 0.15) return;
+
+      const radius = (idx === 11 || idx === 12 || idx === 23 || idx === 24) ? 12 : 9;
+      ctx.strokeStyle = pal.secondary;
+      ctx.lineWidth = 1.8;
+      ctx.beginPath();
+      ctx.arc(pt.x, pt.y, radius * awakeFactor, 0, Math.PI * 2);
+      ctx.stroke();
+
+      ctx.fillStyle = pal.core;
+      ctx.beginPath();
+      ctx.arc(pt.x, pt.y, (radius * 0.45) * awakeFactor, 0, Math.PI * 2);
+      ctx.fill();
     });
 
-    this.limbSegments.forEach((seg, idx) => {
-      const p1 = landmarks[seg.from];
-      const p2 = landmarks[seg.to];
-      const limb = this.limbMeshes[idx];
+    // 6. Core Pulsating Reactor at Torso Center
+    if (this.metrics.torsoCenter) {
+      const tc = this.metrics.torsoCenter;
+      const coreR = (16 + energy * 18 + Math.sin(time * 6) * 4) * awakeFactor;
 
-      if (p1 && p2 && p1.visibility > 0.1 && p2.visibility > 0.1) {
-        const v1 = new THREE.Vector3(p1.x, p1.y, p1.z);
-        const v2 = new THREE.Vector3(p2.x, p2.y, p2.z);
-        const distance = v1.distanceTo(v2);
+      const grad = ctx.createRadialGradient(tc.x, tc.y, 2, tc.x, tc.y, coreR * 1.5);
+      grad.addColorStop(0, pal.core);
+      grad.addColorStop(0.4, pal.primary);
+      grad.addColorStop(1, 'rgba(0,0,0,0)');
 
-        limb.group.position.copy(v1);
-        limb.group.lookAt(v2);
-        limb.group.rotateX(Math.PI * 0.5);
-        limb.cylMesh.scale.set(1, Math.max(distance, 0.01), 1);
-        limb.ringMesh.position.y = distance * 0.5 + Math.sin(time * 4 + idx) * 0.04;
-        limb.group.visible = true;
-      } else {
-        limb.group.visible = false;
-      }
-    });
+      ctx.fillStyle = grad;
+      ctx.beginPath();
+      ctx.arc(tc.x, tc.y, coreR * 1.5, 0, Math.PI * 2);
+      ctx.fill();
 
-    if (metrics.torsoCenter) {
-      this.coreGroup.position.set(
-        metrics.torsoCenter.x,
-        metrics.torsoCenter.y + 0.08,
-        metrics.torsoCenter.z + 0.05
-      );
-      this.coreGroup.rotation.y = time * 2.0;
-      this.coreGroup.rotation.x = time * 1.5;
+      // Rotating core radar ring
+      ctx.strokeStyle = pal.secondary;
+      ctx.lineWidth = 1.5;
+      ctx.beginPath();
+      ctx.arc(tc.x, tc.y, coreR, time * 2, time * 2 + Math.PI * 1.4);
+      ctx.stroke();
     }
+
+    ctx.restore();
   }
 }
 
 
 /**
- * ============================================================================
- * FORM 2: BIO BRISTLE / FUR ORGANISM (Multi-Dancer)
- * ============================================================================
+ * FORM 2: BIO BRISTLE (2D HTML Canvas)
+ * Living bioluminescent organism with thousands of kinetic quills swaying with momentum.
  */
-class BioBristleForm {
+class BioBristle2D {
   constructor(palette) {
-    this.root = new THREE.Group();
     this.palette = palette;
-    this.bristleCount = 180;
-    this.bristles = [];
-
-    this.material = new THREE.LineBasicMaterial({
-      color: palette.primary,
-      transparent: true,
-      opacity: 0.85
-    });
-
-    this.tipMaterial = new THREE.MeshBasicMaterial({
-      color: palette.accent
-    });
-
-    this._buildBristles();
+    this.landmarks = [];
+    this.metrics = {};
+    this.params = {};
   }
 
-  setVisible(v) {
-    this.root.visible = v;
+  update(landmarks, metrics, params) {
+    this.landmarks = landmarks;
+    this.metrics = metrics;
+    this.params = params;
   }
 
-  _buildBristles() {
-    const tipGeom = new THREE.SphereGeometry(0.016, 6, 6);
+  render(ctx) {
+    const lm = this.landmarks;
+    const spine = this.metrics.spinePoints || [];
+    if (!lm || lm.length < 33) return;
 
-    for (let i = 0; i < this.bristleCount; i++) {
-      const positions = new Float32Array(3 * 3);
-      const geom = new THREE.BufferGeometry();
-      geom.setAttribute('position', new THREE.BufferAttribute(positions, 3));
+    const { time, awakeFactor, sensitivity, yOffset } = this.params;
+    const energy = (this.metrics.energy || 0) * sensitivity;
+    const pal = this.palette;
 
-      const line = new THREE.Line(geom, this.material);
-      const tipMesh = new THREE.Mesh(tipGeom, this.tipMaterial);
+    ctx.save();
+    if (yOffset) ctx.translate(0, yOffset);
 
-      this.root.add(line);
-      this.root.add(tipMesh);
-
-      this.bristles.push({
-        line, tipMesh, geom, positions,
-        jointIndex: i % 14,
-        offsetAngle: (i / this.bristleCount) * Math.PI * 2 * 5,
-        length: 0.2 + Math.random() * 0.25,
-        tipPos: new THREE.Vector3(),
-        tipVel: new THREE.Vector3()
-      });
-    }
-  }
-
-  update(landmarks, metrics, { time, delta, awakeFactor, sensitivity }) {
-    if (!landmarks) return;
-
-    const energy = (metrics.energy || 0) * sensitivity;
-    const trackedJoints = [
-      landmarks[0],
-      landmarks[11], landmarks[12],
-      landmarks[13], landmarks[14],
-      landmarks[15], landmarks[16],
-      landmarks[23], landmarks[24],
-      landmarks[25], landmarks[26],
-      landmarks[27], landmarks[28]
+    // Radiate filaments along spine and limbs
+    const segments = [
+      [11, 13], [13, 15], [12, 14], [14, 16],
+      [23, 25], [25, 27], [24, 26], [26, 28]
     ];
 
-    for (let i = 0; i < this.bristles.length; i++) {
-      const b = this.bristles[i];
-      const joint = trackedJoints[b.jointIndex % trackedJoints.length];
-      if (!joint || joint.visibility < 0.1) {
-        b.line.visible = false;
-        b.tipMesh.visible = false;
-        continue;
+    // Spine quills
+    for (let i = 0; i < spine.length; i += 2) {
+      const pt = spine[i];
+      const count = 7;
+      for (let k = 0; k < count; k++) {
+        const angle = (k / count) * Math.PI * 2 + Math.sin(time * 3 + i) * 0.4;
+        const len = (25 + Math.sin(i * 1.5 + k) * 15 + energy * 30) * awakeFactor;
+        const sway = Math.sin(time * 8 + i + k) * (10 + energy * 15);
+
+        const ex = pt.x + Math.cos(angle) * len + sway;
+        const ey = pt.y + Math.sin(angle) * len + Math.abs(sway * 0.5);
+
+        ctx.strokeStyle = k % 2 === 0 ? pal.primary : pal.secondary;
+        ctx.lineWidth = 1.4;
+        ctx.beginPath();
+        ctx.moveTo(pt.x, pt.y);
+        ctx.quadraticCurveTo((pt.x + ex) * 0.5 + sway, (pt.y + ey) * 0.5, ex, ey);
+        ctx.stroke();
+
+        ctx.fillStyle = pal.core;
+        ctx.beginPath();
+        ctx.arc(ex, ey, 1.8, 0, Math.PI * 2);
+        ctx.fill();
       }
-      b.line.visible = true;
-      b.tipMesh.visible = awakeFactor > 0.1;
-
-      const base = new THREE.Vector3(joint.x, joint.y, joint.z);
-      const restDir = new THREE.Vector3(
-        Math.cos(b.offsetAngle),
-        Math.sin(b.offsetAngle) * 0.8,
-        Math.sin(b.offsetAngle * 2.0) * 0.5
-      ).normalize().multiplyScalar(b.length * (1.0 + energy * 0.75) * awakeFactor);
-
-      const targetTip = base.clone().add(restDir);
-      const springForce = targetTip.sub(b.tipPos).multiplyScalar(18.0);
-      b.tipVel.add(springForce.multiplyScalar(delta));
-      b.tipVel.multiplyScalar(0.78);
-      b.tipPos.add(b.tipVel);
-
-      const mid = base.clone().lerp(b.tipPos, 0.5);
-      mid.y += Math.sin(time * 5.0 + i) * 0.03 * energy;
-
-      const pos = b.positions;
-      pos[0] = base.x; pos[1] = base.y; pos[2] = base.z;
-      pos[3] = mid.x;  pos[4] = mid.y;  pos[5] = mid.z;
-      pos[6] = b.tipPos.x; pos[7] = b.tipPos.y; pos[8] = b.tipPos.z;
-
-      b.geom.attributes.position.needsUpdate = true;
-      b.tipMesh.position.copy(b.tipPos);
     }
-  }
-}
 
+    // Limb filaments
+    segments.forEach(([from, to]) => {
+      const p1 = lm[from];
+      const p2 = lm[to];
+      if (!p1 || !p2 || p1.visibility < 0.15 || p2.visibility < 0.15) return;
 
-/**
- * ============================================================================
- * FORM 3: LIQUID MERCURY & CHROMATIC RIBBONS (Multi-Dancer)
- * ============================================================================
- */
-class LiquidRibbonForm {
-  constructor(palette) {
-    this.root = new THREE.Group();
-    this.palette = palette;
-    this.jointSpheres = [];
+      const steps = 6;
+      for (let s = 0; s <= steps; s++) {
+        const u = s / steps;
+        const bx = p1.x + (p2.x - p1.x) * u;
+        const by = p1.y + (p2.y - p1.y) * u;
 
-    this.mercuryMaterial = new THREE.MeshStandardMaterial({
-      color: palette.chrome,
-      metalness: 1.0,
-      roughness: 0.08
-    });
+        for (const side of [-1, 1]) {
+          const baseAngle = (side * Math.PI * 0.5) + Math.sin(time * 5 + s) * 0.3;
+          const bristleLen = (20 + energy * 25 + Math.cos(s * 2 + time * 6) * 8) * awakeFactor;
+          const sx = bx + Math.cos(baseAngle) * bristleLen;
+          const sy = by + Math.sin(baseAngle) * bristleLen;
 
-    this.trailPointsCount = 45;
-    this.trailEmitters = [
-      { jointIdx: 0, color: palette.primary },
-      { jointIdx: 15, color: palette.accent },
-      { jointIdx: 16, color: palette.primary },
-      { jointIdx: 27, color: palette.accent },
-      { jointIdx: 28, color: palette.primary }
-    ];
+          ctx.strokeStyle = pal.primary;
+          ctx.lineWidth = 1.2;
+          ctx.beginPath();
+          ctx.moveTo(bx, by);
+          ctx.lineTo(sx, sy);
+          ctx.stroke();
 
-    this.trails = [];
-    this._buildJoints();
-    this._buildTrails();
-  }
-
-  setVisible(v) {
-    this.root.visible = v;
-  }
-
-  _buildJoints() {
-    const geom = new THREE.SphereGeometry(0.07, 16, 16);
-    for (let i = 0; i < 14; i++) {
-      const mesh = new THREE.Mesh(geom, this.mercuryMaterial);
-      this.root.add(mesh);
-      this.jointSpheres.push(mesh);
-    }
-  }
-
-  _buildTrails() {
-    this.trailEmitters.forEach(emitter => {
-      const history = [];
-      for (let p = 0; p < this.trailPointsCount; p++) {
-        history.push(new THREE.Vector3(0, 0, 0));
-      }
-
-      const vertexCount = this.trailPointsCount * 2;
-      const positions = new Float32Array(vertexCount * 3);
-      const indices = [];
-
-      for (let i = 0; i < this.trailPointsCount - 1; i++) {
-        const v = i * 2;
-        indices.push(v, v + 1, v + 2);
-        indices.push(v + 1, v + 3, v + 2);
-      }
-
-      const geom = new THREE.BufferGeometry();
-      geom.setAttribute('position', new THREE.BufferAttribute(positions, 3));
-      geom.setIndex(indices);
-
-      const ribbonMat = new THREE.MeshBasicMaterial({
-        color: emitter.color,
-        side: THREE.DoubleSide,
-        transparent: true,
-        opacity: 0.8,
-        blending: THREE.AdditiveBlending
-      });
-
-      const mesh = new THREE.Mesh(geom, ribbonMat);
-      this.root.add(mesh);
-      this.trails.push({ emitter, history, geom, positions, mesh });
-    });
-  }
-
-  update(landmarks, metrics, { time, delta, awakeFactor, sensitivity }) {
-    if (!landmarks) return;
-
-    const energy = (metrics.energy || 0) * sensitivity;
-    const joints = [
-      landmarks[0],
-      landmarks[11], landmarks[12],
-      landmarks[13], landmarks[14],
-      landmarks[15], landmarks[16],
-      landmarks[23], landmarks[24],
-      landmarks[25], landmarks[26],
-      landmarks[27], landmarks[28]
-    ];
-
-    joints.forEach((j, idx) => {
-      if (j && this.jointSpheres[idx]) {
-        const mesh = this.jointSpheres[idx];
-        if (j.visibility > 0.1) {
-          mesh.position.set(j.x, j.y, j.z);
-          const squash = 1.0 + Math.sin(time * 6.0 + idx) * 0.15 * energy;
-          mesh.scale.set(squash * awakeFactor, (1.0 / squash) * awakeFactor, squash * awakeFactor);
-          mesh.visible = true;
-        } else {
-          mesh.visible = false;
+          ctx.fillStyle = pal.secondary;
+          ctx.beginPath();
+          ctx.arc(sx, sy, 1.6, 0, Math.PI * 2);
+          ctx.fill();
         }
       }
     });
 
-    this.trails.forEach(trail => {
-      const joint = landmarks[trail.emitter.jointIdx];
-      if (!joint || joint.visibility < 0.1) return;
+    // Core pulsing aura
+    if (this.metrics.torsoCenter) {
+      const tc = this.metrics.torsoCenter;
+      ctx.fillStyle = pal.glow;
+      ctx.beginPath();
+      ctx.arc(tc.x, tc.y, (30 + energy * 30) * awakeFactor, 0, Math.PI * 2);
+      ctx.fill();
+    }
 
-      const currentPos = new THREE.Vector3(joint.x, joint.y, joint.z);
-      trail.history.pop();
-      trail.history.unshift(currentPos);
-
-      const pos = trail.positions;
-      for (let i = 0; i < this.trailPointsCount; i++) {
-        const pt = trail.history[i];
-        const width = (1.0 - i / this.trailPointsCount) * 0.1 * awakeFactor;
-        const normIdx = i * 2 * 3;
-
-        pos[normIdx]     = pt.x - width;
-        pos[normIdx + 1] = pt.y;
-        pos[normIdx + 2] = pt.z;
-
-        pos[normIdx + 3] = pt.x + width;
-        pos[normIdx + 4] = pt.y;
-        pos[normIdx + 5] = pt.z;
-      }
-      trail.geom.attributes.position.needsUpdate = true;
-    });
+    ctx.restore();
   }
 }
 
 
 /**
- * ============================================================================
- * FORM 4: QUANTUM GEOMETRIC CONSTELLATION (Multi-Dancer)
- * ============================================================================
+ * FORM 3: LIQUID RIBBON (2D HTML Canvas)
+ * Calligraphic flowing ribbon streamers tracing hand and body gestures with chromatic trails.
  */
-class QuantumLatticeForm {
+class LiquidRibbon2D {
   constructor(palette) {
-    this.root = new THREE.Group();
     this.palette = palette;
-    this.polyhedra = [];
-
-    this.crystalMaterial = new THREE.MeshStandardMaterial({
-      color: palette.primary,
-      emissive: palette.metal,
-      metalness: 0.85,
-      roughness: 0.15,
-      wireframe: true
-    });
-
-    this.laserMaterial = new THREE.LineBasicMaterial({
-      color: palette.accent,
-      transparent: true,
-      opacity: 0.65,
-      blending: THREE.AdditiveBlending
-    });
-
-    this._buildConstellation();
+    this.landmarks = [];
+    this.metrics = {};
+    this.params = {};
+    this.history = []; // Array of snapshot joints
+    this.maxHistory = 18;
   }
 
-  setVisible(v) {
-    this.root.visible = v;
-  }
+  update(landmarks, metrics, params) {
+    this.landmarks = landmarks;
+    this.metrics = metrics;
+    this.params = params;
 
-  _buildConstellation() {
-    for (let i = 0; i < 14; i++) {
-      const geom = (i % 2 === 0)
-        ? new THREE.IcosahedronGeometry(0.075, 0)
-        : new THREE.OctahedronGeometry(0.08, 0);
-
-      const crystalMesh = new THREE.Mesh(geom, this.crystalMaterial);
-      this.root.add(crystalMesh);
-
-      this.polyhedra.push({
-        crystalMesh,
-        jointIdx: i,
-        orbitSpeed: 2.0 + Math.random() * 2.0,
-        orbitRadius: 0.08 + Math.random() * 0.08
+    if (landmarks && landmarks[15] && landmarks[16]) {
+      this.history.unshift({
+        lw: { x: landmarks[15].x, y: landmarks[15].y },
+        rw: { x: landmarks[16].x, y: landmarks[16].y },
+        neck: { x: (landmarks[11].x + landmarks[12].x) * 0.5, y: (landmarks[11].y + landmarks[12].y) * 0.5 },
+        time: params.time
       });
+      if (this.history.length > this.maxHistory) {
+        this.history.pop();
+      }
     }
-
-    this.laserLinesCount = 12;
-    this.laserPositions = new Float32Array(this.laserLinesCount * 2 * 3);
-    this.laserGeom = new THREE.BufferGeometry();
-    this.laserGeom.setAttribute('position', new THREE.BufferAttribute(this.laserPositions, 3));
-    this.laserMesh = new THREE.LineSegments(this.laserGeom, this.laserMaterial);
-    this.root.add(this.laserMesh);
   }
 
-  update(landmarks, metrics, { time, delta, awakeFactor, sensitivity }) {
-    if (!landmarks) return;
+  render(ctx) {
+    const lm = this.landmarks;
+    if (!lm || lm.length < 33 || this.history.length < 3) return;
 
-    const energy = (metrics.energy || 0) * sensitivity;
-    const joints = [
-      landmarks[0],
-      landmarks[11], landmarks[12],
-      landmarks[13], landmarks[14],
-      landmarks[15], landmarks[16],
-      landmarks[23], landmarks[24],
-      landmarks[25], landmarks[26],
-      landmarks[27], landmarks[28]
-    ];
+    const { time, awakeFactor, sensitivity, yOffset } = this.params;
+    const energy = (this.metrics.energy || 0) * sensitivity;
+    const pal = this.palette;
 
-    this.polyhedra.forEach((p, idx) => {
-      const j = joints[idx];
-      if (!j || j.visibility < 0.1) {
-        p.crystalMesh.visible = false;
-        return;
-      }
-      p.crystalMesh.visible = true;
+    ctx.save();
+    if (yOffset) ctx.translate(0, yOffset);
 
-      const orbitRad = (p.orbitRadius + energy * 0.12) * awakeFactor;
-      const angle = time * p.orbitSpeed + idx;
+    // 1. Draw Liquid Hand Streamer Ribbons
+    ['lw', 'rw'].forEach((handKey, hIdx) => {
+      const pts = this.history.map(h => h[handKey]);
+      if (pts.length < 3) return;
 
-      p.crystalMesh.position.set(
-        j.x + Math.cos(angle) * orbitRad,
-        j.y + Math.sin(angle) * orbitRad,
-        j.z + Math.sin(angle * 2.0) * orbitRad * 0.5
-      );
+      for (let i = 0; i < pts.length - 1; i++) {
+        const p1 = pts[i];
+        const p2 = pts[i + 1];
+        const u = 1.0 - (i / pts.length);
+        const width = (4 + u * (14 + energy * 20)) * awakeFactor;
 
-      p.crystalMesh.rotation.x = time * 2.0;
-      p.crystalMesh.rotation.y = time * 1.5;
+        ctx.lineWidth = width;
+        ctx.lineCap = 'round';
+        ctx.strokeStyle = hIdx === 0 ? pal.primary : pal.secondary;
+        ctx.globalAlpha = u * awakeFactor * 0.85;
 
-      const scale = (1.0 + energy * 0.6) * awakeFactor;
-      p.crystalMesh.scale.set(scale, scale, scale);
-    });
-
-    const links = [
-      [0, 1], [0, 2], [1, 2],
-      [1, 3], [3, 5],
-      [2, 4], [4, 6],
-      [1, 7], [2, 8], [7, 8],
-      [7, 9], [8, 10]
-    ];
-
-    const pos = this.laserPositions;
-    links.forEach((link, idx) => {
-      const j1 = joints[link[0]];
-      const j2 = joints[link[1]];
-      const nIdx = idx * 6;
-
-      if (j1 && j2 && j1.visibility > 0.1 && j2.visibility > 0.1) {
-        pos[nIdx]     = j1.x; pos[nIdx + 1] = j1.y; pos[nIdx + 2] = j1.z;
-        pos[nIdx + 3] = j2.x; pos[nIdx + 4] = j2.y; pos[nIdx + 5] = j2.z;
-      } else {
-        pos[nIdx] = 0; pos[nIdx + 1] = 0; pos[nIdx + 2] = 0;
-        pos[nIdx + 3] = 0; pos[nIdx + 4] = 0; pos[nIdx + 5] = 0;
+        ctx.beginPath();
+        ctx.moveTo(p1.x, p1.y);
+        ctx.lineTo(p2.x, p2.y);
+        ctx.stroke();
       }
     });
 
-    this.laserGeom.attributes.position.needsUpdate = true;
+    // 2. Liquid Skeleton Strands
+    const chains = [
+      [15, 13, 11, 12, 14, 16], // Arm span
+      [27, 25, 23, 24, 26, 28]  // Leg arch
+    ];
+
+    chains.forEach(chain => {
+      const validPoints = chain.map(idx => lm[idx]).filter(p => p && p.visibility > 0.1);
+      if (validPoints.length < 3) return;
+
+      ctx.lineWidth = (3.5 + energy * 6) * awakeFactor;
+      ctx.strokeStyle = pal.primary;
+      ctx.globalAlpha = 0.75 * awakeFactor;
+
+      ctx.beginPath();
+      ctx.moveTo(validPoints[0].x, validPoints[0].y);
+      for (let i = 1; i < validPoints.length - 1; i++) {
+        const xc = (validPoints[i].x + validPoints[i + 1].x) * 0.5;
+        const yc = (validPoints[i].y + validPoints[i + 1].y) * 0.5;
+        ctx.quadraticCurveTo(validPoints[i].x, validPoints[i].y, xc, yc);
+      }
+      ctx.lineTo(validPoints[validPoints.length - 1].x, validPoints[validPoints.length - 1].y);
+      ctx.stroke();
+    });
+
+    ctx.restore();
+  }
+}
+
+
+/**
+ * FORM 4: QUANTUM LATTICE (2D HTML Canvas)
+ * Geometric kinetic constellation matrix with holographic radar rings and laser filaments.
+ */
+class QuantumLattice2D {
+  constructor(palette) {
+    this.palette = palette;
+    this.landmarks = [];
+    this.metrics = {};
+    this.params = {};
+    this.radarAngle = 0;
+  }
+
+  update(landmarks, metrics, params) {
+    this.landmarks = landmarks;
+    this.metrics = metrics;
+    this.params = params;
+    this.radarAngle += params.delta * 3.5;
+  }
+
+  render(ctx) {
+    const lm = this.landmarks;
+    if (!lm || lm.length < 33) return;
+
+    const { time, awakeFactor, sensitivity, yOffset } = this.params;
+    const energy = (this.metrics.energy || 0) * sensitivity;
+    const pal = this.palette;
+
+    ctx.save();
+    if (yOffset) ctx.translate(0, yOffset);
+
+    // 1. Constellation Triangulation Network
+    const connections = [
+      [0, 11], [0, 12], [11, 12],
+      [11, 13], [13, 15], [12, 14], [14, 16],
+      [11, 23], [12, 24], [23, 24],
+      [23, 25], [25, 27], [24, 26], [26, 28],
+      [15, 23], [16, 24] // Cross kinetic bonds
+    ];
+
+    ctx.lineWidth = 1.2;
+    connections.forEach(([i1, i2]) => {
+      const p1 = lm[i1];
+      const p2 = lm[i2];
+      if (!p1 || !p2 || p1.visibility < 0.15 || p2.visibility < 0.15) return;
+
+      ctx.strokeStyle = pal.primary;
+      ctx.globalAlpha = (0.35 + energy * 0.4) * awakeFactor;
+      ctx.beginPath();
+      ctx.moveTo(p1.x, p1.y);
+      ctx.lineTo(p2.x, p2.y);
+      ctx.stroke();
+
+      // Kinetic spark traveling along bond
+      const sparkT = (Math.sin(time * 4 + i1 + i2) * 0.5 + 0.5);
+      const sx = p1.x + (p2.x - p1.x) * sparkT;
+      const sy = p1.y + (p2.y - p1.y) * sparkT;
+      ctx.fillStyle = pal.core;
+      ctx.globalAlpha = 0.9 * awakeFactor;
+      ctx.beginPath();
+      ctx.arc(sx, sy, 2.2, 0, Math.PI * 2);
+      ctx.fill();
+    });
+
+    // 2. Holographic Radar Rings at Joints
+    const keyJoints = [11, 12, 15, 16, 23, 24, 27, 28];
+    keyJoints.forEach((idx, jIdx) => {
+      const pt = lm[idx];
+      if (!pt || pt.visibility < 0.15) return;
+
+      const r1 = (14 + energy * 12) * awakeFactor;
+      const r2 = (22 + energy * 18) * awakeFactor;
+
+      ctx.strokeStyle = pal.secondary;
+      ctx.lineWidth = 1.4;
+      ctx.globalAlpha = 0.8 * awakeFactor;
+
+      // Outer dashed radar
+      ctx.setLineDash([4, 4]);
+      ctx.beginPath();
+      ctx.arc(pt.x, pt.y, r2, this.radarAngle + jIdx, this.radarAngle + jIdx + Math.PI * 1.5);
+      ctx.stroke();
+      ctx.setLineDash([]);
+
+      // Inner solid ring
+      ctx.strokeStyle = pal.primary;
+      ctx.beginPath();
+      ctx.arc(pt.x, pt.y, r1, 0, Math.PI * 2);
+      ctx.stroke();
+
+      // Center quantum node
+      ctx.fillStyle = pal.core;
+      ctx.beginPath();
+      ctx.arc(pt.x, pt.y, 3.5 * awakeFactor, 0, Math.PI * 2);
+      ctx.fill();
+    });
+
+    ctx.restore();
   }
 }

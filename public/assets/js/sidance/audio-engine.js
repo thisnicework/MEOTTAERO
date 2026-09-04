@@ -173,11 +173,13 @@ export class AudioEngine {
       if (dancer) {
         const lw = dancer.landmarks[15];
         const rw = dancer.landmarks[16];
-        const handY = Math.max(lw ? lw.y : 0, rw ? rw.y : 0);
+        const lNormY = lw && lw.normY !== undefined ? lw.normY : (lw ? lw.y / (window.innerHeight || 1920) : 0.5);
+        const rNormY = rw && rw.normY !== undefined ? rw.normY : (rw ? rw.y / (window.innerHeight || 1920) : 0.5);
+        // Elevation: 0 (hands at bottom) -> 1 (hands raised up)
+        const handElevation = Math.max(0, Math.min(1, 1.0 - Math.min(lNormY, rNormY)));
 
         // Map height to pitch with harmonious harmonic offset per dancer
-        const normY = Math.max(0, Math.min(1, (handY + 0.6) / 2.0));
-        let noteIdx = Math.floor(normY * (this.scale.length - 1));
+        let noteIdx = Math.floor(handElevation * (this.scale.length - 1));
         // Add musical offset for polyphony: Dancer 2 plays 3rd/5th harmonic
         if (i === 1) noteIdx = (noteIdx + 2) % this.scale.length;
         if (i === 2) noteIdx = (noteIdx + 4) % this.scale.length;
