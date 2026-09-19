@@ -23,9 +23,10 @@ export class MultiPoseTracker {
     this.offscreenCanvas = document.createElement('canvas');
     this.offscreenCtx = this.offscreenCanvas.getContext('2d', { willReadFrequently: true });
 
-    // Optimal MoveNet MultiPose input resolution (288x512 or 384x512)
+    // MoveNet MultiPose input — will be dynamically sized in _updateOffscreenAspect()
     this.offscreenCanvas.width = 512;
     this.offscreenCanvas.height = 384;
+    this._offscreenIsPortrait = false;
 
     this.detector = null;
     this.stream = null;
@@ -203,7 +204,10 @@ export class MultiPoseTracker {
       } else if (this.isModelReady && this.videoElement && this.videoElement.readyState >= 2 && !this.isProcessingFrame) {
         this.isProcessingFrame = true;
         try {
-          // Downscale to 512x384 for high-speed multi-person inference
+          // Auto-detect camera orientation and resize inference canvas accordingly
+          this._updateOffscreenAspect();
+
+          // Downscale to inference canvas for high-speed multi-person inference
           this.offscreenCtx.drawImage(
             this.videoElement,
             0, 0,
@@ -228,6 +232,26 @@ export class MultiPoseTracker {
     };
 
     requestAnimationFrame(loop);
+  }
+
+  _updateOffscreenAspect() {
+    // Auto-detect camera orientation and swap inference canvas if needed
+    const vw = this.videoElement.videoWidth || 640;
+    const vh = this.videoElement.videoHeight || 480;
+    const isPortrait = vh > vw;
+
+    if (isPortrait !== this._offscreenIsPortrait) {
+      // Camera aspect ratio changed — swap inference canvas dimensions
+      if (isPortrait) {
+        this.offscreenCanvas.width = 384;
+        this.offscreenCanvas.height = 512;
+      } else {
+        this.offscreenCanvas.width = 512;
+        this.offscreenCanvas.height = 384;
+      }
+      this._offscreenIsPortrait = isPortrait;
+      console.log(`[PoseTracker] Inference canvas switched to ${this.offscreenCanvas.width}x${this.offscreenCanvas.height} (${isPortrait ? 'Portrait' : 'Landscape'})`);
+    }
   }
 
   _isValidHumanPose(rawPose) {
