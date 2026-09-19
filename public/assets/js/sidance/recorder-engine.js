@@ -134,8 +134,8 @@ export class RecorderEngine {
     }
 
     const isPortrait = srcH > srcW;
-    // Target ~720p resolution while preserving real aspect ratio
-    const targetShort = 720;
+    // Target ~1080p resolution while preserving real aspect ratio
+    const targetShort = 1080;
     const targetLong = Math.round(targetShort * (Math.max(srcW, srcH) / Math.min(srcW, srcH)));
 
     const canvasW = isPortrait ? targetShort : targetLong;
@@ -161,8 +161,8 @@ export class RecorderEngine {
       // 0. Initialize compositor canvas to match actual screen aspect ratio
       this._initCompositorCanvas();
 
-      // 1. Prepare video stream from composite canvas (30 FPS)
-      const videoStream = this.compCanvas.captureStream(30);
+      // 1. Prepare video stream from composite canvas (60 FPS)
+      const videoStream = this.compCanvas.captureStream(60);
 
       // 2. Prepare combined stream with audio track if available
       const combinedTracks = [...videoStream.getVideoTracks()];
@@ -186,7 +186,7 @@ export class RecorderEngine {
 
       this.mediaRecorder = new MediaRecorder(recordStream, {
         mimeType,
-        videoBitsPerSecond: 2500000 // 2.5 Mbps crisp 720p
+        videoBitsPerSecond: 6000000 // 6 Mbps crisp 1080p 60fps
       });
 
       this.mediaRecorder.ondataavailable = (event) => {
