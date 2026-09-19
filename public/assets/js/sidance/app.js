@@ -50,8 +50,8 @@ class SidanceApp {
     this.presenceToast = document.getElementById('presence-toast');
     this.stageScaler = document.getElementById('stage-scaler');
     this.stageCropSelect = document.getElementById('stage-crop-select');
-    this.stageCropVal = document.getElementById('stage-crop-val');
-    this.currentCropScale = 1.25; // Default 80% bottom crop (1 / 0.8 = 1.25, aspect ratio preserved)
+    this.currentCropScale = 1.0; // Default 100% full stage (no crop)
+    this.gpuVal = document.getElementById('hud-gpu-val');
 
     // Submodules
     this.tracker = null;
@@ -59,16 +59,15 @@ class SidanceApp {
     this.audio = null;
 
     // State
-    this.isUiVisible = true;
+    this.isTestFitMode = true;
+    this.camViewMode = 'overlay'; // 'overlay' | 'pip' | 'off'
     this.isMirror = true;
     this.isDemo = false;
-    this.isTestFitMode = true; // Enabled by default for direct 1:1 real person alignment
-    this.camViewMode = 'overlay'; // 'pip' | 'overlay' | 'off'
-    this.bgOpacity = 0.65;
+    this.isUiVisible = true;
     this.lastDancerCount = 0;
     this.calibration = {
       scale: 1.0,
-      yOffset: -0.1,
+      yOffset: 0.0,
       sensitivity: 1.2
     };
 
@@ -76,7 +75,7 @@ class SidanceApp {
   }
 
   async init() {
-    // 1. Initialize Multi-Avatar 3D Creature Engine
+    // 1. Initialize Organic Creature Dynamics Engine
     this.creature = new CreatureEngine(this.container, {
       activeForm: 'random',
       scale: this.calibration.scale,
@@ -97,6 +96,12 @@ class SidanceApp {
     });
 
     await this.tracker.init(this.videoElement);
+
+    // Update GPU Status Badge
+    if (this.gpuVal) {
+      const gpuName = this.tracker.getGpuBackendName();
+      this.gpuVal.textContent = `⚡ GPU: ${gpuName}`;
+    }
 
     // 4. Setup Cameras & UI Event Listeners
     await this.setupCameras();
@@ -539,14 +544,18 @@ class SidanceApp {
   setStageCropScale(scale) {
     this.currentCropScale = scale;
     if (this.stageScaler) {
-      this.stageScaler.style.transform = `scale(${scale})`;
-      this.stageScaler.style.transformOrigin = '50% 100%';
+      if (scale === 1.0) {
+        this.stageScaler.style.transform = 'none';
+      } else {
+        this.stageScaler.style.transform = `scale(${scale})`;
+        this.stageScaler.style.transformOrigin = '50% 100%';
+      }
     }
     const pct = Math.round((1 / scale) * 100);
     if (this.stageCropVal) {
-      this.stageCropVal.textContent = `${pct}% (${scale.toFixed(2)}x)`;
+      this.stageCropVal.textContent = scale === 1.0 ? '100% (크롭 없음)' : `${pct}% (${scale.toFixed(2)}x)`;
     }
-    this.showToast(`// 화면 크롭: 하단 ${pct}% 적용 (비율 유지)`);
+    this.showToast(scale === 1.0 ? '// 화면 크롭 해제 (100% 전체 화면)' : `// 화면 크롭: 하단 ${pct}% 적용 (비율 유지)`);
   }
 
   updateMirrorState() {

@@ -64,11 +64,18 @@ export class CreatureEngine {
     this.canvas.style.height = '100%';
     this.canvas.style.zIndex = '1';
     this.canvas.style.pointerEvents = 'none';
+    this.canvas.style.transform = 'translateZ(0)'; // Force hardware layer promotion on GPU compositor
+    this.canvas.style.willChange = 'transform';
 
     this.container.innerHTML = '';
     this.container.appendChild(this.canvas);
 
-    this.ctx = this.canvas.getContext('2d', { alpha: true });
+    // Hardware-accelerated GPU 2D context with direct front-buffer desynchronization
+    this.ctx = this.canvas.getContext('2d', {
+      alpha: true,
+      desynchronized: true,
+      willReadFrequently: false
+    });
     this.dpr = Math.min(window.devicePixelRatio || 1, 2);
 
     this.avatars = new Map(); // slotId -> OrganicAvatarInstance

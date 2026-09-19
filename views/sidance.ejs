@@ -1,9 +1,10 @@
 <%- include('partials/header') %>
 
-<!-- TensorFlow.js and MoveNet MultiPose Libraries (Ultra-low latency 2D inference) -->
+<!-- TensorFlow.js GPU Acceleration: WebGPU & WebGL 2.0 (FP16 Vectorized Inference) -->
 <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs-core@4.17.0/dist/tf-core.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs-converter@4.17.0/dist/tf-converter.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs-backend-webgl@4.17.0/dist/tf-backend-webgl.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs-backend-webgpu@4.17.0/dist/tf-backend-webgpu.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@tensorflow-models/pose-detection@2.1.3/dist/pose-detection.min.js"></script>
 
 <style>
@@ -56,13 +57,13 @@
     inset: 0;
     width: 100%;
     height: 100%;
-    transform: scale(1.25);
-    transform-origin: 50% 100%;
+    transform: none; /* 크롭 제거: 100% 전체 화면 */
+    transform-origin: 50% 50%;
     will-change: transform;
     transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1);
   }
 
-  /* 2D HTML5 Canvas Target */
+  /* 2D HTML5 Canvas Target (Hardware GPU Surface) */
   #canvas-container {
     position: absolute;
     top: 0;
@@ -71,12 +72,19 @@
     height: 100%;
     z-index: 2;
     pointer-events: none;
+    transform: translateZ(0);
+    will-change: transform;
+    contain: layout size;
   }
 
   #canvas-container canvas {
     display: block;
     width: 100% !important;
     height: 100% !important;
+    transform: translateZ(0);
+    -webkit-transform: translateZ(0);
+    will-change: transform;
+    backface-visibility: hidden;
   }
 
   /* Fullscreen Camera Background Feed */
@@ -152,50 +160,50 @@
   .watermark-floating {
     display: inline-flex;
     align-items: center;
-    gap: 0.9rem;
+    gap: 1.15rem;
     background: transparent !important;
     border: none !important;
     padding: 0 !important;
     box-shadow: none !important;
-    opacity: 0.82; /* 미세한 투명도 적용 */
+    opacity: 0.58; /* 투명도를 더 높여 은은하게 화면에 융합 */
     transition: opacity 0.25s ease, transform 0.25s ease;
   }
 
   .watermark-floating:hover {
-    opacity: 1.0;
+    opacity: 0.95;
     transform: scale(1.02);
   }
 
   .watermark-mottaero {
-    width: 52px;
-    height: 52px;
+    width: 72px;
+    height: 72px;
     border-radius: 50%;
     object-fit: cover;
     display: block;
-    filter: drop-shadow(0 4px 10px rgba(0, 0, 0, 0.7));
+    filter: drop-shadow(0 4px 14px rgba(0, 0, 0, 0.7));
   }
 
   .watermark-sep {
     font-family: var(--font-mono);
-    font-size: 1.15rem;
+    font-size: 1.5rem;
     font-weight: 800;
-    color: rgba(255, 255, 255, 0.7);
-    filter: drop-shadow(0 2px 6px rgba(0, 0, 0, 0.8));
+    color: rgba(255, 255, 255, 0.75);
+    filter: drop-shadow(0 2px 8px rgba(0, 0, 0, 0.8));
     line-height: 1;
   }
 
   .watermark-sidance {
-    height: 34px;
+    height: 48px;
     width: auto;
-    max-width: 175px;
+    max-width: 245px;
     object-fit: contain;
     display: block;
-    filter: drop-shadow(0 4px 10px rgba(0, 0, 0, 0.75));
+    filter: drop-shadow(0 4px 14px rgba(0, 0, 0, 0.75));
   }
 
   .hud-spacer {
     flex: 1;
-    max-width: 280px;
+    max-width: 360px;
     height: 1px;
     pointer-events: none;
   }
@@ -598,6 +606,9 @@
 
       <div class="hud-metrics">
         <div id="hud-status" class="mottaero-tag status-badge status-init">INITIALIZING...</div>
+        <div id="hud-gpu-badge" class="mottaero-tag" style="color: var(--color-high); border-color: var(--color-high); box-shadow: 2px 2px 0px var(--color-high);">
+          <span id="hud-gpu-val">⚡ GPU: 가속 준비</span>
+        </div>
         <div id="hud-mode-badge" class="mottaero-tag" style="color: var(--color-accent); border-color: var(--color-accent); box-shadow: 2px 2px 0px var(--color-accent); display: none;">
           <span>⚡ 1:1 바디 매칭</span>
         </div>
@@ -751,12 +762,12 @@
     <div class="setting-group" id="group-stage-crop">
       <div class="setting-label">
         <span>Stage Crop (Bottom Region)</span>
-        <span id="stage-crop-val">80% (1.25x)</span>
+        <span id="stage-crop-val">100% (크롭 없음)</span>
       </div>
       <select id="stage-crop-select" class="setting-select">
-        <option value="1.0">100% (전체 화면)</option>
+        <option value="1.0" selected>100% (전체 화면 / 크롭 없음)</option>
         <option value="1.11">90% 하단 크롭</option>
-        <option value="1.25" selected>80% 하단 크롭 (기본)</option>
+        <option value="1.25">80% 하단 크롭</option>
         <option value="1.43">70% 하단 크롭</option>
         <option value="1.67">60% 하단 크롭</option>
       </select>
