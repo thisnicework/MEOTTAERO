@@ -21,7 +21,7 @@ export class MultiPoseTracker {
 
     this.videoElement = null;
     this.offscreenCanvas = document.createElement('canvas');
-    this.offscreenCtx = this.offscreenCanvas.getContext('2d', { willReadFrequently: false, alpha: false });
+    this.offscreenCtx = this.offscreenCanvas.getContext('2d', { willReadFrequently: true });
 
     // Optimal MoveNet MultiPose input resolution (288x512 or 384x512)
     this.offscreenCanvas.width = 512;
@@ -33,7 +33,6 @@ export class MultiPoseTracker {
     this.isProcessingFrame = false;
     this.demoMode = false;
     this.isModelReady = false;
-    this.gpuBackendName = 'GPU 초기화 중...';
 
     // Multi-dancer state map: slotId (1..maxDancers) -> { id, landmarks, prevLandmarks, metrics, lastSeen, isExiting, isConfirmed, detectionStreak }
     this.trackedDancers = new Map();
@@ -60,42 +59,13 @@ export class MultiPoseTracker {
   async init(videoElement) {
     this.videoElement = videoElement;
 
-    // Initialize High-Performance GPU Acceleration (WebGPU or WebGL 2.0 with FP16)
+    // Initialize TensorFlow.js WebGL backend
     if (window.tf) {
-      let webgpuSuccess = false;
-      // 1. Try WebGPU compute backend if supported by hardware & browser
-      if (navigator.gpu && window.tf.findBackend && window.tf.findBackend('webgpu')) {
-        try {
-          await window.tf.setBackend('webgpu');
-          await window.tf.ready();
-          this.gpuBackendName = 'WebGPU (Compute Pipeline)';
-          webgpuSuccess = true;
-          console.info('⚡ GPU Acceleration Active: WebGPU Compute Pipeline');
-        } catch (e) {
-          console.warn('WebGPU not ready, falling back to WebGL 2.0:', e);
-        }
-      }
-
-      // 2. WebGL 2.0 with 16-bit float textures & parallel vectorized tensor packing
-      if (!webgpuSuccess) {
-        try {
-          const env = window.tf.env();
-          env.set('WEBGL_VERSION', 2);
-          env.set('WEBGL_FORCE_F16_TEXTURES', true);
-          env.set('WEBGL_RENDER_FLOAT32_CAPABLE', true);
-          env.set('WEBGL_PACK', true);
-          env.set('WEBGL_PACK_BINARY_OPERATIONS', true);
-          env.set('WEBGL_FLUSH_THRESHOLD', 1);
-          env.set('WEBGL_DELETE_TEXTURE_THRESHOLD', -1);
-
-          await window.tf.setBackend('webgl');
-          await window.tf.ready();
-          this.gpuBackendName = 'WebGL 2.0 (FP16 Accelerated)';
-          console.info('⚡ GPU Acceleration Active: WebGL 2.0 with FP16 Textures & Vector Packing');
-        } catch (e) {
-          console.warn('WebGL backend setup notice:', e);
-          this.gpuBackendName = 'WebGL (Standard)';
-        }
+      try {
+        await window.tf.setBackend('webgl');
+        await window.tf.ready();
+      } catch (e) {
+        console.warn('WebGL backend setup notice:', e);
       }
     }
 
@@ -209,10 +179,6 @@ export class MultiPoseTracker {
 
   setMirror(mirror) {
     this.options.mirror = Boolean(mirror);
-  }
-
-  getGpuBackendName() {
-    return this.gpuBackendName || 'WebGL 2.0 (FP16)';
   }
 
   _startProcessingLoop() {

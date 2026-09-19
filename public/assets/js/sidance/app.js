@@ -51,7 +51,6 @@ class SidanceApp {
     this.stageScaler = document.getElementById('stage-scaler');
     this.stageCropSelect = document.getElementById('stage-crop-select');
     this.currentCropScale = 1.0; // Default 100% full stage (no crop)
-    this.gpuVal = document.getElementById('hud-gpu-val');
 
     // Submodules
     this.tracker = null;
@@ -96,12 +95,6 @@ class SidanceApp {
     });
 
     await this.tracker.init(this.videoElement);
-
-    // Update GPU Status Badge
-    if (this.gpuVal) {
-      const gpuName = this.tracker.getGpuBackendName();
-      this.gpuVal.textContent = `⚡ GPU: ${gpuName}`;
-    }
 
     // 4. Setup Cameras & UI Event Listeners
     await this.setupCameras();
