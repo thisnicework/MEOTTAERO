@@ -47,11 +47,9 @@ export class RecorderEngine {
     // Active upload tracking
     this.activeUploadsCount = 0;
 
-    // Offscreen Compositor Canvas (720p 16:9 for optimal 30fps upload & crisp playback)
-    this.compCanvas = document.createElement('canvas');
-    this.compCanvas.width = 1280;
-    this.compCanvas.height = 720;
-    this.compCtx = this.compCanvas.getContext('2d', { alpha: false });
+    // Offscreen Compositor Canvas — created lazily in start() to match actual display aspect ratio
+    this.compCanvas = null;
+    this.compCtx = null;
   }
 
   setMirror(mirror) {
@@ -124,12 +122,44 @@ export class RecorderEngine {
     }
   }
 
+  _initCompositorCanvas() {
+    // Detect actual display aspect ratio from creature canvas or viewport
+    const creature = this.options.creatureCanvas;
+    let srcW = window.innerWidth || 1280;
+    let srcH = window.innerHeight || 720;
+
+    if (creature && creature.width > 0 && creature.height > 0) {
+      srcW = creature.width;
+      srcH = creature.height;
+    }
+
+    const isPortrait = srcH > srcW;
+    // Target ~720p resolution while preserving real aspect ratio
+    const targetShort = 720;
+    const targetLong = Math.round(targetShort * (Math.max(srcW, srcH) / Math.min(srcW, srcH)));
+
+    const canvasW = isPortrait ? targetShort : targetLong;
+    const canvasH = isPortrait ? targetLong : targetShort;
+
+    if (!this.compCanvas) {
+      this.compCanvas = document.createElement('canvas');
+    }
+    this.compCanvas.width = canvasW;
+    this.compCanvas.height = canvasH;
+    this.compCtx = this.compCanvas.getContext('2d', { alpha: false });
+
+    console.log(`[RecorderEngine] Compositor canvas: ${canvasW}x${canvasH} (${isPortrait ? 'Portrait' : 'Landscape'})`);
+  }
+
   start() {
     if (this.isRecording) return;
 
     try {
       this.recordedChunks = [];
       this.recordStartTime = performance.now();
+
+      // 0. Initialize compositor canvas to match actual screen aspect ratio
+      this._initCompositorCanvas();
 
       // 1. Prepare video stream from composite canvas (30 FPS)
       const videoStream = this.compCanvas.captureStream(30);
