@@ -630,50 +630,39 @@ export async function uploadBoothPhoto(fileName, buffer) {
 }
 
 export async function uploadSidanceVideo(fileName, buffer, contentType = 'video/webm') {
-  // 1. Always save to local public/recordings folder for zero-latency local playback and archive
-  const localDir = path.resolve(__dirname, 'public/recordings');
+  // Upload directly and exclusively to Supabase Storage ('booth' bucket -> 'sidance/' folder)
+  // No local disk files saved to prevent filling up storage
+  if (!supabase) {
+    console.warn('Supabase client not initialized');
+    return { success: false, error: 'Supabase client not initialized' };
+  }
+
   try {
-    if (!fs.existsSync(localDir)) {
-      fs.mkdirSync(localDir, { recursive: true });
+    const storagePath = `sidance/${fileName}`;
+    const { data, error } = await supabase.storage
+      .from('booth')
+      .upload(storagePath, buffer, {
+        contentType: contentType,
+        upsert: true
+      });
+
+    if (error) {
+      console.warn('Supabase video upload error:', error);
+      return { success: false, error: error.message };
     }
-    fs.writeFileSync(path.join(localDir, fileName), buffer);
-  } catch (fsErr) {
-    console.warn('Local recording file save warning:', fsErr);
+
+    const { data: urlData } = supabase.storage.from('booth').getPublicUrl(storagePath);
+    const publicUrl = (urlData && urlData.publicUrl) ? urlData.publicUrl : '';
+
+    return {
+      success: true,
+      fileName,
+      publicUrl
+    };
+  } catch (supaErr) {
+    console.error('Supabase video upload exception:', supaErr);
+    return { success: false, error: supaErr.message };
   }
-
-  const localUrl = `/recordings/${fileName}`;
-  let publicUrl = localUrl;
-
-  // 2. Upload to Supabase Storage in 'booth' bucket under 'sidance/' folder
-  if (supabase) {
-    try {
-      const storagePath = `sidance/${fileName}`;
-      const { data, error } = await supabase.storage
-        .from('booth')
-        .upload(storagePath, buffer, {
-          contentType: contentType,
-          upsert: true
-        });
-
-      if (!error) {
-        const { data: urlData } = supabase.storage.from('booth').getPublicUrl(storagePath);
-        if (urlData && urlData.publicUrl) {
-          publicUrl = urlData.publicUrl;
-        }
-      } else {
-        console.warn('Supabase video upload warning:', error);
-      }
-    } catch (supaErr) {
-      console.warn('Supabase video upload error:', supaErr);
-    }
-  }
-
-  return {
-    success: true,
-    fileName,
-    localUrl,
-    publicUrl
-  };
 }
 
 // Heterotopia guestbook storage helpers

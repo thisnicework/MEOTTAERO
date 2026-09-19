@@ -360,7 +360,7 @@ app.post('/api/booth/upload', async (req, res) => {
   }
 });
 
-// Route: API Upload Sidance Video to Supabase Storage & Local Archive
+// Route: API Upload Sidance Video to Supabase Storage (Cloud Only)
 app.post('/api/sidance/record', express.raw({ type: ['video/webm', 'video/mp4', 'application/octet-stream'], limit: '100mb' }), async (req, res) => {
   const buffer = req.body;
   if (!buffer || buffer.length === 0) {
@@ -386,7 +386,7 @@ app.post('/api/sidance/record', express.raw({ type: ['video/webm', 'video/mp4', 
     if (result.success) {
       return res.json(result);
     } else {
-      return res.status(500).json({ error: 'Failed to save recording' });
+      return res.status(500).json({ error: result.error || 'Failed to upload recording to Supabase' });
     }
   } catch (err) {
     console.error('Sidance record upload error:', err);
