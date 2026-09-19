@@ -235,10 +235,6 @@ class OrganicAvatarInstance {
     this.awakeFactor = 0.0;
     this.currentFormId = 2; // Default: Form 2 (Aurora Veil)
 
-    // Floating Stardust Embers / Light Sprinkles
-    this.particles = [];
-    this.maxParticles = 65;
-
     // Curated Visuals: Only Form 2 (Aurora Veil) & Form 4 (Cosmic Yarn)
     this.forms = {
       2: new AuroraVeilForm(this.palette),     // Form 2: Multi-Strand Ethereal Gossamer Veils
@@ -253,39 +249,6 @@ class OrganicAvatarInstance {
 
   update(landmarks, metrics, options) {
     this.awakeFactor += (1.0 - this.awakeFactor) * Math.min(options.delta * 4.5, 1.0);
-
-    // Particle shedding on sudden acceleration
-    const energy = (metrics.energy || 0) * options.sensitivity;
-    if (energy > 0.4 && Math.random() < 0.65 && landmarks[15] && landmarks[16]) {
-      const source = Math.random() < 0.5 ? landmarks[15] : landmarks[16];
-      if (source && source.visibility > 0.1) {
-        this.particles.push({
-          x: source.x + (Math.random() - 0.5) * 20,
-          y: source.y + (Math.random() - 0.5) * 20,
-          vx: (Math.random() - 0.5) * 45,
-          vy: -15 - Math.random() * 35,
-          radius: 1.5 + Math.random() * 2.5,
-          alpha: 0.9,
-          decay: 0.4 + Math.random() * 0.5
-        });
-        if (this.particles.length > this.maxParticles) {
-          this.particles.shift();
-        }
-      }
-    }
-
-    // Update floating particles
-    for (let i = this.particles.length - 1; i >= 0; i--) {
-      const p = this.particles[i];
-      p.x += p.vx * options.delta;
-      p.y += p.vy * options.delta;
-      p.vx *= 0.96;
-      p.vy += 25 * options.delta; // gentle gravity
-      p.alpha -= p.decay * options.delta;
-      if (p.alpha <= 0) {
-        this.particles.splice(i, 1);
-      }
-    }
 
     const form = this.forms[this.currentFormId];
     if (form && landmarks) {
@@ -310,17 +273,6 @@ class OrganicAvatarInstance {
     ctx.save();
     ctx.globalCompositeOperation = 'lighter';
     ctx.globalAlpha = Math.max(0, Math.min(1, this.awakeFactor));
-
-    // Render floating embers in MOTTAERO native palette sparks
-    const pal = this.palette;
-    const emberColors = [pal.primary, pal.sheen, pal.secondary, '#ffffff'];
-    this.particles.forEach((p, pIdx) => {
-      ctx.fillStyle = emberColors[pIdx % emberColors.length];
-      ctx.globalAlpha = p.alpha * this.awakeFactor;
-      ctx.beginPath();
-      ctx.arc(p.x, p.y, p.radius, 0, Math.PI * 2);
-      ctx.fill();
-    });
 
     const form = this.forms[this.currentFormId];
     if (form) {
@@ -672,14 +624,6 @@ class AuroraVeilForm {
 
         ctx.globalAlpha = (0.45 + (1 - sIdx / this.strandCount) * 0.45) * awakeFactor;
         ctx.stroke();
-
-        // Tip glowing light droplet
-        const lastNode = nodes[nodes.length - 1];
-        ctx.fillStyle = sIdx % 2 === 0 ? pal.sheen : '#ffffff';
-        ctx.globalAlpha = 0.9 * awakeFactor;
-        ctx.beginPath();
-        ctx.arc(lastNode.x, lastNode.y, 2.4, 0, Math.PI * 2);
-        ctx.fill();
       });
     });
 

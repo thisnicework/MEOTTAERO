@@ -334,8 +334,8 @@ class SidanceApp {
     this.soundBtn.addEventListener('click', () => {
       const enabled = this.audio.toggle();
       this.soundBtn.classList.toggle('active', enabled);
-      this.soundBtn.querySelector('.btn-label').textContent = enabled ? '🔊 락킹 사운드: ON' : '🔊 락킹 사운드: OFF';
-      this.showToast(enabled ? '// 락킹 사운드 활성화 (112 BPM FUNK GROOVE)' : '// 락킹 사운드 음소거');
+      this.soundBtn.querySelector('.btn-label').textContent = enabled ? '🔊 사운드: ON' : '🔊 사운드: OFF';
+      this.showToast(enabled ? '// 사운드 활성화 (다성부 앰비언트 신디사이저)' : '// 사운드 음소거');
     });
 
     // 4-1. Dedicated Clean Stage UI Hide Button
