@@ -665,6 +665,32 @@ export async function uploadSidanceVideo(fileName, buffer, contentType = 'video/
   }
 }
 
+export async function getSidanceVideos(limit = 100) {
+  if (!supabase) return [];
+  try {
+    const { data, error } = await supabase.storage
+      .from('booth')
+      .list('sidance', { limit, sortBy: { column: 'created_at', order: 'desc' } });
+
+    if (error || !data) return [];
+
+    return data
+      .filter(f => f.name && f.name.endsWith('.webm'))
+      .map(f => {
+        const { data: urlData } = supabase.storage.from('booth').getPublicUrl(`sidance/${f.name}`);
+        return {
+          name: f.name,
+          size: f.metadata?.size || 0,
+          createdAt: f.created_at || f.updated_at || '',
+          url: urlData?.publicUrl || ''
+        };
+      });
+  } catch (err) {
+    console.error('getSidanceVideos error:', err);
+    return [];
+  }
+}
+
 // Heterotopia guestbook storage helpers
 const HETEROTOPIA_FILE = path.resolve(__dirname, 'heterotopia_cards.json');
 

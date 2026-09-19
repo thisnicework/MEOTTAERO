@@ -394,6 +394,28 @@ app.post('/api/sidance/record', express.raw({ type: ['video/webm', 'video/mp4', 
   }
 });
 
+// Route: API Get All Sidance Recordings
+app.get('/api/sidance/videos', async (req, res) => {
+  try {
+    const videos = await db.getSidanceVideos(100);
+    res.json({ success: true, count: videos.length, videos });
+  } catch (err) {
+    console.error('Fetch sidance videos error:', err);
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// Route: Sidance Exhibition Video Archive Viewer Page
+app.get(['/sidance/archive', '/sidance/videos'], async (req, res) => {
+  try {
+    const videos = await db.getSidanceVideos(100);
+    res.render('sidance-archive', { videos });
+  } catch (err) {
+    console.error('Render sidance archive error:', err);
+    res.status(500).send('Error loading archive');
+  }
+});
+
 function formatPhone(phoneStr) {
   if (!phoneStr) return '';
   const nums = phoneStr.replace(/[^0-9]/g, '');
