@@ -670,12 +670,13 @@ export async function getSidanceVideos(limit = 100) {
   try {
     const { data, error } = await supabase.storage
       .from('booth')
-      .list('sidance', { limit, sortBy: { column: 'created_at', order: 'desc' } });
+      .list('sidance', { limit: 1000, sortBy: { column: 'name', order: 'desc' } });
 
     if (error || !data) return [];
 
     return data
-      .filter(f => f.name && f.name.endsWith('.webm'))
+      .filter(f => f.name && (f.name.endsWith('.webm') || f.name.endsWith('.mp4')) && (f.metadata?.size || 0) > 1000)
+      .slice(0, limit)
       .map(f => {
         const { data: urlData } = supabase.storage.from('booth').getPublicUrl(`sidance/${f.name}`);
         return {

@@ -391,8 +391,8 @@ export class RecorderEngine {
 
     console.log(`[RecorderEngine] Finalized Session #${session.id}: ${durationSec.toFixed(1)}s, ${(blob.size / 1024).toFixed(1)} KB, ${session.chunks.length} chunks`);
 
-    // Discard empty or micro-glitch interactions (< 0.8s or < 2000 bytes)
-    if (durationSec < this.options.minDuration || blob.size < 2000) {
+    // Discard empty or micro-glitch interactions (< 0.8s or < 5000 bytes)
+    if (durationSec < this.options.minDuration || blob.size < 5000) {
       console.log(`[RecorderEngine] Discarded micro-recording (${durationSec.toFixed(2)}s, ${blob.size} bytes)`);
       if (this.options.onStatusChange) {
         this.options.onStatusChange('discarded', { duration: durationSec, size: blob.size });
@@ -420,7 +420,7 @@ export class RecorderEngine {
       const response = await fetch('/api/sidance/record', {
         method: 'POST',
         headers: {
-          'Content-Type': blob.type || 'video/webm'
+          'Content-Type': 'application/octet-stream'
         },
         body: blob
       });

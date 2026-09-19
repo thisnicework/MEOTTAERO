@@ -361,10 +361,12 @@ app.post('/api/booth/upload', async (req, res) => {
 });
 
 // Route: API Upload Sidance Video to Supabase Storage (Cloud Only)
-app.post('/api/sidance/record', express.raw({ type: ['video/webm', 'video/mp4', 'application/octet-stream'], limit: '100mb' }), async (req, res) => {
+// Parse ANY incoming binary stream regardless of MIME parameters / commas
+app.post('/api/sidance/record', express.raw({ type: () => true, limit: '100mb' }), async (req, res) => {
   const buffer = req.body;
-  if (!buffer || buffer.length === 0) {
-    return res.status(400).json({ error: 'No video data provided' });
+  if (!Buffer.isBuffer(buffer) || buffer.length < 1000) {
+    console.warn('[Sidance Record] Rejected invalid upload: buffer is not a valid Buffer or size < 1000 bytes');
+    return res.status(400).json({ error: 'No valid video data provided (buffer empty or corrupted)' });
   }
 
   try {
@@ -380,12 +382,20 @@ app.post('/api/sidance/record', express.raw({ type: ['video/webm', 'video/mp4', 
     const ss = String(kst.getSeconds()).padStart(2, '0');
     const ms = String(kst.getMilliseconds()).padStart(3, '0');
 
-    const fileName = `sidance_${yyyy}${mm}${dd}_${hh}${min}${ss}_${ms}.webm`;
+    // Inspect content-type or binary magic bytes to determine extension
+    const rawContentType = (req.headers['content-type'] || '').toLowerCase();
+    const isMp4 = rawContentType.includes('mp4') || (buffer.length > 8 && buffer.toString('utf8', 4, 8) === 'ftyp');
+    const ext = isMp4 ? 'mp4' : 'webm';
+    const mimeType = isMp4 ? 'video/mp4' : 'video/webm';
 
-    const result = await db.uploadSidanceVideo(fileName, buffer, 'video/webm');
+    const fileName = `sidance_${yyyy}${mm}${dd}_${hh}${min}${ss}_${ms}.${ext}`;
+
+    const result = await db.uploadSidanceVideo(fileName, buffer, mimeType);
     if (result.success) {
+      console.log(`[Sidance Record] Saved ${fileName} (${(buffer.length / 1024 / 1024).toFixed(2)} MB) to Supabase Storage`);
       return res.json(result);
     } else {
+      console.error('[Sidance Record] Supabase upload failed:', result.error);
       return res.status(500).json({ error: result.error || 'Failed to upload recording to Supabase' });
     }
   } catch (err) {
