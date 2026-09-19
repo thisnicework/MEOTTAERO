@@ -407,6 +407,51 @@
     transform: translate(-50%, -50%) scale(1.0);
   }
 
+  /* Standby Guidance Prompt: Transparent Floating Text ('천천히 다가오세요') */
+  #approach-prompt {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    pointer-events: none;
+    z-index: 25;
+    text-align: center;
+    user-select: none;
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity 1.8s cubic-bezier(0.16, 1, 0.3, 1), visibility 1.8s;
+  }
+
+  #approach-prompt.visible {
+    opacity: 1;
+    visibility: visible;
+    animation: promptBreathing 4.2s ease-in-out infinite;
+  }
+
+  #approach-prompt .prompt-text {
+    font-family: var(--font-primary), -apple-system, BlinkMacSystemFont, 'Pretendard', sans-serif;
+    font-size: clamp(1.8rem, 4vw, 3.2rem);
+    font-weight: 300;
+    letter-spacing: 0.35em;
+    color: rgba(255, 255, 255, 0.45);
+    text-shadow: 0 0 24px rgba(255, 255, 255, 0.2);
+    white-space: nowrap;
+    padding-left: 0.35em; /* Optical center alignment for letter-spacing */
+  }
+
+  @keyframes promptBreathing {
+    0%, 100% {
+      opacity: 0.28;
+      transform: translate(-50%, -50%) scale(0.99);
+      filter: drop-shadow(0 0 10px rgba(255, 255, 255, 0.1));
+    }
+    50% {
+      opacity: 0.65;
+      transform: translate(-50%, -50%) scale(1.015);
+      filter: drop-shadow(0 0 26px rgba(255, 255, 255, 0.3));
+    }
+  }
+
   /* PIP Real-time Camera Preview Window */
   #pip-container {
     position: absolute;
@@ -577,6 +622,11 @@
       <!-- 2D HTML5 Canvas Target (Zero-latency 60 FPS Generative Visuals) -->
       <div id="canvas-container"></div>
     </div>
+  </div>
+
+  <!-- Standby Approach Guidance Prompt: Semi-transparent text when no dancers detected -->
+  <div id="approach-prompt" class="approach-prompt" aria-hidden="true">
+    <div class="prompt-text">천천히 다가오세요</div>
   </div>
 
   <!-- Raw Webcam Feed (Hidden for offscreen analysis) -->

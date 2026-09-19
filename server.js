@@ -360,6 +360,39 @@ app.post('/api/booth/upload', async (req, res) => {
   }
 });
 
+// Route: API Upload Sidance Video to Supabase Storage & Local Archive
+app.post('/api/sidance/record', express.raw({ type: ['video/webm', 'video/mp4', 'application/octet-stream'], limit: '100mb' }), async (req, res) => {
+  const buffer = req.body;
+  if (!buffer || buffer.length === 0) {
+    return res.status(400).json({ error: 'No video data provided' });
+  }
+
+  try {
+    const date = new Date();
+    const utc = date.getTime() + (date.getTimezoneOffset() * 60000);
+    const kst = new Date(utc + (9 * 3600000));
+
+    const yyyy = kst.getFullYear();
+    const mm = String(kst.getMonth() + 1).padStart(2, '0');
+    const dd = String(kst.getDate()).padStart(2, '0');
+    const hh = String(kst.getHours()).padStart(2, '0');
+    const min = String(kst.getMinutes()).padStart(2, '0');
+    const ss = String(kst.getSeconds()).padStart(2, '0');
+    const ms = String(kst.getMilliseconds()).padStart(3, '0');
+
+    const fileName = `sidance_${yyyy}${mm}${dd}_${hh}${min}${ss}_${ms}.webm`;
+
+    const result = await db.uploadSidanceVideo(fileName, buffer, 'video/webm');
+    if (result.success) {
+      return res.json(result);
+    } else {
+      return res.status(500).json({ error: 'Failed to save recording' });
+    }
+  } catch (err) {
+    console.error('Sidance record upload error:', err);
+    return res.status(500).json({ error: err.message });
+  }
+});
 
 function formatPhone(phoneStr) {
   if (!phoneStr) return '';

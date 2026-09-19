@@ -7,6 +7,7 @@
 import { MultiPoseTracker } from './pose-tracker.js';
 import { CreatureEngine } from './creature-engine.js';
 import { AudioEngine } from './audio-engine.js';
+import { RecorderEngine } from './recorder-engine.js';
 
 class SidanceApp {
   constructor() {
@@ -48,9 +49,14 @@ class SidanceApp {
     this.mirrorBtn = document.getElementById('btn-mirror');
     this.demoBtn = document.getElementById('btn-demo');
     this.presenceToast = document.getElementById('presence-toast');
+    this.approachPromptEl = document.getElementById('approach-prompt');
+    this.approachTimer = null;
+    this.currentDancerCount = 0;
     this.stageScaler = document.getElementById('stage-scaler');
     this.stageCropSelect = document.getElementById('stage-crop-select');
     this.currentCropScale = 1.0; // Default 100% full stage (no crop)
+
+    this.recorder = null;
 
     // Submodules
     this.tracker = null;
@@ -106,6 +112,18 @@ class SidanceApp {
 
     // 6. Auto-start Camera Stream
     this.startCameraStream();
+
+    // 7. Initialize Standby Approach Guidance Prompt (8s absence timer)
+    this.updateApproachPrompt(0);
+
+    // 8. Initialize Option 1 Composite Video Recorder (Camera + Avatar + Sound -> Supabase & Local)
+    this.recorder = new RecorderEngine({
+      cameraVideo: this.bgVideo,
+      creatureCanvas: this.creature.canvas,
+      audioEngine: this.audio,
+      isMirror: this.isMirror,
+      onStatusChange: (status, data) => this.onRecorderStatusChange(status, data)
+    });
   }
 
   async setupCameras() {
@@ -178,6 +196,14 @@ class SidanceApp {
       this.dancersVal.textContent = count === 0 ? '0명 감지' : `${count}인 감지 (${count === 1 ? '솔로' : count === 2 ? '듀엣' : '앙상블'})`;
     }
 
+    // 4. Update Standby Approach Guidance Prompt ('천천히 다가오세요')
+    this.updateApproachPrompt(count);
+
+    // 5. Update Option 1 Auto-Recording Engine
+    if (this.recorder) {
+      this.recorder.onDancerUpdate(count);
+    }
+
     if (this.isUiVisible && collectiveMetrics) {
       const energyPct = count === 0 ? 0 : Math.min(Math.round((collectiveMetrics.totalEnergy || 0) * 45), 100);
       this.energyMeter.style.width = `${energyPct}%`;
@@ -198,6 +224,37 @@ class SidanceApp {
         this.showToast('// 모든 댄서 이탈 — 스테이지 리셋');
       }
       this.lastDancerCount = count;
+    }
+  }
+
+  onRecorderStatusChange(status, data) {
+    // Pure stealth recording: completely invisible to the audience
+    if (status === 'error' && data && data.error) {
+      console.warn('Background recording upload notice:', data.error);
+    }
+  }
+
+  updateApproachPrompt(count) {
+    if (!this.approachPromptEl) return;
+    this.currentDancerCount = count;
+
+    if (count > 0) {
+      // Dancers detected: cancel timer and immediately fade out
+      if (this.approachTimer) {
+        clearTimeout(this.approachTimer);
+        this.approachTimer = null;
+      }
+      this.approachPromptEl.classList.remove('visible');
+    } else {
+      // No dancers detected: schedule appearance after 8 seconds of absence
+      if (!this.approachTimer && !this.approachPromptEl.classList.contains('visible')) {
+        this.approachTimer = setTimeout(() => {
+          if (this.currentDancerCount === 0 && this.approachPromptEl) {
+            this.approachPromptEl.classList.add('visible');
+          }
+          this.approachTimer = null;
+        }, 8000);
+      }
     }
   }
 
@@ -337,6 +394,7 @@ class SidanceApp {
       this.soundBtn.querySelector('.btn-label').textContent = enabled ? '🔊 사운드: ON' : '🔊 사운드: OFF';
       this.showToast(enabled ? '// 사운드 활성화 (다성부 앰비언트 신디사이저)' : '// 사운드 음소거');
     });
+
 
     // 4-1. Dedicated Clean Stage UI Hide Button
     const hideBtn = document.getElementById('btn-hide-ui');
@@ -560,6 +618,7 @@ class SidanceApp {
     if (this.videoElement) this.videoElement.style.transform = transformVal;
     if (this.pipVideo) this.pipVideo.style.transform = transformVal;
     if (this.bgVideo) this.bgVideo.style.transform = transformVal;
+    if (this.recorder) this.recorder.setMirror(this.isMirror);
   }
 
   toggleUI(force) {

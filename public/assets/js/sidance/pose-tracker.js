@@ -549,6 +549,8 @@ export class MultiPoseTracker {
           smooth.y += alpha * (curr.y - smooth.y);
           smooth.z += alpha * (curr.z - smooth.z);
           smooth.visibility = curr.visibility;
+          smooth.normX = sw > 0 ? smooth.x / sw : curr.normX;
+          smooth.normY = sh > 0 ? smooth.y / sh : curr.normY;
 
           prev.x = curr.x;
           prev.y = curr.y;

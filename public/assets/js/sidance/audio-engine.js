@@ -43,6 +43,10 @@ export class AudioEngine {
     this.masterGain.gain.setValueAtTime(this.volume, this.ctx.currentTime);
     this.masterGain.connect(this.ctx.destination);
 
+    // MediaStream destination for synchronized video recording
+    this.mediaStreamDest = this.ctx.createMediaStreamDestination();
+    this.masterGain.connect(this.mediaStreamDest);
+
     // Dynamic Filter
     this.filter = this.ctx.createBiquadFilter();
     this.filter.type = 'lowpass';
@@ -151,6 +155,17 @@ export class AudioEngine {
     }
   }
 
+  getAudioStreamTrack() {
+    if (!this.ctx) this.init();
+    if (!this.mediaStreamDest && this.ctx && this.masterGain) {
+      this.mediaStreamDest = this.ctx.createMediaStreamDestination();
+      this.masterGain.connect(this.mediaStreamDest);
+    }
+    return (this.mediaStreamDest && this.mediaStreamDest.stream) 
+      ? this.mediaStreamDest.stream.getAudioTracks()[0] 
+      : null;
+  }
+
   updateMultiDancers(trackedDancersMap, collectiveMetrics) {
     if (!this.isEnabled || !this.ctx || !trackedDancersMap) return;
 
@@ -173,10 +188,24 @@ export class AudioEngine {
       if (dancer) {
         const lw = dancer.landmarks[15];
         const rw = dancer.landmarks[16];
-        const lNormY = lw && lw.normY !== undefined ? lw.normY : (lw ? lw.y / (window.innerHeight || 1920) : 0.5);
-        const rNormY = rw && rw.normY !== undefined ? rw.normY : (rw ? rw.y / (window.innerHeight || 1920) : 0.5);
+        const sh = window.innerHeight || 1080;
+
+        // Check visibility of wrists (keypoints 15 and 16)
+        const lVis = lw && (lw.visibility === undefined || lw.visibility > 0.12);
+        const rVis = rw && (rw.visibility === undefined || rw.visibility > 0.12);
+
+        // Calculate live, real-time normalized Y from smoothed screen pixels
+        let highestY = 0.5;
+        if (lVis && rVis) {
+          highestY = Math.min(lw.y / sh, rw.y / sh);
+        } else if (lVis) {
+          highestY = lw.y / sh;
+        } else if (rVis) {
+          highestY = rw.y / sh;
+        }
+
         // Elevation: 0 (hands at bottom) -> 1 (hands raised up)
-        const handElevation = Math.max(0, Math.min(1, 1.0 - Math.min(lNormY, rNormY)));
+        const handElevation = Math.max(0, Math.min(1, 1.0 - highestY));
 
         // Map height to pitch with harmonious harmonic offset per dancer
         let noteIdx = Math.floor(handElevation * (this.scale.length - 1));
@@ -187,8 +216,10 @@ export class AudioEngine {
         const targetFreq = this.scale[noteIdx];
         voice.osc.frequency.setTargetAtTime(targetFreq, t, 0.08);
 
-        // Voice volume based on dancer's individual energy
-        const voiceVol = Math.min((dancer.metrics.energy || 0) * 0.18, 0.22);
+        // Voice volume: Base presence sustain (0.07) ensures pitch is audible even when holding pose,
+        // dynamically swelling up to 0.22 with physical energy
+        const energy = dancer.metrics.energy || 0;
+        const voiceVol = Math.min(0.07 + energy * 0.14, 0.22);
         voice.gain.gain.setTargetAtTime(voiceVol, t, 0.1);
       } else {
         // Silence inactive voices
