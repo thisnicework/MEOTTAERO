@@ -2,10 +2,10 @@
  * SIDANCE ✕ FUTURE YOU - Automatic Exhibition Recorder Engine
  * 
  * Features:
- * 1. Option 1 Full Composite Recording:
+ * 1. Clean Full Composite Recording:
  *    - Real Camera Background Video (Mirrored & Aspect Maintained)
  *    - Generative Silk / Aurora / Cosmic Creature Ribbon Visuals
- *    - MOTTAERO ✕ SIDance Floating Watermark Logos
+ *    - Pure Clean Visuals (No Watermark Logos or UI)
  *    - Real-time Multi-Voice Polyphonic Synthesizer Audio
  * 2. Unbroken Continuous Auto-Recording & Saving ("계속 매번 저장"):
  *    - Starts immediately whenever any dancer is detected
@@ -52,12 +52,6 @@ export class RecorderEngine {
     this.compCanvas.width = 1280;
     this.compCanvas.height = 720;
     this.compCtx = this.compCanvas.getContext('2d', { alpha: false });
-
-    // Preload Watermark Logos
-    this.mottaeroImg = new Image();
-    this.mottaeroImg.src = '/MEOTTAERO.JPG';
-    this.sidanceImg = new Image();
-    this.sidanceImg.src = '/sidance_logo_light.svg';
   }
 
   setMirror(mirror) {
@@ -289,45 +283,10 @@ export class RecorderEngine {
         ctx.drawImage(creature, 0, 0, cw, ch);
       }
 
-      // C. Draw MOTTAERO ✕ SIDANCE watermark logos (Top-Left)
-      this._drawWatermark(ctx, cw, ch);
-
       this.animationFrameId = requestAnimationFrame(render);
     };
 
     render();
-  }
-
-  _drawWatermark(ctx, cw, ch) {
-    ctx.save();
-    ctx.globalAlpha = 0.65;
-
-    const topY = 28;
-    let currX = 32;
-
-    // Mottaero Logo
-    if (this.mottaeroImg && this.mottaeroImg.complete && this.mottaeroImg.naturalWidth > 0) {
-      const h = 38;
-      const w = (this.mottaeroImg.naturalWidth / this.mottaeroImg.naturalHeight) * h;
-      ctx.drawImage(this.mottaeroImg, currX, topY, w, h);
-      currX += w + 14;
-    }
-
-    // Separator '✕'
-    ctx.fillStyle = 'rgba(255, 255, 255, 0.45)';
-    ctx.font = '700 16px monospace';
-    ctx.textBaseline = 'middle';
-    ctx.fillText('✕', currX, topY + 19);
-    currX += 22;
-
-    // SIDance Logo
-    if (this.sidanceImg && this.sidanceImg.complete && this.sidanceImg.naturalWidth > 0) {
-      const h = 26;
-      const w = (this.sidanceImg.naturalWidth / this.sidanceImg.naturalHeight) * h;
-      ctx.drawImage(this.sidanceImg, currX, topY + 6, w, h);
-    }
-
-    ctx.restore();
   }
 
   async _handleRecordingComplete() {
