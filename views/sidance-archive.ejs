@@ -123,8 +123,8 @@
       max-width: 1400px;
       margin: 0 auto;
       display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(360px, 1fr));
-      gap: 28px;
+      grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+      gap: 24px;
     }
 
     .video-card {
@@ -145,8 +145,9 @@
     .video-wrapper {
       position: relative;
       width: 100%;
-      aspect-ratio: 16 / 9;
+      aspect-ratio: 9 / 16;
       background: #000;
+      border-bottom: 1px solid var(--card-border);
     }
 
     .video-player {
@@ -154,10 +155,11 @@
       height: 100%;
       object-fit: cover;
       display: block;
+      background: #000;
     }
 
     .video-info {
-      padding: 16px 18px;
+      padding: 14px 16px;
       display: flex;
       flex-direction: column;
       gap: 10px;
@@ -188,6 +190,16 @@
       padding: 2px 6px;
       border-radius: 3px;
       color: #cbd5e1;
+    }
+
+    .badge-ratio {
+      background: rgba(0, 229, 255, 0.12);
+      border: 1px solid rgba(0, 229, 255, 0.35);
+      padding: 2px 6px;
+      border-radius: 3px;
+      color: var(--accent-cyan);
+      font-size: 0.72rem;
+      font-weight: 600;
     }
 
     .video-actions {
@@ -285,8 +297,8 @@
   </header>
 
   <div class="stats-bar">
-    <span>총 <%= (videos && videos.length) || 0 %>개의 녹화 영상 (최신순)</span>
-    <span>스토리지: Supabase Cloud Storage (booth/sidance)</span>
+    <span>총 <%= (videos && videos.length) || 0 %>개의 녹화 영상 (최신순 · 세로 9:16)</span>
+    <span>전시 규격: 1080×1920 (60FPS 세로 영상)</span>
   </div>
 
   <% if (videos && videos.length > 0) { %>
@@ -313,7 +325,10 @@
             <div class="video-name" title="<%= video.name %>"><%= video.name %></div>
             <div class="video-meta">
               <span>📅 <%= dateFormatted %></span>
-              <span class="badge-size"><%= sizeMb %></span>
+              <div style="display: flex; gap: 6px; align-items: center;">
+                <span class="badge-ratio">세로 9:16</span>
+                <span class="badge-size"><%= sizeMb %></span>
+              </div>
             </div>
             <div class="video-actions">
               <a href="<%= video.url %>" target="_blank" class="action-btn btn-play">새창 열기 ↗</a>
@@ -329,7 +344,7 @@
       <h2 class="empty-title">저장된 녹화 영상이 아직 없습니다</h2>
       <p class="empty-desc">
         무대 화면에서 관객이 3초 이상 인식되면<br>
-        자동으로 녹화되어 이곳에 실시간으로 표시됩니다.
+        실제 전시 모니터와 동일한 세로 9:16 영상으로 자동 녹화되어 실시간 저장됩니다.
       </p>
       <div style="margin-top: 24px;">
         <a href="/sidance" class="btn btn-accent">무대 화면 바로가기</a>

@@ -123,23 +123,29 @@ export class RecorderEngine {
   }
 
   _initCompositorCanvas() {
-    // Detect actual display aspect ratio from creature canvas or viewport
-    const creature = this.options.creatureCanvas;
-    let srcW = window.innerWidth || 1280;
-    let srcH = window.innerHeight || 720;
+    // Exhibition screen is ALWAYS a vertical display (세로 모니터, 9:16).
+    // Recorded output MUST ALWAYS be saved as a crisp portrait video (1080x1920 @ 60fps),
+    // precisely matching what the audience sees on the physical vertical exhibition monitor.
+    let canvasW = 1080;
+    let canvasH = 1920;
 
+    const creature = this.options.creatureCanvas;
+    let srcW = window.innerWidth || 1080;
+    let srcH = window.innerHeight || 1920;
     if (creature && creature.width > 0 && creature.height > 0) {
       srcW = creature.width;
       srcH = creature.height;
     }
 
-    const isPortrait = srcH > srcW;
-    // Target ~1080p resolution while preserving real aspect ratio
-    const targetShort = 1080;
-    const targetLong = Math.round(targetShort * (Math.max(srcW, srcH) / Math.min(srcW, srcH)));
-
-    const canvasW = isPortrait ? targetShort : targetLong;
-    const canvasH = isPortrait ? targetLong : targetShort;
+    if (srcH > srcW) {
+      // Screen is already portrait: lock width to 1080 and compute matching height (even number)
+      canvasW = 1080;
+      canvasH = Math.round((1080 * (srcH / srcW)) / 2) * 2;
+    } else {
+      // Screen is landscape (e.g. testing on laptop): strictly lock to 1080x1920 (9:16 vertical video)
+      canvasW = 1080;
+      canvasH = 1920;
+    }
 
     if (!this.compCanvas) {
       this.compCanvas = document.createElement('canvas');
@@ -148,7 +154,7 @@ export class RecorderEngine {
     this.compCanvas.height = canvasH;
     this.compCtx = this.compCanvas.getContext('2d', { alpha: false });
 
-    console.log(`[RecorderEngine] Compositor canvas: ${canvasW}x${canvasH} (${isPortrait ? 'Portrait' : 'Landscape'})`);
+    console.log(`[RecorderEngine] Compositor canvas: ${canvasW}x${canvasH} (Vertical Exhibition Video @ 60fps)`);
   }
 
   start() {
@@ -309,8 +315,26 @@ export class RecorderEngine {
 
       // B. Draw generative creature visual canvas directly on top
       const creature = this.options.creatureCanvas;
-      if (creature && creature.width > 0) {
-        ctx.drawImage(creature, 0, 0, cw, ch);
+      if (creature && creature.width > 0 && creature.height > 0) {
+        const crW = creature.width;
+        const crH = creature.height;
+        const crAspect = crW / crH;
+        const canvasAspect = cw / ch;
+
+        let srcX = 0, srcY = 0, srcW = crW, srcH = crH;
+
+        if (crAspect > canvasAspect) {
+          // Source canvas is wider than target 9:16 vertical canvas (e.g. testing on laptop)
+          // Crop the central vertical slice so it corresponds 1:1 with the camera crop!
+          srcW = crH * canvasAspect;
+          srcX = (crW - srcW) * 0.5;
+        } else if (crAspect < canvasAspect) {
+          // Source canvas is taller than target vertical canvas
+          srcH = crW / canvasAspect;
+          srcY = (crH - srcH) * 0.5;
+        }
+
+        ctx.drawImage(creature, srcX, srcY, srcW, srcH, 0, 0, cw, ch);
       }
 
       this.animationFrameId = requestAnimationFrame(render);

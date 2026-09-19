@@ -607,6 +607,11 @@ export class MultiPoseTracker {
     };
     dancer.metrics.torsoAngle = Math.atan2(pelvis.x - neck.x, pelvis.y - neck.y);
 
+    // Consider dancer present only if inside or entering the visible monitor screen
+    // (Takes into account vertical monitor crop, rejecting people outside the vertical screen bounds)
+    const isWithinVisibleScreen = dancer.metrics.torsoCenter.x >= -sw * 0.05 && dancer.metrics.torsoCenter.x <= sw * 1.05;
+    dancer.metrics.isPresent = isWithinVisibleScreen;
+
     // Spine spline points in 2D
     const spineSegments = 20;
     const spine = [];
