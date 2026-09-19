@@ -63,6 +63,7 @@ class SidanceApp {
     this.isMirror = true;
     this.isDemo = false;
     this.isUiVisible = true;
+    this.bgOpacity = 0.75;
     this.lastDancerCount = 0;
     this.calibration = {
       scale: 1.0,
@@ -283,7 +284,7 @@ class SidanceApp {
       if (this.pipContainer) this.pipContainer.classList.add('hidden');
       if (this.bgVideo) {
         this.bgVideo.classList.add('active');
-        this.bgVideo.style.opacity = this.bgOpacity;
+        this.bgVideo.style.opacity = String(this.bgOpacity !== undefined ? this.bgOpacity : 0.75);
       }
       if (this.bgDimmer) this.bgDimmer.classList.add('active');
       this.creature.setCameraBackground(true);
