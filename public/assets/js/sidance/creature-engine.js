@@ -6,40 +6,40 @@
 
 const ARTISTIC_PALETTES = [
   {
-    name: 'OPAL_PEARL',
-    primary: '#00f0ff',
-    secondary: '#ff2a8d',
+    name: 'MOTTAERO_CYAN',
+    primary: '#00f0ff',      // Native High Cyan
+    secondary: '#ffffff',    // Native Pure White
     core: '#ffffff',
-    sheen: '#bbf7d0',
-    glow: 'rgba(0, 240, 255, 0.45)',
-    ink: 'rgba(0, 240, 255, 0.85)'
+    sheen: '#00ff66',        // Native Acid Lime Green
+    glow: 'rgba(0, 240, 255, 0.65)',
+    ink: 'rgba(0, 240, 255, 0.95)'
   },
   {
-    name: 'CHAMPAGNE_GOLD',
-    primary: '#ffe66d',
-    secondary: '#00ff88',
+    name: 'MOTTAERO_PINK',
+    primary: '#ff0077',      // Native Punk Pink
+    secondary: '#00f0ff',    // Native High Cyan
     core: '#ffffff',
-    sheen: '#ffaa44',
-    glow: 'rgba(255, 230, 109, 0.45)',
-    ink: 'rgba(255, 220, 80, 0.85)'
+    sheen: '#00ff66',        // Native Acid Lime Green
+    glow: 'rgba(255, 0, 119, 0.65)',
+    ink: 'rgba(255, 0, 119, 0.95)'
   },
   {
-    name: 'MIDNIGHT_IRIS',
-    primary: '#b366ff',
-    secondary: '#ff477e',
+    name: 'MOTTAERO_ACID',
+    primary: '#00ff66',      // Native Acid Lime Green
+    secondary: '#ff0077',    // Native Punk Pink
     core: '#ffffff',
-    sheen: '#e0b0ff',
-    glow: 'rgba(179, 102, 255, 0.45)',
-    ink: 'rgba(179, 102, 255, 0.85)'
+    sheen: '#00f0ff',        // Native High Cyan
+    glow: 'rgba(0, 255, 102, 0.65)',
+    ink: 'rgba(0, 255, 102, 0.95)'
   },
   {
-    name: 'TITANIUM_SILK',
-    primary: '#ffffff',
-    secondary: '#00a2ff',
-    core: '#70ffe5',
-    sheen: '#dbeafe',
-    glow: 'rgba(255, 255, 255, 0.5)',
-    ink: 'rgba(255, 255, 255, 0.9)'
+    name: 'MOTTAERO_WHITE',
+    primary: '#ffffff',      // Native Stark Brutalist White
+    secondary: '#00f0ff',    // Native High Cyan
+    core: '#00ff66',        // Accent Lime
+    sheen: '#ff0077',        // Punk Pink
+    glow: 'rgba(255, 255, 255, 0.75)',
+    ink: 'rgba(255, 255, 255, 0.98)'
   }
 ];
 
@@ -47,7 +47,7 @@ export class CreatureEngine {
   constructor(container, options = {}) {
     this.container = container;
     this.options = Object.assign({
-      activeForm: 1, // Default: Form 1 (Silk Flow)
+      activeForm: 'random', // Default: 'random' | 2 (Aurora Veil) | 4 (Cosmic Yarn)
       scale: 1.0,
       yOffset: 0.0,
       sensitivity: 1.2,
@@ -89,10 +89,37 @@ export class CreatureEngine {
     this.canvas.height = Math.floor(sh * this.dpr);
   }
 
-  setForm(formId) {
-    this.options.activeForm = Number(formId);
+  getRandomForm() {
+    const choices = [2, 4]; // 2: Aurora Veil, 4: Cosmic Yarn
+    // If an avatar is already active, complement it with the other form for duet visual contrast!
+    if (this.avatars && this.avatars.size === 1) {
+      const existingForm = this.avatars.values().next().value.currentFormId;
+      return existingForm === 2 ? 4 : 2;
+    }
+    return choices[Math.floor(Math.random() * choices.length)];
+  }
+
+  randomizeAllAvatars() {
+    const choices = [2, 4];
+    let startIdx = Math.floor(Math.random() * choices.length);
+    let offset = 0;
     for (const avatar of this.avatars.values()) {
-      avatar.setForm(this.options.activeForm);
+      avatar.setForm(choices[(startIdx + offset) % choices.length]);
+      offset++;
+    }
+  }
+
+  setForm(formId) {
+    if (formId === 'random') {
+      this.options.activeForm = 'random';
+      this.randomizeAllAvatars();
+    } else {
+      const num = Number(formId);
+      // Strictly restrict to Form 2 (Aurora Veil) or Form 4 (Cosmic Yarn)
+      this.options.activeForm = (num === 4) ? 4 : 2;
+      for (const avatar of this.avatars.values()) {
+        avatar.setForm(this.options.activeForm);
+      }
     }
   }
 
@@ -160,7 +187,10 @@ export class CreatureEngine {
           if (!avatar) {
             const paletteIndex = ((dancer.colorIndex || 1) - 1) % ARTISTIC_PALETTES.length;
             avatar = new OrganicAvatarInstance(id, ARTISTIC_PALETTES[paletteIndex]);
-            avatar.setForm(this.options.activeForm);
+            const assignedForm = this.options.activeForm === 'random'
+              ? this.getRandomForm()
+              : this.options.activeForm;
+            avatar.setForm(assignedForm);
             this.avatars.set(id, avatar);
           }
 
@@ -203,23 +233,22 @@ class OrganicAvatarInstance {
     this.id = id;
     this.palette = palette;
     this.awakeFactor = 0.0;
-    this.currentFormId = 1;
+    this.currentFormId = 2; // Default: Form 2 (Aurora Veil)
 
-    // Floating Stardust Embers / Ink Sprinkles
+    // Floating Stardust Embers / Light Sprinkles
     this.particles = [];
     this.maxParticles = 65;
 
-    // The 4 Curated Non-AI Dance Art Forms
+    // Curated Visuals: Only Form 2 (Aurora Veil) & Form 4 (Cosmic Yarn)
     this.forms = {
-      1: new SilkFlowForm(this.palette),      // Form 1: Wide Satin Silk Ribbons & Cloth Physics
       2: new AuroraVeilForm(this.palette),     // Form 2: Multi-Strand Ethereal Gossamer Veils
-      3: new FluidInkForm(this.palette),       // Form 3: Contemporary Korean Calligraphy Ink Strokes
       4: new CosmicYarnForm(this.palette)      // Form 4: Kinetic Woven Thread Loom & Sculptural Contour
     };
   }
 
   setForm(formId) {
-    this.currentFormId = formId;
+    const num = Number(formId);
+    this.currentFormId = (num === 4) ? 4 : 2;
   }
 
   update(landmarks, metrics, options) {
@@ -282,10 +311,11 @@ class OrganicAvatarInstance {
     ctx.globalCompositeOperation = 'lighter';
     ctx.globalAlpha = Math.max(0, Math.min(1, this.awakeFactor));
 
-    // Render floating embers
+    // Render floating embers in MOTTAERO native palette sparks
     const pal = this.palette;
-    this.particles.forEach(p => {
-      ctx.fillStyle = pal.primary;
+    const emberColors = [pal.primary, pal.sheen, pal.secondary, '#ffffff'];
+    this.particles.forEach((p, pIdx) => {
+      ctx.fillStyle = emberColors[pIdx % emberColors.length];
       ctx.globalAlpha = p.alpha * this.awakeFactor;
       ctx.beginPath();
       ctx.arc(p.x, p.y, p.radius, 0, Math.PI * 2);
@@ -645,10 +675,10 @@ class AuroraVeilForm {
 
         // Tip glowing light droplet
         const lastNode = nodes[nodes.length - 1];
-        ctx.fillStyle = '#ffffff';
-        ctx.globalAlpha = 0.8 * awakeFactor;
+        ctx.fillStyle = sIdx % 2 === 0 ? pal.sheen : '#ffffff';
+        ctx.globalAlpha = 0.9 * awakeFactor;
         ctx.beginPath();
-        ctx.arc(lastNode.x, lastNode.y, 2.2, 0, Math.PI * 2);
+        ctx.arc(lastNode.x, lastNode.y, 2.4, 0, Math.PI * 2);
         ctx.fill();
       });
     });
@@ -661,15 +691,15 @@ class AuroraVeilForm {
       [24, 26, 28]  // Right Leg
     ];
 
-    streamPairs.forEach(([p1Idx, p2Idx, p3Idx]) => {
+    streamPairs.forEach(([p1Idx, p2Idx, p3Idx], streamIdx) => {
       const p1 = lm[p1Idx];
       const p2 = lm[p2Idx];
       const p3 = lm[p3Idx];
       if (!p1 || !p2 || !p3 || p1.visibility < 0.15 || p3.visibility < 0.15) return;
 
-      ctx.strokeStyle = pal.primary;
-      ctx.lineWidth = (4.0 + energy * 6) * awakeFactor;
-      ctx.globalAlpha = 0.7 * awakeFactor;
+      ctx.strokeStyle = streamIdx % 2 === 0 ? pal.primary : pal.secondary;
+      ctx.lineWidth = (3.8 + energy * 6) * awakeFactor;
+      ctx.globalAlpha = 0.8 * awakeFactor;
 
       ctx.beginPath();
       ctx.moveTo(p1.x, p1.y);
@@ -880,9 +910,9 @@ class CosmicYarnForm {
         const pt = spine[i];
         const span = (45 + Math.sin(i * 0.8 + time * 3) * 25 + energy * 30) * awakeFactor;
 
-        ctx.strokeStyle = i % 4 === 0 ? pal.sheen : pal.primary;
+        ctx.strokeStyle = i % 4 === 0 ? pal.sheen : (i % 2 === 0 ? pal.primary : pal.secondary);
         ctx.lineWidth = 1.6;
-        ctx.globalAlpha = 0.7 * awakeFactor;
+        ctx.globalAlpha = 0.75 * awakeFactor;
 
         ctx.beginPath();
         ctx.ellipse(pt.x, pt.y, span, span * 0.35, Math.sin(time + i) * 0.5, 0, Math.PI * 2);

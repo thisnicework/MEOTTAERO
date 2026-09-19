@@ -48,6 +48,10 @@ class SidanceApp {
     this.mirrorBtn = document.getElementById('btn-mirror');
     this.demoBtn = document.getElementById('btn-demo');
     this.presenceToast = document.getElementById('presence-toast');
+    this.stageScaler = document.getElementById('stage-scaler');
+    this.stageCropSelect = document.getElementById('stage-crop-select');
+    this.stageCropVal = document.getElementById('stage-crop-val');
+    this.currentCropScale = 1.25; // Default 80% bottom crop (1 / 0.8 = 1.25, aspect ratio preserved)
 
     // Submodules
     this.tracker = null;
@@ -74,7 +78,7 @@ class SidanceApp {
   async init() {
     // 1. Initialize Multi-Avatar 3D Creature Engine
     this.creature = new CreatureEngine(this.container, {
-      activeForm: 1,
+      activeForm: 'random',
       scale: this.calibration.scale,
       yOffset: this.calibration.yOffset,
       sensitivity: this.calibration.sensitivity
@@ -184,6 +188,10 @@ class SidanceApp {
     // Toast on dancer count changes
     if (count !== this.lastDancerCount) {
       if (count > this.lastDancerCount) {
+        if (this.lastDancerCount === 0 && this.creature.options.activeForm === 'random') {
+          // New stage entrance: re-roll random forms for incoming dancers
+          this.creature.randomizeAllAvatars();
+        }
         if (count === 1) this.showToast('// 댄서 1인 감지 완료');
         else if (count === 2) this.showToast('// 2인 듀엣 동기화 완료');
         else this.showToast(`// ${count}인 앙상블 동기화 완료`);
@@ -303,7 +311,8 @@ class SidanceApp {
     // 1. Form Switching
     this.formButtons.forEach(btn => {
       btn.addEventListener('click', () => {
-        const formId = Number(btn.dataset.formBtn);
+        const val = btn.dataset.formBtn;
+        const formId = val === 'random' ? 'random' : Number(val);
         this.selectForm(formId);
       });
     });
@@ -326,8 +335,8 @@ class SidanceApp {
     this.soundBtn.addEventListener('click', () => {
       const enabled = this.audio.toggle();
       this.soundBtn.classList.toggle('active', enabled);
-      this.soundBtn.querySelector('.btn-label').textContent = enabled ? '🔊 사운드: ON' : '🔊 사운드: OFF';
-      this.showToast(enabled ? '// 사운드 활성화' : '// 사운드 음소거');
+      this.soundBtn.querySelector('.btn-label').textContent = enabled ? '🔊 락킹 사운드: ON' : '🔊 락킹 사운드: OFF';
+      this.showToast(enabled ? '// 락킹 사운드 활성화 (112 BPM FUNK GROOVE)' : '// 락킹 사운드 음소거');
     });
 
     // 4-1. Dedicated Clean Stage UI Hide Button
@@ -430,6 +439,14 @@ class SidanceApp {
       });
     }
 
+    // 10-1. Stage Crop Region Selection (Bottom Crop, Aspect Ratio Preserved)
+    if (this.stageCropSelect) {
+      this.stageCropSelect.addEventListener('change', (e) => {
+        const scale = parseFloat(e.target.value) || 1.25;
+        this.setStageCropScale(scale);
+      });
+    }
+
     // 11. Calibration Sliders
     this.scaleSlider.addEventListener('input', (e) => {
       const val = parseFloat(e.target.value);
@@ -481,8 +498,12 @@ class SidanceApp {
         this.demoBtn.click();
       } else if (key === 'C') {
         this.toggleSettings();
-      } else if (['1', '2', '3', '4'].includes(key)) {
-        this.selectForm(Number(key));
+      } else if (key === 'R') {
+        this.selectForm('random');
+      } else if (key === '1') {
+        this.selectForm(2); // 01 오로라 베일
+      } else if (key === '2' || key === '4') {
+        this.selectForm(4); // 02 코스믹 얀
       } else if (key === 'ESCAPE') {
         this.toggleSettings(false);
       }
@@ -490,18 +511,42 @@ class SidanceApp {
   }
 
   selectForm(formId) {
+    if (formId === 'random' && this.creature.options.activeForm === 'random') {
+      this.creature.randomizeAllAvatars();
+      this.showToast('// 무용 폼: 🎲 랜덤 재배치 완료');
+      return;
+    }
+
     this.creature.setForm(formId);
     this.formButtons.forEach(btn => {
-      btn.classList.toggle('active', Number(btn.dataset.formBtn) === formId);
+      const btnVal = btn.dataset.formBtn;
+      if (formId === 'random') {
+        btn.classList.toggle('active', btnVal === 'random');
+      } else {
+        btn.classList.toggle('active', Number(btnVal) === Number(formId));
+      }
     });
 
     const formNames = {
-      1: '01 실크 플로우',
-      2: '02 오로라 베일',
-      3: '03 수묵 키네틱',
-      4: '04 코스믹 얀'
+      random: '🎲 랜덤 (오로라 베일 ✕ 코스믹 얀)',
+      2: '01 오로라 베일',
+      4: '02 코스믹 얀'
     };
-    this.showToast(`// 무용 폼 전환: ${formNames[formId]}`);
+    const formName = formNames[formId] || (formId === 'random' ? '랜덤' : `폼 ${formId}`);
+    this.showToast(`// 무용 폼 전환: ${formName}`);
+  }
+
+  setStageCropScale(scale) {
+    this.currentCropScale = scale;
+    if (this.stageScaler) {
+      this.stageScaler.style.transform = `scale(${scale})`;
+      this.stageScaler.style.transformOrigin = '50% 100%';
+    }
+    const pct = Math.round((1 / scale) * 100);
+    if (this.stageCropVal) {
+      this.stageCropVal.textContent = `${pct}% (${scale.toFixed(2)}x)`;
+    }
+    this.showToast(`// 화면 크롭: 하단 ${pct}% 적용 (비율 유지)`);
   }
 
   updateMirrorState() {
