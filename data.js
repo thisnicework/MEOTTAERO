@@ -691,6 +691,27 @@ export async function getSidanceVideos(limit = 100) {
   }
 }
 
+export async function deleteSidanceVideo(fileName) {
+  if (!supabase) return { success: false, error: 'Supabase not initialized' };
+  // Safety: only allow sidance_*.webm filenames
+  if (!fileName || !fileName.startsWith('sidance_') || !fileName.endsWith('.webm')) {
+    return { success: false, error: 'Invalid filename' };
+  }
+  try {
+    const { error } = await supabase.storage
+      .from('booth')
+      .remove([`sidance/${fileName}`]);
+    if (error) {
+      console.warn('Supabase delete error:', error);
+      return { success: false, error: error.message };
+    }
+    return { success: true, fileName };
+  } catch (err) {
+    console.error('deleteSidanceVideo exception:', err);
+    return { success: false, error: err.message };
+  }
+}
+
 // Heterotopia guestbook storage helpers
 const HETEROTOPIA_FILE = path.resolve(__dirname, 'heterotopia_cards.json');
 

@@ -416,6 +416,22 @@ app.get(['/sidance/archive', '/sidance/videos'], async (req, res) => {
   }
 });
 
+// Route: API Delete a Sidance Recording from Supabase Storage
+app.delete('/api/sidance/videos/:fileName', async (req, res) => {
+  const { fileName } = req.params;
+  try {
+    const result = await db.deleteSidanceVideo(fileName);
+    if (result.success) {
+      res.json({ success: true, fileName });
+    } else {
+      res.status(400).json({ error: result.error || 'Delete failed' });
+    }
+  } catch (err) {
+    console.error('Delete sidance video error:', err);
+    res.status(500).json({ error: err.message });
+  }
+});
+
 function formatPhone(phoneStr) {
   if (!phoneStr) return '';
   const nums = phoneStr.replace(/[^0-9]/g, '');
