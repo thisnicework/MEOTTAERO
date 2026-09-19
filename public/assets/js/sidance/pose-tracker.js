@@ -344,14 +344,15 @@ export class MultiPoseTracker {
       this._processPersonPose(slotId, rawPose, now, cx, cy);
     });
 
-    // 3. Handle absent dancers (fast 650ms timeout)
-    const timeoutThreshold = 650;
+    // 3. Handle absent dancers (graceful 400ms debounce before marking exiting, 800ms cleanup)
+    const timeoutThreshold = 800;
+    const exitThreshold = 400;
     for (const [id, dancer] of this.trackedDancers.entries()) {
       if (!seenSlotIds.has(id)) {
         const elapsed = now - dancer.lastSeen;
         if (elapsed > timeoutThreshold) {
           this.trackedDancers.delete(id);
-        } else {
+        } else if (elapsed > exitThreshold) {
           dancer.isExiting = true;
           dancer.metrics.isPresent = false;
         }
@@ -608,8 +609,8 @@ export class MultiPoseTracker {
     dancer.metrics.torsoAngle = Math.atan2(pelvis.x - neck.x, pelvis.y - neck.y);
 
     // Consider dancer present only if inside or entering the visible monitor screen
-    // (Takes into account vertical monitor crop, rejecting people outside the vertical screen bounds)
-    const isWithinVisibleScreen = dancer.metrics.torsoCenter.x >= -sw * 0.05 && dancer.metrics.torsoCenter.x <= sw * 1.05;
+    // (Takes into account vertical monitor crop with ±15% movement margin, rejecting people far outside in the hallway)
+    const isWithinVisibleScreen = dancer.metrics.torsoCenter.x >= -sw * 0.15 && dancer.metrics.torsoCenter.x <= sw * 1.15;
     dancer.metrics.isPresent = isWithinVisibleScreen;
 
     // Spine spline points in 2D

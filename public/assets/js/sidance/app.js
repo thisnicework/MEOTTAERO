@@ -57,6 +57,9 @@ class SidanceApp {
     this.currentCropScale = 1.0; // Default 100% full stage (no crop)
 
     this.recorder = null;
+    this.hudRecordBadge = document.getElementById('hud-record-badge');
+    this.hudRecordText = document.getElementById('hud-record-text');
+    this.recInterval = null;
 
     // Submodules
     this.tracker = null;
@@ -228,9 +231,78 @@ class SidanceApp {
   }
 
   onRecorderStatusChange(status, data) {
-    // Pure stealth recording: completely invisible to the audience
-    if (status === 'error' && data && data.error) {
-      console.warn('Background recording upload notice:', data.error);
+    if (!this.hudRecordBadge || !this.hudRecordText) return;
+
+    if (status === 'countdown') {
+      this.hudRecordBadge.style.display = 'flex';
+      this.hudRecordBadge.style.color = 'var(--color-high)';
+      this.hudRecordBadge.style.borderColor = 'var(--color-high)';
+      this.hudRecordBadge.style.boxShadow = '2px 2px 0px var(--color-high)';
+      this.hudRecordText.textContent = '⏳ 3초 후 녹화 시작';
+    } else if (status === 'started') {
+      this.hudRecordBadge.style.display = 'flex';
+      this.hudRecordBadge.style.color = '#ff3366';
+      this.hudRecordBadge.style.borderColor = '#ff3366';
+      this.hudRecordBadge.style.boxShadow = '2px 2px 0px #ff3366';
+      this.hudRecordText.textContent = '● REC 00:00';
+
+      clearInterval(this.recInterval);
+      const startTime = performance.now();
+      this.recInterval = setInterval(() => {
+        if (!this.recorder || !this.recorder.isRecording) {
+          clearInterval(this.recInterval);
+          return;
+        }
+        const elapsedSec = Math.floor((performance.now() - startTime) / 1000);
+        const mins = String(Math.floor(elapsedSec / 60)).padStart(2, '0');
+        const secs = String(elapsedSec % 60).padStart(2, '0');
+        this.hudRecordText.textContent = `● REC ${mins}:${secs}`;
+      }, 1000);
+    } else if (status === 'stopping') {
+      clearInterval(this.recInterval);
+      this.hudRecordBadge.style.display = 'flex';
+      this.hudRecordBadge.style.color = '#e2e8f0';
+      this.hudRecordBadge.style.borderColor = '#e2e8f0';
+      this.hudRecordBadge.style.boxShadow = '2px 2px 0px #e2e8f0';
+      this.hudRecordText.textContent = '⏹️ 인코딩 중...';
+    } else if (status === 'uploading') {
+      clearInterval(this.recInterval);
+      this.hudRecordBadge.style.display = 'flex';
+      this.hudRecordBadge.style.color = 'var(--color-high)';
+      this.hudRecordBadge.style.borderColor = 'var(--color-high)';
+      this.hudRecordBadge.style.boxShadow = '2px 2px 0px var(--color-high)';
+      this.hudRecordText.textContent = '☁️ 저장 중...';
+    } else if (status === 'uploaded') {
+      clearInterval(this.recInterval);
+      this.hudRecordBadge.style.display = 'flex';
+      this.hudRecordBadge.style.color = 'var(--color-accent)';
+      this.hudRecordBadge.style.borderColor = 'var(--color-accent)';
+      this.hudRecordBadge.style.boxShadow = '2px 2px 0px var(--color-accent)';
+      this.hudRecordText.textContent = '✓ 저장 완료';
+      this.showToast('// 🎥 세로 영상 저장 완료 (아카이브 추가)');
+      setTimeout(() => {
+        if (this.hudRecordBadge && (!this.recorder || !this.recorder.isRecording)) {
+          this.hudRecordBadge.style.display = 'none';
+        }
+      }, 3500);
+    } else if (status === 'cancelled' || status === 'discarded') {
+      clearInterval(this.recInterval);
+      if (!this.recorder || !this.recorder.isRecording) {
+        this.hudRecordBadge.style.display = 'none';
+      }
+    } else if (status === 'error') {
+      clearInterval(this.recInterval);
+      this.hudRecordBadge.style.display = 'flex';
+      this.hudRecordBadge.style.color = '#ff4444';
+      this.hudRecordBadge.style.borderColor = '#ff4444';
+      this.hudRecordBadge.style.boxShadow = '2px 2px 0px #ff4444';
+      this.hudRecordText.textContent = '⚠️ 저장 오류';
+      console.warn('[Recorder Notice]:', data?.error);
+      setTimeout(() => {
+        if (this.hudRecordBadge && (!this.recorder || !this.recorder.isRecording)) {
+          this.hudRecordBadge.style.display = 'none';
+        }
+      }, 5000);
     }
   }
 
